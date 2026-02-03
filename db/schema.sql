@@ -27,14 +27,15 @@ CREATE TABLE user_stats (
 -- Invites
 CREATE TABLE invites (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  code VARCHAR(16) UNIQUE NOT NULL,
-  host_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  time_control VARCHAR(16) NOT NULL, -- blitz, rapid, classical
-  minutes INTEGER NOT NULL,
-  increment_sec INTEGER DEFAULT 0,
-  status VARCHAR(16) DEFAULT 'active', -- active, used, expired
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  expires_at TIMESTAMP NOT NULL
+  code VARCHAR(12) UNIQUE NOT NULL,
+  creator_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  game_mode VARCHAR(20) NOT NULL, -- standard, rapid, blitz, bullet
+  time_control VARCHAR(20),
+  expires_at TIMESTAMP NOT NULL,
+  used BOOLEAN DEFAULT FALSE,
+  used_at TIMESTAMP,
+  accepted_by UUID REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Games
