@@ -5,6 +5,7 @@ import com.chessonline.repository.GameRepository;
 import com.chessonline.repository.MoveRepository;
 import com.chessonline.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,12 @@ public class GameService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private RatingService ratingService;
+
+    @Autowired(required = false)
+    private SimpMessagingTemplate messagingTemplate;
 
     /**
      * Create a new game from an invite or matchmaking
@@ -117,9 +124,67 @@ public class GameService {
         // TODO: Implement proper checkmate/stalemate detection here
         // For now, games continue until resignation/abandon
         
-        gameRepository.save(game);
+        Game savedGame = gameRepository.save(game);
+        
+        // Send WebSocket notification
+        notifyGameUpdate(savedGame);
 
         return moveRecord;
+    }
+    
+    /**
+     * Send WebSocket notification about game update
+     */
+    private void notifyGameUpdate(Game game) {
+        if (messagingTemplate != null) {
+            try {
+                messagingTemplate.convertAndSend(
+                    "/topic/game/" + game.getId() + "/updates",
+                    createGameUpdateMessage(game)
+                );
+            } catch (Exception e) {
+                // Log error but don't fail the request
+                System.err.println("Failed to send WebSocket notification: " + e.getMessage());
+            }
+        }
+    }
+    
+    private GameUpdateMessage createGameUpdateMessage(Game game) {
+        GameUpdateMessage msg = new GameUpdateMessage();
+        msg.setGameId(game.getId());
+        msg.setStatus(game.getStatus());
+        msg.setFenCurrent(game.getFenCurrent());
+        msg.setResult(game.getResult());
+        msg.setResultReason(game.getResultReason());
+        msg.setWhiteTimeLeftMs(game.getWhiteTimeLeftMs());
+        msg.setBlackTimeLeftMs(game.getBlackTimeLeftMs());
+        return msg;
+    }
+    
+    // Inner class for WebSocket messages
+    public static class GameUpdateMessage {
+        private UUID gameId;
+        private String status;
+        private String fenCurrent;
+        private String result;
+        private String resultReason;
+        private Long whiteTimeLeftMs;
+        private Long blackTimeLeftMs;
+        
+        public UUID getGameId() { return gameId; }
+        public void setGameId(UUID gameId) { this.gameId = gameId; }
+        public String getStatus() { return status; }
+        public void setStatus(String status) { this.status = status; }
+        public String getFenCurrent() { return fenCurrent; }
+        public void setFenCurrent(String fenCurrent) { this.fenCurrent = fenCurrent; }
+        public String getResult() { return result; }
+        public void setResult(String result) { this.result = result; }
+        public String getResultReason() { return resultReason; }
+        public void setResultReason(String resultReason) { this.resultReason = resultReason; }
+        public Long getWhiteTimeLeftMs() { return whiteTimeLeftMs; }
+        public void setWhiteTimeLeftMs(Long whiteTimeLeftMs) { this.whiteTimeLeftMs = whiteTimeLeftMs; }
+        public Long getBlackTimeLeftMs() { return blackTimeLeftMs; }
+        public void setBlackTimeLeftMs(Long blackTimeLeftMs) { this.blackTimeLeftMs = blackTimeLeftMs; }
     }
 
     /**
@@ -170,7 +235,15 @@ public class GameService {
         }
         game.setResultReason("resignation");
 
-        return gameRepository.save(game);
+        Game savedGame = gameRepository.save(game);
+        
+        // Update ratings
+        ratingService.updateRatingsForGame(savedGame);
+        
+        // Send WebSocket notification
+        notifyGameUpdate(savedGame);
+        
+        return savedGame;
     }
 
     /**

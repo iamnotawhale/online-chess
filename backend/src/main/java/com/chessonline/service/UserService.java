@@ -1,6 +1,8 @@
 package com.chessonline.service;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -44,6 +46,12 @@ public class UserService {
     public UserResponse getMe() {
         User user = getCurrentUserEntity();
         return toUserResponse(user, true);
+    }
+
+    public List<UserResponse> getAllUsers() {
+        return userRepository.findAll().stream()
+            .map(user -> toUserResponse(user, false))
+            .collect(Collectors.toList());
     }
 
     public UserResponse getPublicProfile(String username) {

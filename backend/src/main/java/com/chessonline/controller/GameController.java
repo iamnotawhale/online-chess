@@ -86,6 +86,24 @@ public class GameController {
     }
 
     /**
+     * Get all games for current user
+     */
+    @GetMapping
+    public ResponseEntity<?> getMyGames(Authentication authentication) {
+        try {
+            UUID userId = UUID.fromString(authentication.getName());
+            List<Game> games = gameService.getUserGames(userId);
+            List<GameResponse> responses = games.stream()
+                    .map(game -> mapToResponse(game, 0))
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(responses);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
      * Make a move
      */
     @PostMapping("/{gameId}/moves")
@@ -170,24 +188,6 @@ public class GameController {
         try {
             String pgn = gameService.generatePGN(gameId);
             return ResponseEntity.ok(Map.of("pgn", pgn));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", e.getMessage()));
-        }
-    }
-
-    /**
-     * Get user's games
-     */
-    @GetMapping("/my")
-    public ResponseEntity<?> getMyGames(Authentication authentication) {
-        try {
-            UUID userId = UUID.fromString(authentication.getName());
-            List<Game> games = gameService.getUserGames(userId);
-            List<GameResponse> responses = games.stream()
-                    .map(g -> mapToResponse(g, 0))
-                    .collect(Collectors.toList());
-            return ResponseEntity.ok(responses);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", e.getMessage()));

@@ -21,6 +21,7 @@ CREATE TABLE user_stats (
   losses INTEGER DEFAULT 0,
   draws INTEGER DEFAULT 0,
   total_games INTEGER DEFAULT 0,
+  games_played INTEGER DEFAULT 0,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

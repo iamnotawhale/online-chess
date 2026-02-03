@@ -38,6 +38,9 @@ public class UserStats {
     @Column(name = "total_games", nullable = false)
     private Integer totalGames = 0;
 
+    @Column(name = "games_played", nullable = false)
+    private Integer gamesPlayed = 0;
+
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
@@ -93,6 +96,14 @@ public class UserStats {
 
     public void setTotalGames(Integer totalGames) {
         this.totalGames = totalGames;
+    }
+
+    public Integer getGamesPlayed() {
+        return gamesPlayed;
+    }
+
+    public void setGamesPlayed(Integer gamesPlayed) {
+        this.gamesPlayed = gamesPlayed;
     }
 
     public Instant getUpdatedAt() {
