@@ -45,13 +45,14 @@ CREATE TABLE games (
   player_black_id UUID NOT NULL REFERENCES users(id),
   status VARCHAR(16) DEFAULT 'active', -- active, finished, abandoned
   result VARCHAR(16), -- white_win, black_win, draw
-  result_reason VARCHAR(32), -- checkmate, resignation, timeout, stalemate, agreement
-  time_control VARCHAR(16) NOT NULL,
-  minutes INTEGER NOT NULL,
-  increment_sec INTEGER DEFAULT 0,
+  result_reason VARCHAR(32), -- checkmate, resignation, timeout, stalemate, agreement, abandonment
+  time_control VARCHAR(20) NOT NULL, -- format: "5+3" (minutes+increment)
   pgn TEXT,
   fen_final TEXT,
+  fen_current TEXT DEFAULT 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
   invite_id UUID REFERENCES invites(id),
+  white_time_left_ms BIGINT,
+  black_time_left_ms BIGINT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   finished_at TIMESTAMP
 );
