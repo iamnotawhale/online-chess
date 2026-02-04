@@ -34,26 +34,26 @@ public class GameWebSocketController {
             @Payload MakeMoveRequest request,
             Principal principal) {
         try {
+            if (principal == null || principal.getName() == null) {
+                throw new RuntimeException("Unauthorized WebSocket session");
+            }
             UUID userId = UUID.fromString(principal.getName());
             
-            // Делаем ход (возвращает Move, а не Game)
+            System.out.println("🎮 Received move: " + request.getMove() + " from user: " + userId + " in game: " + gameId);
+            
+            // Делаем ход - метод makeMove() уже отправляет WebSocket уведомление внутри
             gameService.makeMove(gameId, userId, request.getMove());
             
-            // Получаем обновленную игру
-            Game game = gameService.getGame(gameId, userId)
-                    .orElseThrow(() -> new RuntimeException("Game not found"));
-            
-            // Отправляем обновление всем подписанным на эту игру
-            GameResponse response = mapGameToResponse(game);
-            messagingTemplate.convertAndSend("/topic/game/" + gameId + "/updates", response);
-            
         } catch (Exception e) {
+            System.err.println("❌ Error processing move: " + e.getMessage());
             // Отправляем ошибку конкретному пользователю
-            messagingTemplate.convertAndSendToUser(
-                principal.getName(),
-                "/queue/errors",
-                new ErrorMessage(e.getMessage())
-            );
+            if (principal != null && principal.getName() != null) {
+                messagingTemplate.convertAndSendToUser(
+                    principal.getName(),
+                    "/queue/errors",
+                    new ErrorMessage(e.getMessage())
+                );
+            }
         }
     }
 
@@ -77,8 +77,9 @@ public class GameWebSocketController {
         response.setResultReason(game.getResultReason());
         response.setTimeControl(game.getTimeControl());
         response.setFenCurrent(game.getFenCurrent());
-        response.setWhiteTimeLeftMs(game.getWhiteTimeLeftMs());
-        response.setBlackTimeLeftMs(game.getBlackTimeLeftMs());
+        response.setWhiteTimeLeftMs(gameService.getEffectiveTimeLeftMs(game, true));
+        response.setBlackTimeLeftMs(gameService.getEffectiveTimeLeftMs(game, false));
+        response.setLastMoveAt(game.getLastMoveAt());
         response.setCreatedAt(game.getCreatedAt());
         response.setFinishedAt(game.getFinishedAt());
         return response;

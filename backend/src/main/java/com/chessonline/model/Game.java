@@ -51,6 +51,9 @@ public class Game {
     @Column(name = "black_time_left_ms")
     private Long blackTimeLeftMs;
 
+    @Column(name = "last_move_at")
+    private LocalDateTime lastMoveAt;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -177,6 +180,14 @@ public class Game {
 
     public void setBlackTimeLeftMs(Long blackTimeLeftMs) {
         this.blackTimeLeftMs = blackTimeLeftMs;
+    }
+
+    public LocalDateTime getLastMoveAt() {
+        return lastMoveAt;
+    }
+
+    public void setLastMoveAt(LocalDateTime lastMoveAt) {
+        this.lastMoveAt = lastMoveAt;
     }
 
     public LocalDateTime getCreatedAt() {

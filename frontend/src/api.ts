@@ -30,7 +30,32 @@ interface GameResponse {
   resultReason?: string;
   fenCurrent: string;
   timeControl?: string;
+  whiteTimeLeftMs?: number;
+  blackTimeLeftMs?: number;
+  lastMoveAt?: string;
   createdAt?: string;
+}
+
+interface MatchmakingJoinRequest {
+  gameMode: 'bullet' | 'blitz' | 'rapid';
+  timeControl: string;
+}
+
+interface MatchmakingJoinResponse {
+  queued: boolean;
+  matched: boolean;
+  gameId?: string;
+  gameMode?: string;
+  timeControl?: string;
+  message?: string;
+}
+
+interface MatchmakingStatusResponse {
+  queued: boolean;
+  matched?: boolean;
+  gameId?: string;
+  gameMode?: string;
+  timeControl?: string;
 }
 
 const API_BASE_URL = '/api';
@@ -69,8 +94,8 @@ class ApiService {
   login(email: string, password: string): Promise<LoginResponse> {
     return this.client.post('/auth/login', { email, password }).then(res => {
       this.token = res.data.token;
-      localStorage.setItem('authToken', this.token);
-      this.client.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
+      localStorage.setItem('authToken', res.data.token);
+      this.client.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
       return res.data;
     });
   }
@@ -78,8 +103,8 @@ class ApiService {
   register(data: RegisterRequest): Promise<LoginResponse> {
     return this.client.post('/auth/register', data).then(res => {
       this.token = res.data.token;
-      localStorage.setItem('authToken', this.token);
-      this.client.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
+      localStorage.setItem('authToken', res.data.token);
+      this.client.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
       return res.data;
     });
   }
@@ -102,6 +127,18 @@ class ApiService {
     return this.client.get('/users').then(res => res.data);
   }
 
+  joinMatchmaking(data: MatchmakingJoinRequest): Promise<MatchmakingJoinResponse> {
+    return this.client.post('/matchmaking/join', data).then(res => res.data);
+  }
+
+  leaveMatchmaking(): Promise<{ message: string }> {
+    return this.client.post('/matchmaking/leave').then(res => res.data);
+  }
+
+  getMatchmakingStatus(): Promise<MatchmakingStatusResponse> {
+    return this.client.get('/matchmaking/status').then(res => res.data);
+  }
+
   getCurrentRating(): Promise<{ rating: number }> {
     return this.client.get('/ratings/me').then(res => res.data);
   }
@@ -118,6 +155,10 @@ class ApiService {
 
   getGame(gameId: string): Promise<GameResponse> {
     return this.client.get(`/games/${gameId}`).then(res => res.data);
+  }
+
+  getGameMoves(gameId: string): Promise<any[]> {
+    return this.client.get(`/games/${gameId}/moves`).then(res => res.data);
   }
 
   makeMove(gameId: string, move: string): Promise<any> {

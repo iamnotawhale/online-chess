@@ -225,8 +225,9 @@ public class GameController {
         response.setResultReason(game.getResultReason());
         response.setTimeControl(game.getTimeControl());
         response.setFenCurrent(game.getFenCurrent());
-        response.setWhiteTimeLeftMs(game.getWhiteTimeLeftMs());
-        response.setBlackTimeLeftMs(game.getBlackTimeLeftMs());
+        response.setWhiteTimeLeftMs(gameService.getEffectiveTimeLeftMs(game, true));
+        response.setBlackTimeLeftMs(gameService.getEffectiveTimeLeftMs(game, false));
+        response.setLastMoveAt(game.getLastMoveAt());
         response.setMoveCount(moveCount);
         response.setCreatedAt(game.getCreatedAt());
         response.setFinishedAt(game.getFinishedAt());

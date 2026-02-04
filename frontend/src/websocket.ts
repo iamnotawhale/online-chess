@@ -2,13 +2,22 @@ import { Client, StompSubscription } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
 interface GameUpdate {
-  gameId: string;
+  id?: string;  // Full game response format
+  gameId?: string;  // Update message format
+  whitePlayerId?: string;
+  whiteUsername?: string;
+  blackPlayerId?: string;
+  blackUsername?: string;
   status: string;
   fenCurrent: string;
   result?: string;
   resultReason?: string;
   whiteTimeLeftMs?: number;
   blackTimeLeftMs?: number;
+  lastMoveAt?: string;
+  timeControl?: string;
+  createdAt?: string;
+  finishedAt?: string;
 }
 
 class WebSocketService {
@@ -68,31 +77,90 @@ class WebSocketService {
   }
 
   subscribeToGame(gameId: string, callback: (update: GameUpdate) => void): () => void {
-    if (!this.client || !this.connected) {
-      console.warn('WebSocket not connected, cannot subscribe');
+    if (!this.client) {
+      console.warn('❌ WebSocket client not initialized');
       return () => {};
     }
 
     const topic = `/topic/game/${gameId}/updates`;
-    
+
+    // If already subscribed, return unsubscribe function
     if (this.subscriptions.has(topic)) {
-      console.log('Already subscribed to', topic);
+      console.log('✅ Already subscribed to', topic);
       return () => this.unsubscribeFromGame(gameId);
     }
 
-    const subscription = this.client.subscribe(topic, (message) => {
-      try {
-        const update: GameUpdate = JSON.parse(message.body);
-        callback(update);
-      } catch (error) {
-        console.error('Error parsing game update:', error);
-      }
-    });
+    // If not connected yet, wait and retry
+    if (!this.client.connected) {
+      console.warn('⏳ WebSocket not connected yet, waiting for connection...');
+      
+      // Store callback for later subscription
+      let retryAttempts = 0;
+      const maxRetries = 20;
+      
+      const retryInterval = setInterval(() => {
+        retryAttempts++;
+        console.log(`⏳ Retry ${retryAttempts}/${maxRetries}: checking connection...`);
+        
+        if (this.client?.connected) {
+          console.log('✅ WebSocket connected! Subscribing now...');
+          clearInterval(retryInterval);
+          
+          // Check again if not already subscribed (might have been subscribed in parallel)
+          if (!this.subscriptions.has(topic)) {
+            this.doSubscribe(gameId, topic, callback);
+          } else {
+            console.log('⚠️ Already subscribed during retry, skipping');
+          }
+        } else if (retryAttempts >= maxRetries) {
+          console.error('❌ Failed to connect after', maxRetries, 'attempts');
+          clearInterval(retryInterval);
+        }
+      }, 300);
+      
+      // Return empty unsubscribe for now (will be subscribed via retry)
+      return () => {
+        clearInterval(retryInterval);
+        this.unsubscribeFromGame(gameId);
+      };
+    }
 
-    this.subscriptions.set(topic, subscription);
-    console.log('Subscribed to', topic);
+    // Connected now, subscribe immediately
+    return this.doSubscribe(gameId, topic, callback);
+  }
 
-    return () => this.unsubscribeFromGame(gameId);
+  private doSubscribe(gameId: string, topic: string, callback: (update: GameUpdate) => void): () => void {
+    if (!this.client || !this.client.connected) {
+      console.error('❌ Cannot subscribe: client not connected');
+      return () => {};
+    }
+
+    // Double-check we're not already subscribed
+    if (this.subscriptions.has(topic)) {
+      console.log('⚠️ Already subscribed to', topic);
+      return () => this.unsubscribeFromGame(gameId);
+    }
+
+    try {
+      console.log('📡 Subscribing to', topic);
+      const subscription = this.client.subscribe(topic, (message) => {
+        try {
+          const update: GameUpdate = JSON.parse(message.body);
+          console.log('📨 Received update on', topic);
+          callback(update);
+        } catch (error) {
+          console.error('Error parsing game update:', error);
+        }
+      });
+
+      this.subscriptions.set(topic, subscription);
+      console.log('✅ Subscribed to', topic);
+
+      return () => this.unsubscribeFromGame(gameId);
+    } catch (error) {
+      console.error('Error subscribing to game:', error);
+      return () => {};
+    }
   }
 
   unsubscribeFromGame(gameId: string): void {

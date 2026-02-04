@@ -16,6 +16,7 @@ public class GameResponse {
     private String fenCurrent;
     private Long whiteTimeLeftMs;
     private Long blackTimeLeftMs;
+    private LocalDateTime lastMoveAt;
     private Integer moveCount;
     private LocalDateTime createdAt;
     private LocalDateTime finishedAt;
@@ -116,6 +117,14 @@ public class GameResponse {
 
     public void setBlackTimeLeftMs(Long blackTimeLeftMs) {
         this.blackTimeLeftMs = blackTimeLeftMs;
+    }
+
+    public LocalDateTime getLastMoveAt() {
+        return lastMoveAt;
+    }
+
+    public void setLastMoveAt(LocalDateTime lastMoveAt) {
+        this.lastMoveAt = lastMoveAt;
     }
 
     public Integer getMoveCount() {

@@ -20,6 +20,21 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
     e.preventDefault();
     setError('');
 
+    if (username.length < 3) {
+      setError('Имя пользователя должно быть минимум 3 символа');
+      return;
+    }
+
+    if (username.length > 32) {
+      setError('Имя пользователя не должно превышать 32 символа');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Пароль должен быть минимум 6 символов');
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError('Пароли не совпадают');
       return;
@@ -44,10 +59,12 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
         {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleRegister}>
           <div className="form-group">
-            <label>Имя пользователя:</label>
+            <label>Имя пользователя (3-32 символа):</label>
             <input
               type="text"
               value={username}
+              minLength={3}
+              maxLength={32}
               onChange={(e) => setUsername(e.target.value)}
               required
               disabled={loading}
@@ -64,10 +81,12 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
             />
           </div>
           <div className="form-group">
-            <label>Пароль:</label>
+            <label>Пароль (минимум 6 символов):</label>
             <input
               type="password"
               value={password}
+              minLength={6}
+              maxLength={64}
               onChange={(e) => setPassword(e.target.value)}
               required
               disabled={loading}
@@ -78,6 +97,8 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
             <input
               type="password"
               value={confirmPassword}
+              minLength={6}
+              maxLength={64}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               disabled={loading}

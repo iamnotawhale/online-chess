@@ -6,6 +6,7 @@ interface User {
   id: string;
   email: string;
   username: string;
+  rating: number;
 }
 
 interface Game {
@@ -20,11 +21,26 @@ export const Dashboard: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [rating, setRating] = useState<number>(0);
   const [games, setGames] = useState<Game[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
-  const [opponentId, setOpponentId] = useState('');
+  const [gameMode, setGameMode] = useState<'bullet' | 'blitz' | 'rapid'>('blitz');
+  const [timeControl, setTimeControl] = useState('5+3');
+  const [isQueued, setIsQueued] = useState(false);
+  const [matchmakingMessage, setMatchmakingMessage] = useState('');
+  const [matchmakingLoading, setMatchmakingLoading] = useState(false);
+
+  const GAME_MODE_LABELS: Record<'bullet' | 'blitz' | 'rapid', string> = {
+    bullet: 'Bullet (1-2 мин) ',
+    blitz: 'Blitz (3-5 мин)',
+    rapid: 'Rapid (10-25 мин)',
+  };
+
+  const TIME_CONTROLS: Record<'bullet' | 'blitz' | 'rapid', string[]> = {
+    bullet: ['1+0', '2+1'],
+    blitz: ['3+0', '3+2', '5+0', '5+3'],
+    rapid: ['10+0', '10+5', '15+10', '25+0'],
+  };
 
   useEffect(() => {
     loadDashboard();
@@ -33,16 +49,14 @@ export const Dashboard: React.FC = () => {
   const loadDashboard = async () => {
     try {
       setLoading(true);
-      const [userData, ratingData, gamesData, usersData] = await Promise.all([
+      const [userData, ratingData, gamesData] = await Promise.all([
         apiService.getMe(),
         apiService.getCurrentRating(),
         apiService.getMyGames(),
-        apiService.getAllUsers(),
       ]);
       setUser(userData);
       setRating(ratingData.rating);
       setGames(gamesData);
-      setUsers(usersData.filter(u => u.id !== userData.id)); // Исключить себя
     } catch (err: any) {
       setError('Ошибка загрузки данных');
       console.error(err);
@@ -50,6 +64,24 @@ export const Dashboard: React.FC = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!isQueued) return;
+    const intervalId = setInterval(async () => {
+      try {
+        const status = await apiService.getMatchmakingStatus();
+        if (status.matched && status.gameId) {
+          window.location.href = `/game/${status.gameId}`;
+          return;
+        }
+        setIsQueued(status.queued);
+      } catch (err) {
+        console.error('Ошибка проверки матчмейкинга', err);
+      }
+    }, 3000);
+
+    return () => clearInterval(intervalId);
+  }, [isQueued]);
 
   const handleSendInvite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,21 +95,38 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  const handleCreateGame = async (e: React.FormEvent) => {
+  const handleJoinMatchmaking = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!opponentId) {
-      alert('Введите ID противника');
-      return;
-    }
+    setMatchmakingLoading(true);
+    setMatchmakingMessage('');
     try {
-      const game = await apiService.createGame(opponentId);
-      alert(`Игра создана! ID: ${game.id}`);
-      setOpponentId('');
-      loadDashboard();
-      // Перенаправить на игру
-      window.location.href = `/game/${game.id}`;
+      const response = await apiService.joinMatchmaking({
+        gameMode,
+        timeControl,
+      });
+      if (response.matched && response.gameId) {
+        window.location.href = `/game/${response.gameId}`;
+        return;
+      }
+      setIsQueued(true);
+      setMatchmakingMessage(response.message || 'Вы в очереди на матч');
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Ошибка создания игры');
+      setMatchmakingMessage(err.response?.data?.error || 'Ошибка матчмейкинга');
+    } finally {
+      setMatchmakingLoading(false);
+    }
+  };
+
+  const handleLeaveMatchmaking = async () => {
+    setMatchmakingLoading(true);
+    try {
+      await apiService.leaveMatchmaking();
+      setIsQueued(false);
+      setMatchmakingMessage('Вы вышли из очереди');
+    } catch (err: any) {
+      setMatchmakingMessage(err.response?.data?.error || 'Ошибка выхода из очереди');
+    } finally {
+      setMatchmakingLoading(false);
     }
   };
 
@@ -101,23 +150,49 @@ export const Dashboard: React.FC = () => {
 
       <div className="dashboard-content">
         <div className="section">
-          <h2>Создать игру</h2>
-          <form onSubmit={handleCreateGame} className="invite-form">
+          <h2>Матчмейкинг</h2>
+          <form onSubmit={handleJoinMatchmaking} className="invite-form">
             <select
-              value={opponentId}
-              onChange={(e) => setOpponentId(e.target.value)}
+              value={gameMode}
+              onChange={(e) => {
+                const mode = e.target.value as 'bullet' | 'blitz' | 'rapid';
+                setGameMode(mode);
+                setTimeControl(TIME_CONTROLS[mode][0]);
+              }}
               required
               style={{ padding: '12px', borderRadius: '5px', border: '1px solid #ddd', fontSize: '16px' }}
+              disabled={matchmakingLoading || isQueued}
             >
-              <option value="">Выберите противника</option>
-              {users.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.username} (рейтинг: {u.rating})
+              {Object.entries(GAME_MODE_LABELS).map(([mode, label]) => (
+                <option key={mode} value={mode}>
+                  {label}
                 </option>
               ))}
             </select>
-            <button type="submit">Создать игру</button>
+            <select
+              value={timeControl}
+              onChange={(e) => setTimeControl(e.target.value)}
+              required
+              style={{ padding: '12px', borderRadius: '5px', border: '1px solid #ddd', fontSize: '16px' }}
+              disabled={matchmakingLoading || isQueued}
+            >
+              {TIME_CONTROLS[gameMode].map((tc) => (
+                <option key={tc} value={tc}>
+                  {tc}
+                </option>
+              ))}
+            </select>
+            {!isQueued ? (
+              <button type="submit" disabled={matchmakingLoading}>
+                Найти матч
+              </button>
+            ) : (
+              <button type="button" onClick={handleLeaveMatchmaking} disabled={matchmakingLoading}>
+                Выйти из очереди
+              </button>
+            )}
           </form>
+          {matchmakingMessage && <p>{matchmakingMessage}</p>}
         </div>
 
         <div className="section">

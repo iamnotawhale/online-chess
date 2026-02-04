@@ -39,6 +39,16 @@
   font-weight: bold;
 }
 
+.logout-btn:hover {
+  background: #b91c1c !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+}
+
+.logout-btn:active {
+  transform: translateY(0);
+}
+
 .dashboard-content {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;

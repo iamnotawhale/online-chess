@@ -54,6 +54,7 @@ CREATE TABLE games (
   invite_id UUID REFERENCES invites(id),
   white_time_left_ms BIGINT,
   black_time_left_ms BIGINT,
+  last_move_at TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   finished_at TIMESTAMP
 );
