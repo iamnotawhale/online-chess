@@ -97,7 +97,7 @@ public class GameController {
     public ResponseEntity<?> getMyGames(Authentication authentication) {
         try {
             UUID userId = UUID.fromString(authentication.getName());
-            List<Game> games = gameService.getUserGames(userId);
+            List<Game> games = gameService.getUserActiveGames(userId);
             List<GameResponse> responses = games.stream()
                     .map(game -> mapToResponse(game, 0))
                     .collect(Collectors.toList());

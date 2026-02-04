@@ -181,7 +181,7 @@ class ApiService {
   }
 
   getMyGames(): Promise<GameResponse[]> {
-    return this.client.get('/games').then(res => res.data);
+    return this.client.get('/games/my/active').then(res => res.data);
   }
 
   getMyFinishedGames(): Promise<GameResponse[]> {

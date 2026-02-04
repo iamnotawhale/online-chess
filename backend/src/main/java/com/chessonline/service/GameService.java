@@ -539,8 +539,7 @@ public class GameService {
      */
     @Transactional(readOnly = true)
     public List<Game> getUserFinishedGames(UUID userId) {
-        return gameRepository.findByStatusAndPlayerWhiteIdOrStatusAndPlayerBlackIdOrderByFinishedAtDesc(
-                "finished", userId, "finished", userId);
+        return gameRepository.findFinishedGamesByUserId("finished", userId);
     }
 
     /**

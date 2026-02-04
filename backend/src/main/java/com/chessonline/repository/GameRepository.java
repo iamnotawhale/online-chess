@@ -2,6 +2,8 @@ package com.chessonline.repository;
 
 import com.chessonline.model.Game;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -19,6 +21,6 @@ public interface GameRepository extends JpaRepository<Game, UUID> {
     
     Optional<Game> findByIdAndPlayerWhiteIdOrPlayerBlackId(UUID gameId, UUID playerId, UUID playerId2);
 
-    List<Game> findByStatusAndPlayerWhiteIdOrStatusAndPlayerBlackIdOrderByFinishedAtDesc(
-            String status1, UUID whiteId, String status2, UUID blackId);
+    @Query("SELECT g FROM Game g WHERE g.status = :status AND (g.playerWhite.id = :userId OR g.playerBlack.id = :userId) ORDER BY g.finishedAt DESC")
+    List<Game> findFinishedGamesByUserId(@Param("status") String status, @Param("userId") UUID userId);
 }
