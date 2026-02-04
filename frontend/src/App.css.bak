@@ -3,8 +3,16 @@
   line-height: 1.6;
   font-weight: 400;
   font-size: 16px;
+
   color: #333;
   background-color: #fafafa;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color: #e5e5e5;
+    background-color: #1a1a1a;
+  }
 }
 
 * {
@@ -79,18 +87,18 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  font-size: 16px;
-  color: #999;
+  font-size: 18px;
+  color: #667eea;
 }
 
 @media (max-width: 768px) {
   .header-content {
     flex-direction: column;
-    gap: 12px;
+    gap: 15px;
     text-align: center;
   }
 
   .logo {
-    font-size: 18px;
+    font-size: 20px;
   }
 }

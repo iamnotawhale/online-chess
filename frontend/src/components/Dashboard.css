@@ -5,48 +5,38 @@
 }
 
 .dashboard-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 30px;
-  border-radius: 10px;
+  background: #fff;
+  color: #333;
+  padding: 20px 0;
+  border-bottom: 1px solid #e5e5e5;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 24px;
 }
 
 .dashboard-header h1 {
   margin: 0;
-  font-size: 32px;
+  font-size: 28px;
+  font-weight: 600;
 }
 
 .rating-box {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 15px 25px;
-  border-radius: 8px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .rating-label {
-  font-weight: 600;
+  font-weight: 500;
   font-size: 14px;
+  color: #666;
 }
 
 .rating-value {
   font-size: 24px;
-  font-weight: bold;
-}
-
-.logout-btn:hover {
-  background: #b91c1c !important;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
-}
-
-.logout-btn:active {
-  transform: translateY(0);
+  font-weight: 600;
+  color: #333;
 }
 
 .dashboard-content {
@@ -68,96 +58,186 @@
 }
 
 .section {
-  background: white;
-  padding: 25px;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background: #fff;
+  padding: 20px;
+  border: 1px solid #e5e5e5;
+  border-radius: 0;
 }
 
 .section h2 {
-  margin-top: 0;
+  margin: 0 0 16px 0;
   color: #333;
-  border-bottom: 2px solid #667eea;
-  padding-bottom: 15px;
-  margin-bottom: 20px;
+  border-bottom: 1px solid #e5e5e5;
+  padding-bottom: 12px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.section > p {
+  color: #999;
+  font-size: 14px;
+  margin: 0;
 }
 
 .invite-form {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 .invite-form input {
   flex: 1;
-  padding: 12px;
+  padding: 8px 12px;
   border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
 }
 
 .invite-form input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #333;
 }
 
 .invite-form button {
-  padding: 12px 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 8px 16px;
+  background: #333;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 4px;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 14px;
   white-space: nowrap;
+  transition: all 0.2s;
 }
 
 .invite-form button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+  background: #555;
+}
+
+.time-control-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mode-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.mode-btn:hover {
+  border-color: #333;
+}
+
+.mode-btn.active {
+  background: #333;
+  color: white;
+  border-color: #333;
+}
+
+.time-control-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.time-control-btn {
+  padding: 10px;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.time-control-btn:hover {
+  border-color: #333;
+}
+
+.time-control-btn.active {
+  background: #333;
+  color: white;
+  border-color: #333;
+}
+
+.matchmaking-btn {
+  width: 100%;
+  padding: 12px;
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.matchmaking-btn:hover:not(:disabled) {
+  background: #555;
+}
+
+.matchmaking-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
 }
 
 .games-list {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 12px;
 }
 
 .game-card {
-  border: 1px solid #eee;
-  padding: 15px;
-  border-radius: 8px;
-  background: #f9f9f9;
+  border: 1px solid #e5e5e5;
+  padding: 12px;
+  border-radius: 4px;
+  background: #fff;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
 }
 
 .game-status {
-  font-weight: 600;
-  color: #667eea;
+  font-weight: 500;
+  color: #666;
+  font-size: 13px;
+  min-width: 60px;
 }
 
 .game-result {
-  color: #27ae60;
-  font-size: 14px;
+  color: #333;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .game-link {
-  color: #667eea;
+  color: #333;
   text-decoration: none;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
+  font-size: 14px;
+  margin-left: auto;
 }
 
 .game-link:hover {
   text-decoration: underline;
-}
-
-.error {
-  color: #e74c3c;
-  padding: 15px;
-  background-color: #fadbd8;
-  border-radius: 5px;
 }
 
 .finished-games-list {
@@ -167,32 +247,28 @@
 }
 
 .finished-game-card {
-  background: white;
-  padding: 15px;
-  border-radius: 8px;
-  border-left: 4px solid;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: #fff;
+  padding: 12px;
+  border-radius: 4px;
+  border-left: 3px solid;
+  box-shadow: none;
   transition: all 0.2s;
 }
 
 .finished-game-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  border-left-color: #333;
 }
 
 .finished-game-card.won {
   border-left-color: #27ae60;
-  background: linear-gradient(to right, rgba(39, 174, 96, 0.05), white);
 }
 
 .finished-game-card.lost {
   border-left-color: #e74c3c;
-  background: linear-gradient(to right, rgba(231, 76, 60, 0.05), white);
 }
 
 .finished-game-card.draw {
   border-left-color: #95a5a6;
-  background: linear-gradient(to right, rgba(149, 165, 166, 0.05), white);
 }
 
 .game-header {
@@ -203,59 +279,60 @@
 }
 
 .result-icon {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: bold;
-  width: 30px;
-  height: 30px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
+  border-radius: 3px;
+  flex-shrink: 0;
 }
 
 .result-icon.win {
-  background: #27ae60;
-  color: white;
+  background: #e8f5e9;
+  color: #27ae60;
 }
 
 .result-icon.loss {
-  background: #e74c3c;
-  color: white;
+  background: #ffebee;
+  color: #e74c3c;
 }
 
 .result-icon.draw {
-  background: #95a5a6;
-  color: white;
+  background: #f5f5f5;
+  color: #666;
 }
 
 .opponent {
-  font-weight: 600;
+  font-weight: 500;
   flex: 1;
+  font-size: 14px;
 }
 
 .rating-change {
-  font-weight: bold;
-  font-size: 16px;
+  font-weight: 600;
+  font-size: 14px;
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 .rating-change.positive {
   color: #27ae60;
-  background: rgba(39, 174, 96, 0.1);
+  background: #e8f5e9;
 }
 
 .rating-change.negative {
   color: #e74c3c;
-  background: rgba(231, 76, 60, 0.1);
+  background: #ffebee;
 }
 
 .game-details {
   display: flex;
-  gap: 15px;
-  font-size: 14px;
+  gap: 12px;
+  font-size: 13px;
   color: #666;
-  margin-bottom: 8px;
 }
 
 .time-control {
@@ -264,4 +341,13 @@
 
 .result-reason {
   font-style: italic;
+}
+
+.error {
+  color: #e74c3c;
+  padding: 12px;
+  background-color: #ffebee;
+  border-radius: 4px;
+  border: 1px solid #ffcdd2;
+  font-size: 14px;
 }
