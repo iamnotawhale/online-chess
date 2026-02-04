@@ -4,6 +4,7 @@ import com.chessonline.model.*;
 import com.chessonline.repository.GameRepository;
 import com.chessonline.repository.MoveRepository;
 import com.chessonline.repository.UserRepository;
+import com.github.bhlangonijr.chesslib.Board;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -84,7 +85,7 @@ public class GameService {
     }
 
     /**
-     * Make a move in the game (simplified validation - stores move without full chess validation)
+     * Make a move in the game using chesslib for validation
      */
     @Transactional
     public Move makeMove(UUID gameId, UUID userId, String moveStr) {
@@ -107,9 +108,6 @@ public class GameService {
             throw new RuntimeException("It's not your turn");
         }
 
-        // Validate move format (basic validation)
-        validateMoveFormat(moveStr);
-
         // Update clocks before move
         if (updateClocksOnMove(game, isWhiteToMove)) {
             Game savedTimeoutGame = gameRepository.save(game);
@@ -118,17 +116,32 @@ public class GameService {
             throw new RuntimeException("Time out");
         }
 
+        // Use chesslib to validate and apply move
+        String newFen;
+        try {
+            Board board = new Board();
+            board.loadFromFen(game.getFenCurrent());
+            
+            // Parse UCI move (e.g., "e2e4")
+            com.github.bhlangonijr.chesslib.move.Move chesslibMove = new com.github.bhlangonijr.chesslib.move.Move(moveStr, board.getSideToMove());
+            
+            // Validate and apply move
+            if (!board.legalMoves().contains(chesslibMove)) {
+                throw new RuntimeException("Illegal move: " + moveStr);
+            }
+            
+            board.doMove(chesslibMove);
+            newFen = board.getFen();
+            
+            System.out.println("✅ Move applied: " + moveStr + " -> New FEN: " + newFen);
+        } catch (Exception e) {
+            System.err.println("❌ Invalid move: " + moveStr + " - " + e.getMessage());
+            throw new RuntimeException("Invalid move: " + e.getMessage());
+        }
+
         // Create move record
         List<Move> moves = moveRepository.findByGameIdOrderByMoveNumber(gameId);
         int moveNumber = moves.size() + 1;
-
-        // Apply move to FEN string
-        String newFen;
-        try {
-            newFen = applyMoveToFen(game.getFenCurrent(), moveStr);
-        } catch (Exception e) {
-            throw new RuntimeException("Invalid move: " + e.getMessage());
-        }
 
         Move moveRecord = new Move(game, moveNumber, moveStr, newFen);
         moveRecord = moveRepository.save(moveRecord);
@@ -139,10 +152,11 @@ public class GameService {
         // Update last move timestamp
         game.setLastMoveAt(LocalDateTime.now());
         
-        // Check for checkmate or stalemate
-        GameEndState endState = checkGameEnd(newFen);
+        // Check for checkmate or stalemate using chesslib
+        GameEndState endState = checkGameEndWithChesslib(newFen);
+        System.out.println("🔍 Game end check for FEN: " + newFen + " -> State: " + endState);
         if (endState != GameEndState.ONGOING) {
-            game.setStatus("completed");
+            game.setStatus("finished");
             if (endState == GameEndState.CHECKMATE) {
                 // The player who just moved wins (turn in newFen is now the loser's turn)
                 String[] fenParts = newFen.split(" ");
@@ -150,11 +164,11 @@ public class GameService {
                 // If current turn is white, black just won (and vice versa)
                 game.setResult(currentTurn.equals("w") ? "0-1" : "1-0");
                 game.setResultReason("checkmate");
-                System.out.println("♔ Checkmate! Winner: " + (currentTurn.equals("w") ? "Black" : "White"));
+                System.out.println("♔ CHECKMATE! Winner: " + (currentTurn.equals("w") ? "Black" : "White") + " | Result: " + game.getResult());
             } else if (endState == GameEndState.STALEMATE) {
                 game.setResult("1/2-1/2");
                 game.setResultReason("stalemate");
-                System.out.println("♔ Stalemate! Draw.");
+                System.out.println("♔ STALEMATE! Draw.");
             }
         }
         
@@ -237,28 +251,6 @@ public class GameService {
         public void setBlackTimeLeftMs(Long blackTimeLeftMs) { this.blackTimeLeftMs = blackTimeLeftMs; }
         public LocalDateTime getLastMoveAt() { return lastMoveAt; }
         public void setLastMoveAt(LocalDateTime lastMoveAt) { this.lastMoveAt = lastMoveAt; }
-    }
-
-    /**
-     * Basic move format validation (algebraic notation)
-     */
-    private void validateMoveFormat(String move) {
-        // Allow castling, captures, promotions, checks: O-O, e4, Nf3, exd5, e8=Q, Bf5+, etc.
-        if (!move.matches("^([a-h][1-8]|[a-h]x[a-h][1-8]|[NBRQK][a-h0-8]?x?[a-h][1-8]|O-O(?:-O)?|[a-h]8=[NBRQK]|.+[+#]?)$")) {
-            throw new RuntimeException("Invalid move format: " + move);
-        }
-    }
-
-    /**
-     * Simple FEN turn flip (w -> b, b -> w)
-     */
-    private String flipFenTurn(String fen) {
-        String[] parts = fen.split(" ");
-        if (parts.length > 1) {
-            parts[1] = "w".equals(parts[1]) ? "b" : "w";
-            return String.join(" ", parts);
-        }
-        return fen;
     }
 
     private boolean updateClocksOnMove(Game game, boolean isWhiteToMove) {
@@ -601,326 +593,30 @@ public class GameService {
     }
 
     /**
-     * Check if the game has ended (checkmate or stalemate)
+     * Check if the game has ended using chesslib
      */
-    private GameEndState checkGameEnd(String fen) {
-        String[] parts = fen.split(" ");
-        String turn = parts.length > 1 ? parts[1] : "w";
-        
-        // Check if the current player (whose turn it is) has any legal moves
-        boolean hasLegalMoves = hasAnyLegalMove(fen);
-        
-        if (!hasLegalMoves) {
-            // If no legal moves, check if in check
-            boolean inCheck = isInCheck(fen, turn);
-            if (inCheck) {
+    private GameEndState checkGameEndWithChesslib(String fen) {
+        try {
+            Board board = new Board();
+            board.loadFromFen(fen);
+            
+            System.out.println("🔍 checkGameEndWithChesslib - FEN: " + fen);
+            System.out.println("🔍 Current turn to move: " + (board.getSideToMove().toString()));
+            System.out.println("🔍 Is in check: " + board.isKingAttacked());
+            System.out.println("🔍 Is checkmate: " + board.isMated());
+            System.out.println("🔍 Is stalemate: " + board.isStaleMate());
+            
+            if (board.isMated()) {
                 return GameEndState.CHECKMATE;
-            } else {
+            } else if (board.isStaleMate()) {
                 return GameEndState.STALEMATE;
             }
+            
+            return GameEndState.ONGOING;
+        } catch (Exception e) {
+            System.err.println("Error checking game end with chesslib: " + e.getMessage());
+            e.printStackTrace();
+            return GameEndState.ONGOING;
         }
-        
-        return GameEndState.ONGOING;
-    }
-
-    /**
-     * Check if current player has any legal move
-     */
-    private boolean hasAnyLegalMove(String fen) {
-        String[] parts = fen.split(" ");
-        String boardPart = parts[0];
-        String turn = parts.length > 1 ? parts[1] : "w";
-        
-        // Parse board
-        String[][] board = parseFenBoard(boardPart);
-        
-        // Try all possible moves for all pieces of current color
-        for (int fromRank = 0; fromRank < 8; fromRank++) {
-            for (int fromFile = 0; fromFile < 8; fromFile++) {
-                String piece = board[fromRank][fromFile];
-                if (piece.equals(" ")) continue;
-                
-                // Check if piece belongs to current player
-                boolean isPieceWhite = Character.isUpperCase(piece.charAt(0));
-                boolean isPlayerWhite = turn.equals("w");
-                if (isPieceWhite != isPlayerWhite) continue;
-                
-                // Try all possible destination squares
-                for (int toRank = 0; toRank < 8; toRank++) {
-                    for (int toFile = 0; toFile < 8; toFile++) {
-                        if (fromRank == toRank && fromFile == toFile) continue;
-                        
-                        // Try to make this move
-                        try {
-                            String fromSquare = fileRankToSquare(fromFile, fromRank);
-                            String toSquare = fileRankToSquare(toFile, toRank);
-                            String testMove = fromSquare + toSquare;
-                            
-                            // Try applying the move (will throw if invalid)
-                            String newFen = applyMoveToFen(fen, testMove);
-                            
-                            // Check if this move leaves king in check
-                            if (!isInCheck(newFen, turn)) {
-                                return true; // Found a legal move
-                            }
-                        } catch (Exception e) {
-                            // Invalid move, continue
-                        }
-                    }
-                }
-            }
-        }
-        
-        return false; // No legal moves found
-    }
-
-    /**
-     * Check if the given side is in check
-     */
-    private boolean isInCheck(String fen, String side) {
-        String[] parts = fen.split(" ");
-        String boardPart = parts[0];
-        String[][] board = parseFenBoard(boardPart);
-        
-        // Find king position
-        String kingPiece = side.equals("w") ? "K" : "k";
-        int kingRank = -1, kingFile = -1;
-        
-        for (int r = 0; r < 8; r++) {
-            for (int f = 0; f < 8; f++) {
-                if (board[r][f].equals(kingPiece)) {
-                    kingRank = r;
-                    kingFile = f;
-                    break;
-                }
-            }
-            if (kingRank != -1) break;
-        }
-        
-        if (kingRank == -1) {
-            return false; // King not found (shouldn't happen)
-        }
-        
-        // Check if any opponent piece can attack the king
-        boolean opponentIsWhite = !side.equals("w");
-        
-        for (int r = 0; r < 8; r++) {
-            for (int f = 0; f < 8; f++) {
-                String piece = board[r][f];
-                if (piece.equals(" ")) continue;
-                
-                boolean isPieceWhite = Character.isUpperCase(piece.charAt(0));
-                if (isPieceWhite != opponentIsWhite) continue;
-                
-                // Check if this piece can attack the king
-                if (canPieceAttackSquare(board, piece.toUpperCase().charAt(0), r, f, kingRank, kingFile)) {
-                    return true;
-                }
-            }
-        }
-        
-        return false;
-    }
-
-    /**
-     * Check if a piece at (fromR, fromF) can attack square (toR, toF)
-     */
-    private boolean canPieceAttackSquare(String[][] board, char pieceType, int fromR, int fromF, int toR, int toF) {
-        int dr = toR - fromR;
-        int df = toF - fromF;
-        
-        switch (pieceType) {
-            case 'P': // Pawn (only attacks diagonally)
-                return Math.abs(df) == 1 && Math.abs(dr) == 1;
-            case 'N': // Knight
-                return (Math.abs(dr) == 2 && Math.abs(df) == 1) || (Math.abs(dr) == 1 && Math.abs(df) == 2);
-            case 'B': // Bishop
-                if (Math.abs(dr) != Math.abs(df)) return false;
-                return isPathClear(board, fromR, fromF, toR, toF);
-            case 'R': // Rook
-                if (dr != 0 && df != 0) return false;
-                return isPathClear(board, fromR, fromF, toR, toF);
-            case 'Q': // Queen
-                if (dr != 0 && df != 0 && Math.abs(dr) != Math.abs(df)) return false;
-                return isPathClear(board, fromR, fromF, toR, toF);
-            case 'K': // King
-                return Math.abs(dr) <= 1 && Math.abs(df) <= 1;
-        }
-        return false;
-    }
-
-    /**
-     * Check if path is clear between two squares
-     */
-    private boolean isPathClear(String[][] board, int fromR, int fromF, int toR, int toF) {
-        int dr = Integer.compare(toR - fromR, 0);
-        int df = Integer.compare(toF - fromF, 0);
-        
-        int r = fromR + dr;
-        int f = fromF + df;
-        
-        while (r != toR || f != toF) {
-            if (!board[r][f].equals(" ")) {
-                return false;
-            }
-            r += dr;
-            f += df;
-        }
-        
-        return true;
-    }
-
-    /**
-     * Parse FEN board part into 2D array
-     */
-    private String[][] parseFenBoard(String boardPart) {
-        String[][] board = new String[8][8];
-        String[] ranks = boardPart.split("/");
-        
-        for (int r = 0; r < 8 && r < ranks.length; r++) {
-            String rank = ranks[r];
-            int f = 0;
-            for (int i = 0; i < rank.length() && f < 8; i++) {
-                char c = rank.charAt(i);
-                if (Character.isDigit(c)) {
-                    int emptyCount = Character.getNumericValue(c);
-                    for (int j = 0; j < emptyCount && f < 8; j++) {
-                        board[r][f++] = " ";
-                    }
-                } else {
-                    board[r][f++] = String.valueOf(c);
-                }
-            }
-            // Fill remaining squares with empty
-            while (f < 8) {
-                board[r][f++] = " ";
-            }
-        }
-        
-        return board;
-    }
-
-    /**
-     * Convert file and rank indices to algebraic notation
-     */
-    private String fileRankToSquare(int file, int rank) {
-        char fileChar = (char) ('a' + file);
-        char rankChar = (char) ('1' + (7 - rank));
-        return "" + fileChar + rankChar;
-    }
-
-    /**
-     * Apply a coordinate move (e.g., "e2e4") to a FEN string
-     * This is a simplified implementation that moves pieces without full chess rule validation
-     */
-    private String applyMoveToFen(String fen, String move) {
-        if (move.length() < 4) {
-            throw new RuntimeException("Move must be at least 4 characters (e.g., 'e2e4')");
-        }
-
-        String[] fenParts = fen.split(" ");
-        String boardPart = fenParts[0];
-        String turn = fenParts.length > 1 ? fenParts[1] : "w";
-        String castling = fenParts.length > 2 ? fenParts[2] : "KQkq";
-        String enPassant = fenParts.length > 3 ? fenParts[3] : "-";
-        String halfmove = fenParts.length > 4 ? fenParts[4] : "0";
-        String fullmove = fenParts.length > 5 ? fenParts[5] : "1";
-
-        // Parse move
-        String from = move.substring(0, 2);
-        String to = move.substring(2, 4);
-        String promotion = move.length() > 4 ? move.substring(4, 5) : null;
-
-        // Convert to coordinates
-        int fromFile = from.charAt(0) - 'a';
-        int fromRank = 8 - (from.charAt(1) - '0');
-        int toFile = to.charAt(0) - 'a';
-        int toRank = 8 - (to.charAt(1) - '0');
-
-        // Convert board to 2D array
-        String[][] board = new String[8][8];
-        String[] ranks = boardPart.split("/");
-        for (int r = 0; r < 8; r++) {
-            int file = 0;
-            for (char c : ranks[r].toCharArray()) {
-                if (Character.isDigit(c)) {
-                    int empty = c - '0';
-                    for (int i = 0; i < empty; i++) {
-                        board[r][file++] = " ";
-                    }
-                } else {
-                    board[r][file++] = String.valueOf(c);
-                }
-            }
-        }
-
-        // Apply move
-        String piece = board[fromRank][fromFile];
-        board[toRank][toFile] = piece;
-        board[fromRank][fromFile] = " ";
-
-        // Handle castling (when king moves 2 squares)
-        if ((piece.equals("K") || piece.equals("k")) && Math.abs(toFile - fromFile) == 2) {
-            // This is castling - need to move the rook too
-            if (toFile > fromFile) {
-                // Kingside castling (short) - rook from h-file to f-file
-                int rookFromFile = 7; // h-file
-                int rookToFile = 5;   // f-file
-                String rook = board[fromRank][rookFromFile];
-                board[fromRank][rookToFile] = rook;
-                board[fromRank][rookFromFile] = " ";
-            } else {
-                // Queenside castling (long) - rook from a-file to d-file
-                int rookFromFile = 0; // a-file
-                int rookToFile = 3;   // d-file
-                String rook = board[fromRank][rookFromFile];
-                board[fromRank][rookToFile] = rook;
-                board[fromRank][rookFromFile] = " ";
-            }
-        }
-
-        // Handle promotion
-        if (promotion != null && !promotion.isEmpty()) {
-            String promoPiece = promotion;
-            if (turn.equals("w")) {
-                promoPiece = promoPiece.toUpperCase();
-            }
-            board[toRank][toFile] = promoPiece;
-        }
-
-        // Convert back to FEN board part
-        StringBuilder newBoardPart = new StringBuilder();
-        for (int r = 0; r < 8; r++) {
-            int emptyCount = 0;
-            for (int f = 0; f < 8; f++) {
-                if (board[r][f].equals(" ")) {
-                    emptyCount++;
-                } else {
-                    if (emptyCount > 0) {
-                        newBoardPart.append(emptyCount);
-                        emptyCount = 0;
-                    }
-                    newBoardPart.append(board[r][f]);
-                }
-            }
-            if (emptyCount > 0) {
-                newBoardPart.append(emptyCount);
-            }
-            if (r < 7) {
-                newBoardPart.append("/");
-            }
-        }
-
-        // Flip turn
-        String newTurn = turn.equals("w") ? "b" : "w";
-
-        // Increment fullmove if black just moved
-        int newFullmove = Integer.parseInt(fullmove);
-        if (turn.equals("b")) {
-            newFullmove++;
-        }
-
-        // Return new FEN
-        return newBoardPart + " " + newTurn + " " + castling + " " + enPassant + " " + halfmove + " " + newFullmove;
     }
 }

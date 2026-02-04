@@ -61,6 +61,20 @@ interface MatchmakingStatusResponse {
   timeControl?: string;
 }
 
+interface InviteResponse {
+  id: string;
+  code: string;
+  inviteUrl: string;
+  gameMode: string;
+  timeControl?: string;
+  expiresAt: string;
+  used: boolean;
+  usedAt?: string;
+  creatorUsername: string;
+  acceptedByUsername?: string;
+  createdAt: string;
+}
+
 const API_BASE_URL = '/api';
 
 class ApiService {
@@ -188,12 +202,16 @@ class ApiService {
     return this.client.get('/games/my/finished').then(res => res.data);
   }
 
-  createInvite(opponentEmail: string): Promise<any> {
-    return this.client.post('/invites', { opponentEmail }).then(res => res.data);
+  createInvite(data: { gameMode: string; timeControl: string; expirationHours?: number }): Promise<InviteResponse> {
+    return this.client.post('/invites', data).then(res => res.data);
   }
 
   acceptInvite(inviteCode: string): Promise<GameResponse> {
     return this.client.post(`/invites/${inviteCode}/accept`).then(res => res.data);
+  }
+
+  getInvite(inviteCode: string): Promise<InviteResponse> {
+    return this.client.get(`/invites/${inviteCode}`).then(res => res.data);
   }
 
   getMyInvites(): Promise<any[]> {

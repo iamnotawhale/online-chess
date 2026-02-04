@@ -4,6 +4,7 @@ import com.chessonline.model.Invite;
 import com.chessonline.model.User;
 import com.chessonline.repository.InviteRepository;
 import com.chessonline.repository.UserRepository;
+import com.chessonline.model.Game;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,9 @@ public class InviteService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private GameService gameService;
 
     /**
      * Generate a unique invite code
@@ -85,7 +89,7 @@ public class InviteService {
      * Accept an invite
      */
     @Transactional
-    public Invite acceptInvite(String code, UUID acceptorId) {
+    public Game acceptInvite(String code, UUID acceptorId) {
         Invite invite = inviteRepository.findByCode(code.toUpperCase())
                 .orElseThrow(() -> new RuntimeException("Invite not found"));
 
@@ -108,13 +112,14 @@ public class InviteService {
         invite.setUsedAt(LocalDateTime.now());
         invite.setAcceptedBy(acceptor);
 
-        Invite savedInvite = inviteRepository.save(invite);
-        
-        // Force load lazy relationships for response
-        savedInvite.getCreator().getUsername();
-        savedInvite.getAcceptedBy().getUsername();
-        
-        return savedInvite;
+        inviteRepository.save(invite);
+
+        return gameService.createGame(
+            invite.getCreator().getId(),
+            acceptor.getId(),
+            invite.getTimeControl(),
+            invite
+        );
     }
 
     /**

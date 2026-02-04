@@ -19,6 +19,7 @@ interface Game {
   result?: string;
   resultReason?: string;
   timeControl?: string;
+  createdAt?: string;
   finishedAt?: string;
   ratingChange?: number;
 }
@@ -30,7 +31,10 @@ export const Dashboard: React.FC = () => {
   const [finishedGames, setFinishedGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteLink, setInviteLink] = useState('');
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteGameMode, setInviteGameMode] = useState<'bullet' | 'blitz' | 'rapid'>('blitz');
+  const [inviteTimeControl, setInviteTimeControl] = useState('5+3');
   const [gameMode, setGameMode] = useState<'bullet' | 'blitz' | 'rapid'>('blitz');
   const [timeControl, setTimeControl] = useState('5+3');
   const [isQueued, setIsQueued] = useState(false);
@@ -74,6 +78,17 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+  const formatDateTime = (dateString?: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
+  };
+
   useEffect(() => {
     if (!isQueued) return;
     const intervalId = setInterval(async () => {
@@ -92,16 +107,37 @@ export const Dashboard: React.FC = () => {
     return () => clearInterval(intervalId);
   }, [isQueued]);
 
-  const handleSendInvite = async (e: React.FormEvent) => {
+  const handleCreateInvite = async (e: React.FormEvent) => {
     e.preventDefault();
+    setInviteLoading(true);
     try {
-      await apiService.createInvite(inviteEmail);
-      setInviteEmail('');
-      alert('Приглашение отправлено!');
-      loadDashboard();
+      const response = await apiService.createInvite({
+        gameMode: inviteGameMode,
+        timeControl: inviteTimeControl,
+      });
+      setInviteLink(response.inviteUrl);
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Ошибка отправки приглашения');
+      alert(err.response?.data?.message || 'Ошибка создания ссылки');
+    } finally {
+      setInviteLoading(false);
     }
+  };
+
+  const handleCopyInvite = async () => {
+    if (!inviteLink) return;
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      alert('Ссылка скопирована');
+      setTimeout(() => {
+        setInviteLink('');
+      }, 1500);
+    } catch (err) {
+      console.error('Failed to copy invite link', err);
+    }
+  };
+
+  const handleHideInvite = () => {
+    setInviteLink('');
   };
 
   const handleJoinMatchmaking = async (e: React.FormEvent) => {
@@ -150,7 +186,7 @@ export const Dashboard: React.FC = () => {
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
-        <h1>Добро пожаловать, {user?.username}!</h1>
+        <h1>{user?.username}</h1>
         <div className="rating-box">
           <span className="rating-label">Рейтинг:</span>
           <span className="rating-value">{rating}</span>
@@ -205,17 +241,67 @@ export const Dashboard: React.FC = () => {
         </div>
 
         <div className="section">
-          <h2>Отправить приглашение</h2>
-          <form onSubmit={handleSendInvite} className="invite-form">
-            <input
-              type="email"
-              placeholder="Email противника"
-              value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
+          <h2>Пригласить по ссылке</h2>
+          <form onSubmit={handleCreateInvite} className="invite-form">
+            <select
+              value={inviteGameMode}
+              onChange={(e) => {
+                const mode = e.target.value as 'bullet' | 'blitz' | 'rapid';
+                setInviteGameMode(mode);
+                setInviteTimeControl(TIME_CONTROLS[mode][0]);
+              }}
               required
-            />
-            <button type="submit">Отправить приглашение</button>
+              disabled={inviteLoading}
+            >
+              {Object.entries(GAME_MODE_LABELS).map(([mode, label]) => (
+                <option key={mode} value={mode}>
+                  {label}
+                </option>
+              ))}
+            </select>
+            <select
+              value={inviteTimeControl}
+              onChange={(e) => setInviteTimeControl(e.target.value)}
+              required
+              disabled={inviteLoading}
+            >
+              {TIME_CONTROLS[inviteGameMode].map((tc) => (
+                <option key={tc} value={tc}>
+                  {tc}
+                </option>
+              ))}
+            </select>
+            {inviteLink ? (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleHideInvite();
+                }}
+                disabled={inviteLoading}
+              >
+                Скрыть
+              </button>
+            ) : (
+              <button type="submit" disabled={inviteLoading}>
+                Сгенерировать ссылку
+              </button>
+            )}
           </form>
+          {inviteLink && (
+            <div className="invite-link-box">
+              <div className="invite-link-row">
+                <input type="text" readOnly value={inviteLink} />
+                <button type="button" onClick={handleCopyInvite}>Копировать</button>
+              </div>
+              <div className="invite-qr">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(inviteLink)}`}
+                  alt="QR"
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="section">
@@ -265,6 +351,9 @@ export const Dashboard: React.FC = () => {
                     <div className="game-details">
                       <span className="time-control">{game.timeControl}</span>
                       <span className="result-reason">{game.resultReason}</span>
+                      {game.createdAt && (
+                        <span className="game-date">{formatDateTime(game.createdAt)}</span>
+                      )}
                     </div>
                     <a href={`/game/${game.id}`} className="game-link">Просмотреть</a>
                   </div>

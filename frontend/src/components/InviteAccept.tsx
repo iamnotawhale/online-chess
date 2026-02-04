@@ -1,0 +1,93 @@
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams, Link } from 'react-router-dom';
+import { apiService } from '../api';
+import './InviteAccept.css';
+
+interface InviteDetails {
+  code: string;
+  inviteUrl: string;
+  gameMode: string;
+  timeControl?: string;
+  expiresAt: string;
+  used: boolean;
+  creatorUsername: string;
+}
+
+export const InviteAccept: React.FC = () => {
+  const { code } = useParams<{ code: string }>();
+  const navigate = useNavigate();
+  const [invite, setInvite] = useState<InviteDetails | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [accepting, setAccepting] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const loadInvite = async () => {
+      if (!code) return;
+      try {
+        setLoading(true);
+        const response = await apiService.getInvite(code);
+        setInvite(response);
+      } catch (err: any) {
+        setError(err.response?.data?.error || 'Приглашение не найдено');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadInvite();
+  }, [code]);
+
+  const handleAccept = async () => {
+    if (!code) return;
+    setAccepting(true);
+    try {
+      const game = await apiService.acceptInvite(code);
+      navigate(`/game/${game.id}`);
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Не удалось принять приглашение');
+    } finally {
+      setAccepting(false);
+    }
+  };
+
+  if (loading) {
+    return <div className="invite-container"><p>Загрузка...</p></div>;
+  }
+
+  if (error) {
+    return <div className="invite-container"><p className="error">{error}</p></div>;
+  }
+
+  if (!invite) {
+    return <div className="invite-container"><p>Приглашение не найдено</p></div>;
+  }
+
+  const isAuthenticated = apiService.isAuthenticated();
+  const loginLink = `/login?redirect=${encodeURIComponent(`/invite/${invite.code}`)}`;
+
+  return (
+    <div className="invite-container">
+      <div className="invite-card">
+        <h2>Приглашение в игру</h2>
+        <p><strong>От:</strong> {invite.creatorUsername}</p>
+        <p><strong>Контроль:</strong> {invite.timeControl || '—'}</p>
+        <p><strong>Режим:</strong> {invite.gameMode}</p>
+        <p><strong>Код:</strong> {invite.code}</p>
+        {invite.used ? (
+          <p className="error">Приглашение уже использовано</p>
+        ) : (
+          <div className="invite-actions">
+            {isAuthenticated ? (
+              <button type="button" onClick={handleAccept} disabled={accepting}>
+                Принять и начать игру
+              </button>
+            ) : (
+              <Link to={loginLink} className="login-link">Войти, чтобы принять</Link>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};

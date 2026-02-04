@@ -31,6 +31,7 @@ interface User {
 }
 
 export const GameView: React.FC = () => {
+  const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
   const { gameId } = useParams<{ gameId: string }>();
   const [game, setGame] = useState<GameData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -44,8 +45,14 @@ export const GameView: React.FC = () => {
   const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
   const [legalMoves, setLegalMoves] = useState<string[]>([]);
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
+  const [moveFens, setMoveFens] = useState<string[]>([]);
   const [currentMoveIndex, setCurrentMoveIndex] = useState<number>(-1);
   const [isViewingHistory, setIsViewingHistory] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [boardWidth, setBoardWidth] = useState<number>(() => {
+    if (typeof window === 'undefined') return 400;
+    return Math.min(440, Math.max(280, window.innerWidth - 32));
+  });
 
   useEffect(() => {
     loadGame();
@@ -71,6 +78,16 @@ export const GameView: React.FC = () => {
       }
     };
   }, [gameId]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setBoardWidth(Math.min(440, Math.max(280, window.innerWidth - 32)));
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleGameUpdate = (update: GameUpdate) => {
     console.log('📨 Game update received:', {
@@ -203,8 +220,28 @@ export const GameView: React.FC = () => {
     if (!gameId) return;
     try {
       const moves = await apiService.getGameMoves(gameId);
-      const moveNotations = moves.map(m => m.san || m.move);
+      const chess = new Chess(START_FEN);
+      const moveNotations = moves.map((m: any) => {
+        const raw = m.san || m.move || '';
+        const uciPattern = /^[a-h][1-8][a-h][1-8][qrbn]?$/i;
+        try {
+          if (uciPattern.test(raw)) {
+            const from = raw.slice(0, 2);
+            const to = raw.slice(2, 4);
+            const promotion = raw.length === 5 ? raw[4].toLowerCase() : undefined;
+            const result = chess.move({ from, to, promotion } as any);
+            return result?.san || raw;
+          }
+          const result = chess.move(raw as any);
+          return result?.san || raw;
+        } catch (e) {
+          console.error('Error parsing move for notation:', raw, e);
+          return raw;
+        }
+      });
+      const movePositions = moves.map((m: any) => m.fen || '');
       setMoveHistory(moveNotations);
+      setMoveFens(movePositions);
       setCurrentMoveIndex(moveNotations.length - 1);
     } catch (err) {
       console.error('Error loading move history:', err);
@@ -338,6 +375,42 @@ export const GameView: React.FC = () => {
         };
       }
     });
+
+    // Highlight king in check
+    try {
+      const fenToUse = boardPosition === 'start' ? START_FEN : boardPosition;
+      const tempChess = new Chess(fenToUse);
+      if (tempChess.inCheck()) {
+        const kingColor = tempChess.turn();
+        const board = tempChess.board();
+        let kingSquare: string | null = null;
+
+        for (let rank = 0; rank < board.length; rank++) {
+          for (let file = 0; file < board[rank].length; file++) {
+            const piece = board[rank][file];
+            if (piece && piece.type === 'k' && piece.color === kingColor) {
+              const fileChar = String.fromCharCode('a'.charCodeAt(0) + file);
+              const rankChar = String(8 - rank);
+              kingSquare = `${fileChar}${rankChar}`;
+              break;
+            }
+          }
+          if (kingSquare) break;
+        }
+
+        if (kingSquare) {
+          const isCheckmate = typeof tempChess.isCheckmate === 'function'
+            ? tempChess.isCheckmate()
+            : false;
+          styles[kingSquare] = {
+            backgroundColor: 'rgba(231, 76, 60, 0.45)',
+            animation: isCheckmate ? 'kingMatePulse 1s ease-in-out infinite' : undefined,
+          };
+        }
+      }
+    } catch (e) {
+      console.error('Failed to compute check highlight', e);
+    }
     
     return styles;
   };
@@ -350,12 +423,18 @@ export const GameView: React.FC = () => {
     
     // If going to start position (index -1)
     if (moveIndex < 0) {
-      setBoardPosition('start');
+      setBoardPosition(START_FEN);
       return;
     }
-    
-    // Replay moves up to this point
-    const tempChess = new Chess();
+
+    const fenAtMove = moveFens[moveIndex];
+    if (fenAtMove) {
+      setBoardPosition(fenAtMove);
+      return;
+    }
+
+    // Fallback: replay moves up to this point if FEN is missing
+    const tempChess = new Chess(START_FEN);
     for (let i = 0; i <= moveIndex && i < moveHistory.length; i++) {
       try {
         tempChess.move(moveHistory[i]);
@@ -369,7 +448,7 @@ export const GameView: React.FC = () => {
   const goToStart = () => {
     setIsViewingHistory(true);
     setCurrentMoveIndex(-1);
-    setBoardPosition('start');
+    setBoardPosition(START_FEN);
   };
 
   const goToPreviousMove = () => {
@@ -477,13 +556,21 @@ export const GameView: React.FC = () => {
 
       <div className="game-content">
         <div className="board-section">
-          <div className="player-info white-player">
-            <div className="player-name">
-              <strong>♔ Белые:</strong> {game.whitePlayerName || game.whitePlayerId}
-              {userIsWhite && <span className="you-badge">Вы</span>}
+          {userIsWhite ? (
+            <div className="player-info black-player">
+              <div className="player-name">
+                <strong>♚ Чёрные:</strong> {game.blackPlayerName || game.blackPlayerId}
+              </div>
+              <div className="player-time">{formatTime(blackTimeLeftMs)}</div>
             </div>
-            <div className="player-time">{formatTime(whiteTimeLeftMs)}</div>
-          </div>
+          ) : (
+            <div className="player-info white-player">
+              <div className="player-name">
+                <strong>♔ Белые:</strong> {game.whitePlayerName || game.whitePlayerId}
+              </div>
+              <div className="player-time">{formatTime(whiteTimeLeftMs)}</div>
+            </div>
+          )}
 
           <div className="chess-board-wrapper">
             {!isGameActive && !isViewingHistory && (
@@ -503,7 +590,7 @@ export const GameView: React.FC = () => {
               onPieceDragEnd={handlePieceDragEnd}
               customSquareStyles={getSquareStyles()}
               boardOrientation={userIsWhite ? 'white' : 'black'}
-              boardWidth={400}
+              boardWidth={boardWidth}
               customDarkSquareStyle={{ backgroundColor: '#739552' }}
               customLightSquareStyle={{ backgroundColor: '#eeeed2' }}
               customDropSquareStyle={{
@@ -512,13 +599,23 @@ export const GameView: React.FC = () => {
             />
           </div>
 
-          <div className="player-info black-player">
-            <div className="player-name">
-              <strong>♚ Чёрные:</strong> {game.blackPlayerName || game.blackPlayerId}
-              {!userIsWhite && currentUser && <span className="you-badge">Вы</span>}
+          {userIsWhite ? (
+            <div className="player-info white-player">
+              <div className="player-name">
+                <strong>♔ Белые:</strong> {game.whitePlayerName || game.whitePlayerId}
+                <span className="you-badge">Вы</span>
+              </div>
+              <div className="player-time">{formatTime(whiteTimeLeftMs)}</div>
             </div>
-            <div className="player-time">{formatTime(blackTimeLeftMs)}</div>
-          </div>
+          ) : (
+            <div className="player-info black-player">
+              <div className="player-name">
+                <strong>♚ Чёрные:</strong> {game.blackPlayerName || game.blackPlayerId}
+                <span className="you-badge">Вы</span>
+              </div>
+              <div className="player-time">{formatTime(blackTimeLeftMs)}</div>
+            </div>
+          )}
 
           {isGameActive && (
             <div className="turn-indicator">

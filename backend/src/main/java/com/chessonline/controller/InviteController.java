@@ -2,8 +2,9 @@ package com.chessonline.controller;
 
 import com.chessonline.dto.CreateInviteRequest;
 import com.chessonline.dto.InviteResponse;
+import com.chessonline.dto.GameResponse;
 import com.chessonline.model.Invite;
-import com.chessonline.model.User;
+import com.chessonline.model.Game;
 import com.chessonline.service.InviteService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,9 +79,8 @@ public class InviteController {
             Authentication authentication) {
         try {
             UUID userId = UUID.fromString(authentication.getName());
-            Invite invite = inviteService.acceptInvite(code, userId);
-
-            InviteResponse response = mapToResponse(invite);
+            Game game = inviteService.acceptInvite(code, userId);
+            GameResponse response = mapToGameResponse(game);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -163,6 +163,27 @@ public class InviteController {
             response.setAcceptedByUsername(invite.getAcceptedBy().getUsername());
         }
         response.setCreatedAt(invite.getCreatedAt());
+        return response;
+    }
+
+    private GameResponse mapToGameResponse(Game game) {
+        GameResponse response = new GameResponse();
+        response.setId(game.getId());
+        response.setWhitePlayerId(game.getPlayerWhite().getId());
+        response.setWhiteUsername(game.getPlayerWhite().getUsername());
+        response.setBlackPlayerId(game.getPlayerBlack().getId());
+        response.setBlackUsername(game.getPlayerBlack().getUsername());
+        response.setStatus(game.getStatus());
+        response.setResult(game.getResult());
+        response.setResultReason(game.getResultReason());
+        response.setTimeControl(game.getTimeControl());
+        response.setFenCurrent(game.getFenCurrent());
+        response.setWhiteTimeLeftMs(game.getWhiteTimeLeftMs());
+        response.setBlackTimeLeftMs(game.getBlackTimeLeftMs());
+        response.setLastMoveAt(game.getLastMoveAt());
+        response.setCreatedAt(game.getCreatedAt());
+        response.setFinishedAt(game.getFinishedAt());
+        response.setDrawOfferedById(game.getDrawOfferedBy() != null ? game.getDrawOfferedBy().getId() : null);
         return response;
     }
 }

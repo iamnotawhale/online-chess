@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { apiService } from '../api';
 import './Auth.css';
 
@@ -13,6 +13,10 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectParam = new URLSearchParams(location.search).get('redirect');
+  const redirectTo = redirectParam || '/';
+  const registerLink = redirectParam ? `/register?redirect=${encodeURIComponent(redirectParam)}` : '/register';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +26,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     try {
       await apiService.login(email, password);
       onLoginSuccess();
-      navigate('/');
+      navigate(redirectTo);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Ошибка входа');
     } finally {
@@ -61,7 +65,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           </button>
         </form>
         <p className="auth-link">
-          Нет аккаунта? <a href="/register">Зарегистрироваться</a>
+          Нет аккаунта? <a href={registerLink}>Зарегистрироваться</a>
         </p>
       </div>
     </div>

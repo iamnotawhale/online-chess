@@ -41,19 +41,19 @@
 
 .dashboard-content {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 20px;
 }
 
-@media (max-width: 1024px) {
+@media (min-width: 768px) {
   .dashboard-content {
     grid-template-columns: 1fr 1fr;
   }
 }
 
-@media (max-width: 768px) {
+@media (min-width: 1024px) {
   .dashboard-content {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
   }
 }
 
@@ -82,15 +82,36 @@
 .invite-form {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .invite-form input {
-  flex: 1;
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-  font-family: inherit;
+  flex: 1 1 auto;
+  min-width: 200px;
+}
+
+@media (max-width: 600px) {
+  .invite-form {
+    flex-direction: column;
+  }
+  .invite-form input,
+  .invite-form button {
+    width: 100%;
+  }
+}
+
+.invite-form input,
+.invite-form select {
+  padding: 12px 14px;
+  font-size: 16px;
+  min-height: 48px;
+}
+
+@media (min-width: 601px) {
+  .invite-form select {
+    flex: 1 1 0;
+    min-width: 0;
+  }
 }
 
 .invite-form input:focus {
@@ -99,7 +120,46 @@
 }
 
 .invite-form button {
-  padding: 8px 16px;
+  padding: 12px 16px;
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 16px;
+  min-height: 48px;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.invite-form button:hover {
+  background: #555;
+}
+
+.invite-link-box {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.invite-link-row {
+  display: flex;
+  gap: 8px;
+}
+
+.invite-link-row input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.invite-link-row button {
+  padding: 10px 12px;
   background: #333;
   color: white;
   border: none;
@@ -107,12 +167,29 @@
   cursor: pointer;
   font-weight: 500;
   font-size: 14px;
-  white-space: nowrap;
-  transition: all 0.2s;
 }
 
-.invite-form button:hover {
-  background: #555;
+
+.invite-qr {
+  display: flex;
+  justify-content: center;
+}
+
+.invite-qr img {
+  width: 160px;
+  height: 160px;
+  border: 1px solid #eee;
+  padding: 4px;
+  background: #fff;
+}
+
+@media (max-width: 600px) {
+  .invite-link-row {
+    flex-direction: column;
+  }
+  .invite-link-row button {
+    width: 100%;
+  }
 }
 
 .time-control-selector {
@@ -128,7 +205,8 @@
 
 .mode-btn {
   flex: 1;
-  padding: 10px;
+  padding: 12px 10px;
+  min-height: 48px;
   border: 1px solid #ddd;
   background: #fff;
   border-radius: 4px;
@@ -155,7 +233,8 @@
 }
 
 .time-control-btn {
-  padding: 10px;
+  padding: 12px 10px;
+  min-height: 48px;
   border: 1px solid #ddd;
   background: #fff;
   border-radius: 4px;
@@ -163,6 +242,7 @@
   font-weight: 500;
   font-size: 13px;
   transition: all 0.2s;
+}
 }
 
 .time-control-btn:hover {
@@ -177,14 +257,15 @@
 
 .matchmaking-btn {
   width: 100%;
-  padding: 12px;
+  padding: 14px 12px;
+  min-height: 48px;
   background: #333;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 16px;
   transition: all 0.2s;
 }
 
@@ -248,7 +329,7 @@
 
 .finished-game-card {
   background: #fff;
-  padding: 12px;
+  padding: 8px 12px;
   border-radius: 4px;
   border-left: 3px solid;
   box-shadow: none;
@@ -341,6 +422,12 @@
 
 .result-reason {
   font-style: italic;
+}
+
+.game-date {
+  color: #999;
+  font-size: 12px;
+  margin-left: auto;
 }
 
 .error {

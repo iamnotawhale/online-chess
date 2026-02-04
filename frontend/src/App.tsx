@@ -5,6 +5,7 @@ import { Login } from './components/Login';
 import { Register } from './components/Register';
 import { Dashboard } from './components/Dashboard';
 import { GameView } from './components/Game';
+import { InviteAccept } from './components/InviteAccept';
 import './App.css';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -76,6 +77,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/invite/:code" element={<InviteAccept />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>
