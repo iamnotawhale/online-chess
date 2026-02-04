@@ -413,6 +413,81 @@ public class GameService {
     }
 
     /**
+     * Offer draw
+     */
+    @Transactional
+    public void offerDraw(UUID gameId, UUID userId) {
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new RuntimeException("Game not found"));
+
+        if (!game.isActive()) {
+            throw new RuntimeException("Game is not active");
+        }
+
+        if (!game.isPlayerInGame(userId)) {
+            throw new RuntimeException("User is not in this game");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        game.setDrawOfferedBy(user);
+        gameRepository.save(game);
+
+        // Notify opponent via WebSocket
+        notifyGameUpdate(game);
+    }
+
+    /**
+     * Respond to draw offer
+     */
+    @Transactional
+    public void respondToDraw(UUID gameId, UUID userId, boolean accept) {
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new RuntimeException("Game not found"));
+
+        if (!game.isActive()) {
+            throw new RuntimeException("Game is not active");
+        }
+
+        if (!game.isPlayerInGame(userId)) {
+            throw new RuntimeException("User is not in this game");
+        }
+
+        if (game.getDrawOfferedBy() == null) {
+            throw new RuntimeException("No draw offer pending");
+        }
+
+        if (game.getDrawOfferedBy().getId().equals(userId)) {
+            throw new RuntimeException("Cannot respond to your own draw offer");
+        }
+
+        if (accept) {
+            // Accept draw
+            game.setStatus("finished");
+            game.setFinishedAt(LocalDateTime.now());
+            game.setResult("draw");
+            game.setResultReason("agreement");
+            game.setDrawOfferedBy(null);
+            
+            Game savedGame = gameRepository.save(game);
+            
+            // Update ratings
+            ratingService.updateRatingsForGame(savedGame);
+            
+            // Notify via WebSocket
+            notifyGameUpdate(savedGame);
+        } else {
+            // Decline draw
+            game.setDrawOfferedBy(null);
+            gameRepository.save(game);
+            
+            // Notify via WebSocket
+            notifyGameUpdate(game);
+        }
+    }
+
+    /**
      * Abandon game (if inactive for too long)
      */
     @Transactional
@@ -457,6 +532,15 @@ public class GameService {
     @Transactional(readOnly = true)
     public List<Game> getUserActiveGames(UUID userId) {
         return gameRepository.findByStatusAndPlayerWhiteIdOrPlayerBlackId("active", userId, userId);
+    }
+
+    /**
+     * Get finished games for a user
+     */
+    @Transactional(readOnly = true)
+    public List<Game> getUserFinishedGames(UUID userId) {
+        return gameRepository.findByStatusAndPlayerWhiteIdOrStatusAndPlayerBlackIdOrderByFinishedAtDesc(
+                "finished", userId, "finished", userId);
     }
 
     /**

@@ -60,6 +60,10 @@ public class Game {
     @Column(name = "finished_at")
     private LocalDateTime finishedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "draw_offered_by_id")
+    private User drawOfferedBy;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -204,6 +208,14 @@ public class Game {
 
     public void setFinishedAt(LocalDateTime finishedAt) {
         this.finishedAt = finishedAt;
+    }
+
+    public User getDrawOfferedBy() {
+        return drawOfferedBy;
+    }
+
+    public void setDrawOfferedBy(User drawOfferedBy) {
+        this.drawOfferedBy = drawOfferedBy;
     }
 
     // Helper methods

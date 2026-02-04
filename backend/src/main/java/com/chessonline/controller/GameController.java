@@ -5,6 +5,8 @@ import com.chessonline.dto.MakeMoveRequest;
 import com.chessonline.dto.MoveResponse;
 import com.chessonline.model.Game;
 import com.chessonline.model.Move;
+import com.chessonline.model.RatingHistory;
+import com.chessonline.repository.RatingHistoryRepository;
 import com.chessonline.service.GameService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,9 @@ public class GameController {
 
     @Autowired
     private GameService gameService;
+
+    @Autowired
+    private RatingHistoryRepository ratingHistoryRepository;
 
     /**
      * Create a new game
@@ -212,8 +217,54 @@ public class GameController {
         }
     }
 
+    @GetMapping("/my/finished")
+    public ResponseEntity<?> getMyFinishedGames(Authentication authentication) {
+        try {
+            UUID userId = UUID.fromString(authentication.getName());
+            List<Game> games = gameService.getUserFinishedGames(userId);
+            List<GameResponse> responses = games.stream()
+                    .map(g -> mapToResponseWithRating(g, 0, userId))
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(responses);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{gameId}/offer-draw")
+    public ResponseEntity<?> offerDraw(@PathVariable UUID gameId, Authentication authentication) {
+        try {
+            UUID userId = UUID.fromString(authentication.getName());
+            gameService.offerDraw(gameId, userId);
+            return ResponseEntity.ok(Map.of("message", "Draw offered"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{gameId}/respond-draw")
+    public ResponseEntity<?> respondToDraw(
+            @PathVariable UUID gameId,
+            @RequestParam boolean accept,
+            Authentication authentication) {
+        try {
+            UUID userId = UUID.fromString(authentication.getName());
+            gameService.respondToDraw(gameId, userId, accept);
+            return ResponseEntity.ok(Map.of("message", accept ? "Draw accepted" : "Draw declined"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
     // Helper methods
     private GameResponse mapToResponse(Game game, int moveCount) {
+        return mapToResponseWithRating(game, moveCount, null);
+    }
+
+    private GameResponse mapToResponseWithRating(Game game, int moveCount, UUID userId) {
         GameResponse response = new GameResponse();
         response.setId(game.getId());
         response.setWhitePlayerId(game.getPlayerWhite().getId());
@@ -231,6 +282,16 @@ public class GameController {
         response.setMoveCount(moveCount);
         response.setCreatedAt(game.getCreatedAt());
         response.setFinishedAt(game.getFinishedAt());
+        response.setDrawOfferedById(game.getDrawOfferedBy() != null ? game.getDrawOfferedBy().getId() : null);
+
+        // Add rating change if userId is provided and game is finished
+        if (userId != null && "finished".equals(game.getStatus())) {
+            RatingHistory ratingHistory = ratingHistoryRepository.findByGameIdAndUserId(game.getId(), userId);
+            if (ratingHistory != null) {
+                response.setRatingChange(ratingHistory.getRatingChange());
+            }
+        }
+
         return response;
     }
 

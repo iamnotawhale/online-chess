@@ -13,4 +13,6 @@ public interface RatingHistoryRepository extends JpaRepository<RatingHistory, UU
     List<RatingHistory> findByUserIdOrderByCreatedAtDesc(UUID userId);
     
     List<RatingHistory> findByGameIdOrderByCreatedAtDesc(UUID gameId);
+
+    RatingHistory findByGameIdAndUserId(UUID gameId, UUID userId);
 }

@@ -20,6 +20,8 @@ public class GameResponse {
     private Integer moveCount;
     private LocalDateTime createdAt;
     private LocalDateTime finishedAt;
+    private UUID drawOfferedById;
+    private Integer ratingChange;
 
     public GameResponse() {}
 
@@ -149,5 +151,21 @@ public class GameResponse {
 
     public void setFinishedAt(LocalDateTime finishedAt) {
         this.finishedAt = finishedAt;
+    }
+
+    public UUID getDrawOfferedById() {
+        return drawOfferedById;
+    }
+
+    public void setDrawOfferedById(UUID drawOfferedById) {
+        this.drawOfferedById = drawOfferedById;
+    }
+
+    public Integer getRatingChange() {
+        return ratingChange;
+    }
+
+    public void setRatingChange(Integer ratingChange) {
+        this.ratingChange = ratingChange;
     }
 }

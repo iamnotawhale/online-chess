@@ -55,6 +55,7 @@ CREATE TABLE games (
   white_time_left_ms BIGINT,
   black_time_left_ms BIGINT,
   last_move_at TIMESTAMP,
+  draw_offered_by_id UUID REFERENCES users(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   finished_at TIMESTAMP
 );

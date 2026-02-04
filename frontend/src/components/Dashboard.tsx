@@ -13,14 +13,21 @@ interface Game {
   id: string;
   whitePlayerId: string;
   blackPlayerId: string;
+  whiteUsername?: string;
+  blackUsername?: string;
   status: string;
   result?: string;
+  resultReason?: string;
+  timeControl?: string;
+  finishedAt?: string;
+  ratingChange?: number;
 }
 
 export const Dashboard: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [rating, setRating] = useState<number>(0);
   const [games, setGames] = useState<Game[]>([]);
+  const [finishedGames, setFinishedGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
@@ -49,14 +56,16 @@ export const Dashboard: React.FC = () => {
   const loadDashboard = async () => {
     try {
       setLoading(true);
-      const [userData, ratingData, gamesData] = await Promise.all([
+      const [userData, ratingData, gamesData, finishedGamesData] = await Promise.all([
         apiService.getMe(),
         apiService.getCurrentRating(),
         apiService.getMyGames(),
+        apiService.getMyFinishedGames(),
       ]);
       setUser(userData);
       setRating(ratingData.rating);
       setGames(gamesData);
+      setFinishedGames(finishedGamesData);
     } catch (err: any) {
       setError('Ошибка загрузки данных');
       console.error(err);
@@ -212,7 +221,7 @@ export const Dashboard: React.FC = () => {
         <div className="section">
           <h2>Мои игры ({games.length})</h2>
           {games.length === 0 ? (
-            <p>У вас пока нет игр</p>
+            <p>У вас пока нет активных игр</p>
           ) : (
             <div className="games-list">
               {games.map((game) => (
@@ -222,6 +231,45 @@ export const Dashboard: React.FC = () => {
                   <a href={`/game/${game.id}`} className="game-link">Посмотреть игру</a>
                 </div>
               ))}
+            </div>
+          )}
+        </div>
+
+        <div className="section">
+          <h2>Завершенные игры ({finishedGames.length})</h2>
+          {finishedGames.length === 0 ? (
+            <p>У вас пока нет завершенных игр</p>
+          ) : (
+            <div className="finished-games-list">
+              {finishedGames.map((game) => {
+                const isWhite = game.whitePlayerId === user?.id;
+                const opponentName = isWhite ? game.blackUsername : game.whiteUsername;
+                const userWon = 
+                  (isWhite && game.result === 'white_win') ||
+                  (!isWhite && game.result === 'black_win');
+                const isDraw = game.result === 'draw';
+
+                return (
+                  <div key={game.id} className={`finished-game-card ${userWon ? 'won' : isDraw ? 'draw' : 'lost'}`}>
+                    <div className="game-header">
+                      <span className={`result-icon ${userWon ? 'win' : isDraw ? 'draw' : 'loss'}`}>
+                        {userWon ? '✓' : isDraw ? '=' : '✗'}
+                      </span>
+                      <span className="opponent">vs {opponentName || 'Unknown'}</span>
+                      {game.ratingChange !== undefined && (
+                        <span className={`rating-change ${game.ratingChange >= 0 ? 'positive' : 'negative'}`}>
+                          {game.ratingChange >= 0 ? '+' : ''}{game.ratingChange}
+                        </span>
+                      )}
+                    </div>
+                    <div className="game-details">
+                      <span className="time-control">{game.timeControl}</span>
+                      <span className="result-reason">{game.resultReason}</span>
+                    </div>
+                    <a href={`/game/${game.id}`} className="game-link">Просмотреть</a>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

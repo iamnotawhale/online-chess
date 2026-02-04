@@ -20,6 +20,7 @@ interface GameData {
   lastMoveAt?: string;
   result?: string;
   resultReason?: string;
+  drawOfferedById?: string;
 }
 
 interface User {
@@ -42,7 +43,6 @@ export const GameView: React.FC = () => {
   const [boardPosition, setBoardPosition] = useState<string>('start');
   const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
   const [legalMoves, setLegalMoves] = useState<string[]>([]);
-  const [isDragging, setIsDragging] = useState(false);
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
   const [currentMoveIndex, setCurrentMoveIndex] = useState<number>(-1);
   const [isViewingHistory, setIsViewingHistory] = useState(false);
@@ -178,6 +178,7 @@ export const GameView: React.FC = () => {
         lastMoveAt: gameResponse.lastMoveAt,
         result: gameResponse.result,
         resultReason: gameResponse.resultReason,
+        drawOfferedById: gameResponse.drawOfferedById,
       };
       setGame(gameData);
       setWhiteTimeLeftMs(gameData.whiteTimeLeftMs || 0);
@@ -292,7 +293,7 @@ export const GameView: React.FC = () => {
     }
   };
 
-  const handlePieceDragBegin = (piece: string, square: string) => {
+  const handlePieceDragBegin = (_piece: string, square: string) => {
     if (!chessInstance || !currentUser || !game) return;
     
     const userIsWhite = game.whitePlayerId === currentUser.id;
@@ -405,6 +406,29 @@ export const GameView: React.FC = () => {
     }
   };
 
+  const handleOfferDraw = async () => {
+    if (!gameId) return;
+    if (!confirm('Предложить ничью?')) return;
+
+    try {
+      await apiService.offerDraw(gameId);
+      loadGame();
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Ошибка при предложении ничьи');
+    }
+  };
+
+  const handleRespondToDraw = async (accept: boolean) => {
+    if (!gameId) return;
+
+    try {
+      await apiService.respondToDraw(gameId, accept);
+      loadGame();
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Ошибка при ответе на предложение');
+    }
+  };
+
   const formatTime = (timeMs: number) => {
     const totalSeconds = Math.max(Math.floor(timeMs / 1000), 0);
     const minutes = Math.floor(totalSeconds / 60);
@@ -462,7 +486,7 @@ export const GameView: React.FC = () => {
           </div>
 
           <div className="chess-board-wrapper">
-            {!isGameActive && (
+            {!isGameActive && !isViewingHistory && (
               <div className="game-over-overlay">
                 <div className="game-over-content">
                   <h2>Игра окончена</h2>
@@ -529,18 +553,38 @@ export const GameView: React.FC = () => {
           </div>
 
           {isGameActive && (
-            <button type="button" onClick={handleResign} className="resign-btn">
-              Сдаться
-            </button>
+            <>
+              {game.drawOfferedById && game.drawOfferedById !== currentUser?.id && (
+                <div className="draw-offer">
+                  <p>Противник предлагает ничью</p>
+                  <div className="draw-actions">
+                    <button onClick={() => handleRespondToDraw(true)} className="accept-btn">
+                      Принять
+                    </button>
+                    <button onClick={() => handleRespondToDraw(false)} className="decline-btn">
+                      Отклонить
+                    </button>
+                  </div>
+                </div>
+              )}
+              {game.drawOfferedById === currentUser?.id && (
+                <div className="draw-offer-sent">
+                  <p>Ожидание ответа на предложение ничьи...</p>
+                </div>
+              )}
+              {!game.drawOfferedById && (
+                <button type="button" onClick={handleOfferDraw} className="offer-draw-btn">
+                  Предложить ничью
+                </button>
+              )}
+              <button type="button" onClick={handleResign} className="resign-btn">
+                Сдаться
+              </button>
+            </>
           )}
 
           <div className="move-history">
             <h3>История ходов</h3>
-            {isViewingHistory && (
-              <div className="history-warning">
-                📜 Просмотр истории
-              </div>
-            )}
             <div className="history-controls">
               <button onClick={goToStart} disabled={currentMoveIndex < 0}>⏮ В начало</button>
               <button onClick={goToPreviousMove} disabled={currentMoveIndex < 0}>◀ Назад</button>

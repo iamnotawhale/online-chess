@@ -34,6 +34,9 @@ interface GameResponse {
   blackTimeLeftMs?: number;
   lastMoveAt?: string;
   createdAt?: string;
+  finishedAt?: string;
+  drawOfferedById?: string;
+  ratingChange?: number;
 }
 
 interface MatchmakingJoinRequest {
@@ -169,8 +172,20 @@ class ApiService {
     return this.client.post(`/games/${gameId}/resign`).then(res => res.data);
   }
 
+  offerDraw(gameId: string): Promise<any> {
+    return this.client.post(`/games/${gameId}/offer-draw`).then(res => res.data);
+  }
+
+  respondToDraw(gameId: string, accept: boolean): Promise<any> {
+    return this.client.post(`/games/${gameId}/respond-draw`, null, { params: { accept } }).then(res => res.data);
+  }
+
   getMyGames(): Promise<GameResponse[]> {
     return this.client.get('/games').then(res => res.data);
+  }
+
+  getMyFinishedGames(): Promise<GameResponse[]> {
+    return this.client.get('/games/my/finished').then(res => res.data);
   }
 
   createInvite(opponentEmail: string): Promise<any> {
