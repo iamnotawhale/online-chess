@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: chess_postgres_prod
+    restart: always
+    environment:
+      POSTGRES_DB: chessonline
+      POSTGRES_USER: chess
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - chess_network
+    ports:
+      - "127.0.0.1:5432:5432"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: chess_backend_prod
+    restart: always
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/chessonline
+      SPRING_DATASOURCE_USERNAME: chess
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      APP_FRONTEND_URL: ${FRONTEND_URL}
+    depends_on:
+      - postgres
+    networks:
+      - chess_network
+    ports:
+      - "127.0.0.1:8082:8082"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${BACKEND_URL}
+    container_name: chess_frontend_prod
+    restart: always
+    networks:
+      - chess_network
+    ports:
+      - "127.0.0.1:3000:80"
+
+  nginx:
+    image: nginx:alpine
+    container_name: chess_nginx
+    restart: always
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - chess_network
+
+volumes:
+  postgres_data:
+
+networks:
+  chess_network:
+    driver: bridge
