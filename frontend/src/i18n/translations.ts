@@ -7,6 +7,9 @@ export const translations = {
     username: 'Username',
     password: 'Password',
     logout: 'Logout',
+    theme: 'Theme',
+    themeLight: 'Light',
+    themeDark: 'Dark',
     
     // Dashboard
     rating: 'Rating',
@@ -176,6 +179,9 @@ export const translations = {
     username: 'Имя пользователя',
     password: 'Пароль',
     logout: 'Выйти',
+    theme: 'Тема',
+    themeLight: 'Светлая',
+    themeDark: 'Тёмная',
     
     // Dashboard
     rating: 'Рейтинг',
@@ -246,7 +252,7 @@ export const translations = {
     resignation: 'Сдача',
     timeout: 'Время',
     stalemate: 'Пат',
-    agreement: 'Соглашение',
+    agreement: 'Ничья по соглашению',
     
     // Lobby
     lobby: 'Лобби',

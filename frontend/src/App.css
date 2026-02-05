@@ -3,8 +3,71 @@
   line-height: 1.6;
   font-weight: 400;
   font-size: 16px;
-  color: #333;
-  background-color: #fafafa;
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --surface-2: #f5f5f5;
+  --surface-3: #f0f0f0;
+  --surface-4: #e8e8e8;
+  --text: #333333;
+  --muted: #666666;
+  --muted-2: #999999;
+  --border: #e5e5e5;
+  --border-2: #dddddd;
+  --accent: #333333;
+  --accent-contrast: #ffffff;
+  --info-bg: #e3f2fd;
+  --info-text: #1976d2;
+  --info-border: #bbdefb;
+  --success-bg: #e8f5e9;
+  --success-text: #27ae60;
+  --success-border: #c8e6c9;
+  --warning-bg: #fff3e0;
+  --warning-text: #e65100;
+  --warning-border: #ffe0b2;
+  --danger-bg: #ffebee;
+  --danger-text: #d32f2f;
+  --danger-border: #ffcdd2;
+  --neutral-bg: #f4f6f7;
+  --neutral-text: #95a5a6;
+  --neutral-border: #e0e0e0;
+  --shadow: rgba(0, 0, 0, 0.1);
+  --shadow-2: rgba(0, 0, 0, 0.2);
+  color: var(--text);
+  background-color: var(--bg);
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --bg: #101010;
+  --surface: #171717;
+  --surface-2: #1f1f1f;
+  --surface-3: #252525;
+  --surface-4: #2b2b2b;
+  --text: #e3e3e3;
+  --muted: #b4b4b4;
+  --muted-2: #8e8e8e;
+  --border: #2f2f2f;
+  --border-2: #3a3a3a;
+  --accent: #e3e3e3;
+  --accent-contrast: #111111;
+  --info-bg: #1a1f24;
+  --info-text: #cfd6dd;
+  --info-border: #2b323a;
+  --success-bg: #1a221c;
+  --success-text: #cfe3d5;
+  --success-border: #2b3530;
+  --warning-bg: #22201a;
+  --warning-text: #e2d8c5;
+  --warning-border: #353027;
+  --danger-bg: #251a1a;
+  --danger-text: #e2c7c7;
+  --danger-border: #362828;
+  --neutral-bg: #1e1e1e;
+  --neutral-text: #b4b4b4;
+  --neutral-border: #2f2f2f;
+  --shadow: rgba(0, 0, 0, 0.45);
+  --shadow-2: rgba(0, 0, 0, 0.6);
+  color-scheme: dark;
 }
 
 * {
@@ -20,19 +83,24 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
 }
 
 #root {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 .header {
-  background: #fff;
-  color: #333;
+  background: var(--surface);
+  color: var(--text);
   padding: 0;
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid var(--border);
 }
 
 .header-content {
@@ -43,6 +111,7 @@ body {
   align-items: center;
   padding: 12px 20px;
   gap: 12px;
+  width: 100%;
 }
 
 .logo {
@@ -61,7 +130,7 @@ body {
   gap: 1px;
   font-size: 20px;
   position: relative;
-  color: #333;
+  color: var(--text);
 }
 
 .chess-piece {
@@ -80,8 +149,70 @@ body {
   font-size: 18px;
   font-weight: 600;
   letter-spacing: 1px;
-  color: #333;
+  color: var(--text);
   white-space: nowrap;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.language-switcher {
+  display: flex;
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.lang-btn {
+  padding: 6px 10px;
+  background: var(--surface);
+  color: var(--muted);
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.lang-btn:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.lang-btn.active {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  width: 32px;
+  height: 28px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.theme-toggle:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--text);
+  border-color: var(--muted-2);
+}
+
+.theme-icon {
+  font-size: 14px;
+  line-height: 1;
 }
 
 .logout-btn {
@@ -89,28 +220,27 @@ body {
   align-items: center;
   gap: 4px;
   background: transparent;
-  color: #666;
-  border: 1px solid #ddd;
+  color: var(--muted);
+  border: 1px solid var(--border);
   padding: 6px 12px;
   border-radius: 4px;
   cursor: pointer;
   font-weight: 400;
   font-size: 13px;
   transition: all 0.2s ease;
-  margin-left: auto;
   flex: 0 0 auto;
   width: auto;
 }
 
 .logout-btn:hover {
-  background: #f5f5f5;
-  border-color: #999;
-  color: #333;
+  background: rgba(0, 0, 0, 0.04);
+  border-color: var(--muted-2);
+  color: var(--text);
 }
 
 .logout-btn:active {
   transform: none;
-  background: #e5e5e5;
+  background: rgba(0, 0, 0, 0.08);
 }
 
 .logout-btn svg {
@@ -125,8 +255,10 @@ body {
 
 .main-content {
   flex: 1;
-  background: #fafafa;
+  background: var(--bg);
   padding: 24px 0;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 .loading {
@@ -135,7 +267,54 @@ body {
   align-items: center;
   min-height: 100vh;
   font-size: 16px;
-  color: #999;
+  color: var(--muted-2);
+}
+
+body[data-theme='dark'] .theme-toggle:hover,
+body[data-theme='dark'] .logout-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+body[data-theme='dark'] input,
+body[data-theme='dark'] select,
+body[data-theme='dark'] textarea {
+  background: #121212;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+body[data-theme='dark'] input::placeholder,
+body[data-theme='dark'] textarea::placeholder {
+  color: var(--muted-2);
+}
+
+body[data-theme='dark'] .dashboard-header,
+body[data-theme='dark'] .section,
+body[data-theme='dark'] .game-header,
+body[data-theme='dark'] .game-info,
+body[data-theme='dark'] .move-history,
+body[data-theme='dark'] .finished-game-card,
+body[data-theme='dark'] .active-game-card,
+body[data-theme='dark'] .lobby-container,
+body[data-theme='dark'] .invite-accept-container,
+body[data-theme='dark'] .auth-container {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+body[data-theme='dark'] .language-switcher {
+  border-color: var(--border);
+}
+
+body[data-theme='dark'] .lang-btn {
+  background: transparent;
+  color: var(--muted);
+}
+
+body[data-theme='dark'] .lang-btn.active {
+  background: var(--accent);
+  color: var(--accent-contrast);
 }
 
 @media (max-width: 768px) {
@@ -154,11 +333,27 @@ body {
     font-size: 18px;
   }
 
+
   .logout-btn span {
     display: none;
   }
 
   .logout-btn {
     padding: 6px 8px;
+  }
+
+  .theme-toggle {
+    width: 30px;
+    height: 26px;
+  }
+
+  .language-switcher {
+    transform: scale(0.92);
+    transform-origin: center right;
+  }
+
+  .lang-btn {
+    padding: 5px 8px;
+    font-size: 11px;
   }
 }

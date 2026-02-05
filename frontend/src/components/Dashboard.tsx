@@ -29,7 +29,7 @@ interface Game {
 }
 
 export const Dashboard: React.FC = () => {
-  const { language, setLanguage, t } = useTranslation();
+  const { t } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
   const [rating, setRating] = useState<number>(0);
   const [games, setGames] = useState<Game[]>([]);
@@ -308,20 +308,6 @@ export const Dashboard: React.FC = () => {
         <div className="rating-box">
           <span className="rating-label">{t('rating')}:</span>
           <span className="rating-value">{rating}</span>
-        </div>
-        <div className="language-switcher">
-          <button
-            className={`lang-btn ${language === 'en' ? 'active' : ''}`}
-            onClick={() => setLanguage('en')}
-          >
-            EN
-          </button>
-          <button
-            className={`lang-btn ${language === 'ru' ? 'active' : ''}`}
-            onClick={() => setLanguage('ru')}
-          >
-            RU
-          </button>
         </div>
       </div>
 

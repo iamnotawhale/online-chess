@@ -1,6 +1,6 @@
 .no-games {
   text-align: center;
-  color: #999;
+  color: var(--muted-2);
   padding: 40px 20px;
   font-size: 14px;
 }
@@ -12,27 +12,27 @@
 }
 
 .lobby-game-card {
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-2);
   border-radius: 4px;
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background: #fafafa;
+  background: var(--surface-2);
   transition: all 0.2s;
 }
 
 .lobby-game-card:hover {
-  border-color: #333;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-color: var(--accent);
+  background: var(--surface);
+  box-shadow: 0 2px 8px var(--shadow);
 }
 
 .game-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border);
   padding-bottom: 8px;
 }
 
@@ -44,16 +44,16 @@
 
 .creator-name {
   font-weight: 600;
-  color: #333;
+  color: var(--text);
   font-size: 14px;
 }
 
 .creator-rating {
-  background: #f0f0f0;
+  background: var(--surface-3);
   padding: 2px 8px;
   border-radius: 3px;
   font-size: 12px;
-  color: #666;
+  color: var(--muted);
   font-weight: 500;
 }
 
@@ -72,13 +72,13 @@
 }
 
 .badge.rated {
-  background: #333;
-  color: white;
+  background: var(--accent);
+  color: var(--accent-contrast);
 }
 
 .badge.casual {
-  background: #ddd;
-  color: #333;
+  background: var(--surface-3);
+  color: var(--text);
 }
 
 .game-details {
@@ -95,19 +95,19 @@
 }
 
 .detail-row .label {
-  color: #666;
+  color: var(--muted);
   font-weight: 500;
 }
 
 .detail-row .value {
-  color: #333;
+  color: var(--text);
   font-weight: 600;
 }
 
 .join-btn {
   padding: 10px 16px;
-  background: #333;
-  color: white;
+  background: var(--accent);
+  color: var(--accent-contrast);
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -118,7 +118,7 @@
 }
 
 .join-btn:hover:not(:disabled) {
-  background: #555;
+  background: var(--text);
 }
 
 .join-btn:disabled {
@@ -127,9 +127,9 @@
 }
 
 .error {
-  color: #d32f2f;
+  color: var(--danger-text);
   padding: 12px;
-  background: #ffebee;
+  background: var(--danger-bg);
   border-radius: 4px;
   margin-bottom: 16px;
   font-size: 13px;
