@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -54,6 +53,11 @@ public class RatingService {
      */
     @Transactional
     public void updateRatingsForGame(Game game) {
+        // Only update ratings for rated games
+        if (!game.isRated()) {
+            return;
+        }
+        
         User whitePlayer = game.getPlayerWhite();
         User blackPlayer = game.getPlayerBlack();
 
@@ -69,10 +73,10 @@ public class RatingService {
         double whiteScore;
         double blackScore;
 
-        if ("white_win".equals(game.getResult())) {
+        if ("1-0".equals(game.getResult()) || "white_win".equals(game.getResult())) {
             whiteScore = 1.0;
             blackScore = 0.0;
-        } else if ("black_win".equals(game.getResult())) {
+        } else if ("0-1".equals(game.getResult()) || "black_win".equals(game.getResult())) {
             whiteScore = 0.0;
             blackScore = 1.0;
         } else {

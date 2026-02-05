@@ -18,6 +18,7 @@ interface GameUpdate {
   timeControl?: string;
   createdAt?: string;
   finishedAt?: string;
+  drawOfferedById?: string | null;
 }
 
 class WebSocketService {

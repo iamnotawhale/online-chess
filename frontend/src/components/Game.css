@@ -4,6 +4,37 @@
   padding: 16px;
 }
 
+.game-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  background: #333;
+  color: #fff;
+  padding: 12px 16px;
+  border-radius: 6px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+  font-size: 14px;
+  max-width: 320px;
+}
+
+.game-toast.info {
+  background: #333;
+}
+
+.game-toast.error {
+  background: #b00020;
+}
+
+@media (max-width: 600px) {
+  .game-toast {
+    top: 12px;
+    right: 12px;
+    left: 12px;
+    max-width: unset;
+  }
+}
+
 @media (max-width: 600px) {
   .game-container {
     padding: 12px;
@@ -54,6 +85,18 @@
   border: 1px solid #e5e5e5;
   background: #f5f5f5;
   color: #666;
+}
+
+.status-badge.active {
+  background: #e3f2fd;
+  color: #1976d2;
+  border-color: #bbdefb;
+}
+
+.status-badge.finished {
+  background: #f5f5f5;
+  color: #666;
+  border-color: #e0e0e0;
 }
 
 @media (max-width: 600px) {

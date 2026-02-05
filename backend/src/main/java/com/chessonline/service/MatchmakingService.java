@@ -18,7 +18,8 @@ public class MatchmakingService {
     private static final Map<String, List<String>> ALLOWED_TIME_CONTROLS = Map.of(
             "bullet", List.of("1+0", "2+1"),
             "blitz", List.of("3+0", "3+2", "5+0", "5+3"),
-            "rapid", List.of("10+0", "10+5", "15+10", "25+0")
+            "rapid", List.of("10+0", "10+5", "15+10", "25+0"),
+            "custom", List.of() // Custom allows any time control
     );
 
     private final Map<String, Deque<UUID>> queues = new ConcurrentHashMap<>();
@@ -29,16 +30,18 @@ public class MatchmakingService {
     @Autowired
     private GameService gameService;
 
-    public MatchmakingResult join(UUID userId, String gameMode, String timeControl) {
+    public MatchmakingResult join(UUID userId, String gameMode, String timeControl, String preferredColor) {
         validateTimeControl(gameMode, timeControl);
 
         synchronized (queueLock) {
             if (userQueueKeys.containsKey(userId)) {
                 String existingKey = userQueueKeys.get(userId);
-                return MatchmakingResult.queued(existingKey.split("\\|")[0], existingKey.split("\\|")[1]);
+                String[] parts = existingKey.split("\\|");
+                String color = parts.length > 2 ? parts[2] : "random";
+                return MatchmakingResult.queued(parts[0], parts[1]);
             }
 
-            String key = key(gameMode, timeControl);
+            String key = key(gameMode, timeControl, preferredColor);
             Deque<UUID> queue = queues.computeIfAbsent(key, k -> new ArrayDeque<>());
 
             if (!queue.isEmpty()) {
@@ -49,9 +52,23 @@ public class MatchmakingService {
 
                 if (opponentId != null) {
                     userQueueKeys.remove(opponentId);
-                    UUID whiteId = ThreadLocalRandom.current().nextBoolean() ? userId : opponentId;
-                    UUID blackId = whiteId.equals(userId) ? opponentId : userId;
-                    Game game = gameService.createGame(whiteId, blackId, timeControl, null);
+                    
+                    // Assign colors based on preferredColor
+                    UUID whiteId, blackId;
+                    if ("white".equals(preferredColor)) {
+                        whiteId = userId;
+                        blackId = opponentId;
+                    } else if ("black".equals(preferredColor)) {
+                        whiteId = opponentId;
+                        blackId = userId;
+                    } else {
+                        // "random" or null - use random assignment
+                        whiteId = ThreadLocalRandom.current().nextBoolean() ? userId : opponentId;
+                        blackId = whiteId.equals(userId) ? opponentId : userId;
+                    }
+                    
+                    boolean rated = "rated".equals(gameMode);
+                    Game game = gameService.createGame(whiteId, blackId, timeControl, null, rated);
                     matchedGames.put(opponentId, game.getId());
                     return MatchmakingResult.matched(game.getId(), gameMode, timeControl);
                 }
@@ -79,27 +96,36 @@ public class MatchmakingService {
     public MatchmakingStatus status(UUID userId) {
         UUID matchedGameId = matchedGames.remove(userId);
         if (matchedGameId != null) {
-            return new MatchmakingStatus(false, true, matchedGameId, null, null);
+            return new MatchmakingStatus(false, true, matchedGameId, null, null, null);
         }
         String key = userQueueKeys.get(userId);
         if (key == null) {
-            return new MatchmakingStatus(false, false, null, null, null);
+            return new MatchmakingStatus(false, false, null, null, null, null);
         }
         String[] parts = key.split("\\|");
-        return new MatchmakingStatus(true, false, null, parts[0], parts[1]);
+        String color = parts.length > 2 ? parts[2] : "random";
+        return new MatchmakingStatus(true, false, null, parts[0], parts[1], color);
     }
 
     private void validateTimeControl(String gameMode, String timeControl) {
         if (!ALLOWED_TIME_CONTROLS.containsKey(gameMode)) {
             throw new RuntimeException("Unsupported game mode");
         }
-        if (!ALLOWED_TIME_CONTROLS.get(gameMode).contains(timeControl)) {
-            throw new RuntimeException("Unsupported time control");
+        // For custom mode, allow any time control format (M+S where M and S are numbers)
+        if ("custom".equals(gameMode)) {
+            if (!timeControl.matches("\\d+\\+\\d+")) {
+                throw new RuntimeException("Invalid custom time control format. Use format: minutes+increment (e.g., 5+3)");
+            }
+        } else {
+            // For other modes, validate against predefined list
+            if (!ALLOWED_TIME_CONTROLS.get(gameMode).contains(timeControl)) {
+                throw new RuntimeException("Unsupported time control");
+            }
         }
     }
 
-    private String key(String gameMode, String timeControl) {
-        return gameMode + "|" + timeControl;
+    private String key(String gameMode, String timeControl, String preferredColor) {
+        return gameMode + "|" + timeControl + "|" + (preferredColor != null ? preferredColor : "random");
     }
 
     public static class MatchmakingResult {
@@ -146,13 +172,15 @@ public class MatchmakingService {
         private final UUID gameId;
         private final String gameMode;
         private final String timeControl;
+        private final String preferredColor;
 
-        public MatchmakingStatus(boolean queued, boolean matched, UUID gameId, String gameMode, String timeControl) {
+        public MatchmakingStatus(boolean queued, boolean matched, UUID gameId, String gameMode, String timeControl, String preferredColor) {
             this.queued = queued;
             this.matched = matched;
             this.gameId = gameId;
             this.gameMode = gameMode;
             this.timeControl = timeControl;
+            this.preferredColor = preferredColor;
         }
 
         public boolean isQueued() {
@@ -173,6 +201,10 @@ public class MatchmakingService {
 
         public String getTimeControl() {
             return timeControl;
+        }
+
+        public String getPreferredColor() {
+            return preferredColor;
         }
     }
 }

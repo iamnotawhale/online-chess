@@ -8,6 +8,8 @@ interface InviteDetails {
   inviteUrl: string;
   gameMode: string;
   timeControl?: string;
+  rated: boolean;
+  preferredColor?: string;
   expiresAt: string;
   used: boolean;
   creatorUsername: string;
@@ -73,6 +75,8 @@ export const InviteAccept: React.FC = () => {
         <p><strong>От:</strong> {invite.creatorUsername}</p>
         <p><strong>Контроль:</strong> {invite.timeControl || '—'}</p>
         <p><strong>Режим:</strong> {invite.gameMode}</p>
+        <p><strong>Тип:</strong> {invite.rated ? 'Рейтинговая' : 'Дружеская'}</p>
+        <p><strong>Цвет создателя:</strong> {invite.preferredColor || 'random'}</p>
         <p><strong>Код:</strong> {invite.code}</p>
         {invite.used ? (
           <p className="error">Приглашение уже использовано</p>

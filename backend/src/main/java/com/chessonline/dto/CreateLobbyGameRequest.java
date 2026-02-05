@@ -4,16 +4,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
-public class MatchmakingJoinRequest {
-
+public class CreateLobbyGameRequest {
     @NotBlank
-    @Pattern(regexp = "bullet|blitz|rapid|custom", message = "Invalid game mode")
+    @Pattern(regexp = "custom")
     private String gameMode;
 
     @NotBlank
+    @Pattern(regexp = "\\d+\\+\\d+")
     private String timeControl;
 
-    @Pattern(regexp = "white|black|random", message = "Invalid preferred color")
+    @NotBlank
+    @Pattern(regexp = "white|black|random")
     private String preferredColor;
 
     @JsonProperty("isRated")

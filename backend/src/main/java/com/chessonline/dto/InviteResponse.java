@@ -10,6 +10,8 @@ public class InviteResponse {
     private String inviteUrl;
     private String gameMode;
     private String timeControl;
+    private boolean rated;
+    private String preferredColor;
     private LocalDateTime expiresAt;
     private boolean used;
     private LocalDateTime usedAt;
@@ -57,6 +59,22 @@ public class InviteResponse {
 
     public void setTimeControl(String timeControl) {
         this.timeControl = timeControl;
+    }
+
+    public boolean isRated() {
+        return rated;
+    }
+
+    public void setRated(boolean rated) {
+        this.rated = rated;
+    }
+
+    public String getPreferredColor() {
+        return preferredColor;
+    }
+
+    public void setPreferredColor(String preferredColor) {
+        this.preferredColor = preferredColor;
     }
 
     public LocalDateTime getExpiresAt() {

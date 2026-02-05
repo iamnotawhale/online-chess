@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { apiService } from '../api';
+import { Lobby } from './Lobby';
 import './Dashboard.css';
 
 interface User {
@@ -33,18 +34,30 @@ export const Dashboard: React.FC = () => {
   const [error, setError] = useState('');
   const [inviteLink, setInviteLink] = useState('');
   const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteSelectedType, setInviteSelectedType] = useState<'bullet' | 'blitz' | 'rapid' | 'custom' | null>(null);
   const [inviteGameMode, setInviteGameMode] = useState<'bullet' | 'blitz' | 'rapid'>('blitz');
   const [inviteTimeControl, setInviteTimeControl] = useState('5+3');
+  const [inviteCustomMinutes, setInviteCustomMinutes] = useState(5);
+  const [inviteCustomIncrement, setInviteCustomIncrement] = useState(0);
+  const [inviteIsRated, setInviteIsRated] = useState(false);
+  const [invitePreferredColor, setInvitePreferredColor] = useState<'white' | 'black' | 'random'>('random');
   const [gameMode, setGameMode] = useState<'bullet' | 'blitz' | 'rapid'>('blitz');
+  const [selectedType, setSelectedType] = useState<'bullet' | 'blitz' | 'rapid' | 'custom' | null>(null);
+  const [customMinutes, setCustomMinutes] = useState(5);
+  const [customIncrement, setCustomIncrement] = useState(0);
+  const [customColor, setCustomColor] = useState<'white' | 'black' | 'random'>('random');
+  const [isRated, setIsRated] = useState(false);
   const [timeControl, setTimeControl] = useState('5+3');
   const [isQueued, setIsQueued] = useState(false);
   const [matchmakingMessage, setMatchmakingMessage] = useState('');
   const [matchmakingLoading, setMatchmakingLoading] = useState(false);
+  const [showAllActiveGames, setShowAllActiveGames] = useState(false);
+  const [finishedGamesPage, setFinishedGamesPage] = useState(0);
 
   const GAME_MODE_LABELS: Record<'bullet' | 'blitz' | 'rapid', string> = {
-    bullet: 'Bullet (1-2 мин) ',
-    blitz: 'Blitz (3-5 мин)',
-    rapid: 'Rapid (10-25 мин)',
+    bullet: 'Bullet',
+    blitz: 'Blitz',
+    rapid: 'Rapid',
   };
 
   const TIME_CONTROLS: Record<'bullet' | 'blitz' | 'rapid', string[]> = {
@@ -60,16 +73,38 @@ export const Dashboard: React.FC = () => {
   const loadDashboard = async () => {
     try {
       setLoading(true);
-      const [userData, ratingData, gamesData, finishedGamesData] = await Promise.all([
+      const [userData, ratingData, gamesData, finishedGamesData, matchmakingStatus] = await Promise.all([
         apiService.getMe(),
         apiService.getCurrentRating(),
         apiService.getMyGames(),
         apiService.getMyFinishedGames(),
+        apiService.getMatchmakingStatus(),
       ]);
       setUser(userData);
       setRating(ratingData.rating);
       setGames(gamesData);
-      setFinishedGames(finishedGamesData);
+      setIsQueued(matchmakingStatus.queued);
+      
+      // Восстанавливаем параметры матчмейкинга если пользователь в очереди
+      if (matchmakingStatus.queued && matchmakingStatus.gameMode && matchmakingStatus.timeControl) {
+        const mode = matchmakingStatus.gameMode as 'bullet' | 'blitz' | 'rapid' | 'custom';
+        if (mode !== 'custom') {
+          setGameMode(mode);
+        }
+        setTimeControl(matchmakingStatus.timeControl);
+        setSelectedType(mode === 'custom' ? 'custom' : mode);
+        if (matchmakingStatus.preferredColor) {
+          setCustomColor(matchmakingStatus.preferredColor as 'white' | 'black' | 'random');
+        }
+      }
+      
+      // Сортируем завершенные игры по времени окончания (новые сверху)
+      const sortedFinishedGames = [...finishedGamesData].sort((a, b) => {
+        const dateA = new Date(a.finishedAt || a.createdAt || 0).getTime();
+        const dateB = new Date(b.finishedAt || b.createdAt || 0).getTime();
+        return dateB - dateA; // DESC
+      });
+      setFinishedGames(sortedFinishedGames);
     } catch (err: any) {
       setError('Ошибка загрузки данных');
       console.error(err);
@@ -107,13 +142,29 @@ export const Dashboard: React.FC = () => {
     return () => clearInterval(intervalId);
   }, [isQueued]);
 
-  const handleCreateInvite = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Reset invite link when game mode or time control changes
+  useEffect(() => {
+    if (inviteLink) {
+      setInviteLink('');
+    }
+  }, [inviteGameMode, inviteTimeControl, inviteCustomMinutes, inviteCustomIncrement, inviteIsRated, invitePreferredColor]);
+
+  const handleCreateInvite = async () => {
     setInviteLoading(true);
     try {
+      const timeControl = inviteSelectedType === 'custom' 
+        ? `${inviteCustomMinutes}+${inviteCustomIncrement}`
+        : inviteTimeControl;
+
+      const gameMode = inviteSelectedType === 'custom' ? 'custom' : inviteGameMode;
+      const isRated = inviteSelectedType === 'custom' ? inviteIsRated : true;
+      const preferredColor = inviteSelectedType === 'custom' ? invitePreferredColor : undefined;
+      
       const response = await apiService.createInvite({
-        gameMode: inviteGameMode,
-        timeControl: inviteTimeControl,
+        gameMode: gameMode,
+        timeControl: timeControl,
+        isRated: isRated,
+        preferredColor: preferredColor,
       });
       setInviteLink(response.inviteUrl);
     } catch (err: any) {
@@ -140,23 +191,80 @@ export const Dashboard: React.FC = () => {
     setInviteLink('');
   };
 
-  const handleJoinMatchmaking = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Вспомогательная функция для установки сообщения с автоматическим таймаутом
+  const setMessageWithTimeout = (message: string, timeout: number = 3000) => {
+    setMatchmakingMessage(message);
+    if (message) {
+      setTimeout(() => {
+        setMatchmakingMessage('');
+      }, timeout);
+    }
+  };
+
+  const handleJoinMatchmaking = async (
+    selectedMode?: 'bullet' | 'blitz' | 'rapid' | 'custom',
+    selectedTimeControl?: string,
+    preferredColor?: 'white' | 'black' | 'random'
+  ) => {
+    if (matchmakingLoading || isQueued) return;
+    const modeToUse = selectedMode ?? gameMode;
+    const timeToUse = selectedTimeControl ?? timeControl;
+    if (modeToUse !== 'custom') {
+      setGameMode(modeToUse);
+    }
+    setTimeControl(timeToUse);
     setMatchmakingLoading(true);
     setMatchmakingMessage('');
     try {
       const response = await apiService.joinMatchmaking({
-        gameMode,
-        timeControl,
+        gameMode: modeToUse,
+        timeControl: timeToUse,
+        preferredColor,
       });
       if (response.matched && response.gameId) {
         window.location.href = `/game/${response.gameId}`;
         return;
       }
       setIsQueued(true);
-      setMatchmakingMessage(response.message || 'Вы в очереди на матч');
+      setMessageWithTimeout(response.message || 'Вы в очереди на матч');
     } catch (err: any) {
-      setMatchmakingMessage(err.response?.data?.error || 'Ошибка матчмейкинга');
+      setMessageWithTimeout(err.response?.data?.error || 'Ошибка матчмейкинга');
+    } finally {
+      setMatchmakingLoading(false);
+    }
+  };
+
+  const getRulesForType = () => {
+    if (!selectedType) return [];
+    if (selectedType === 'custom') {
+      return Array.from(new Set([
+        ...TIME_CONTROLS.bullet,
+        ...TIME_CONTROLS.blitz,
+        ...TIME_CONTROLS.rapid,
+      ]));
+    }
+    return TIME_CONTROLS[selectedType];
+  };
+
+  const handleStartCustomMatch = async () => {
+    const timeControlValue = `${customMinutes}+${customIncrement}`;
+    setMatchmakingLoading(true);
+    try {
+      await apiService.createLobbyGame({
+        gameMode: 'custom',
+        timeControl: timeControlValue,
+        preferredColor: customColor,
+        isRated: isRated,
+      });
+      setMatchmakingMessage(`Игра создана в лобби. Ожидание противника...`);
+      setSelectedType(null);
+      setCustomMinutes(5);
+      setCustomIncrement(0);
+      setCustomColor('random');
+      setIsRated(false);
+    } catch (error) {
+      setMessageWithTimeout('Ошибка создания игры');
+      console.error(error);
     } finally {
       setMatchmakingLoading(false);
     }
@@ -167,9 +275,9 @@ export const Dashboard: React.FC = () => {
     try {
       await apiService.leaveMatchmaking();
       setIsQueued(false);
-      setMatchmakingMessage('Вы вышли из очереди');
+      setMatchmakingMessage('');
     } catch (err: any) {
-      setMatchmakingMessage(err.response?.data?.error || 'Ошибка выхода из очереди');
+      setMessageWithTimeout(err.response?.data?.error || 'Ошибка выхода из очереди');
     } finally {
       setMatchmakingLoading(false);
     }
@@ -196,98 +304,277 @@ export const Dashboard: React.FC = () => {
       <div className="dashboard-content">
         <div className="section">
           <h2>Матчмейкинг</h2>
-          <form onSubmit={handleJoinMatchmaking} className="invite-form">
-            <select
-              value={gameMode}
-              onChange={(e) => {
-                const mode = e.target.value as 'bullet' | 'blitz' | 'rapid';
-                setGameMode(mode);
-                setTimeControl(TIME_CONTROLS[mode][0]);
-              }}
-              required
-              style={{ padding: '12px', borderRadius: '5px', border: '1px solid #ddd', fontSize: '16px' }}
-              disabled={matchmakingLoading || isQueued}
-            >
+          <div className="time-control-selector">
+            <div className="mode-buttons">
               {Object.entries(GAME_MODE_LABELS).map(([mode, label]) => (
-                <option key={mode} value={mode}>
+                <button
+                  key={mode}
+                  type="button"
+                  className={`mode-btn ${selectedType === mode ? 'active' : ''}`}
+                  onClick={() => {
+                    const nextMode = mode as 'bullet' | 'blitz' | 'rapid';
+                    setSelectedType(nextMode);
+                    setGameMode(nextMode);
+                    setTimeControl(TIME_CONTROLS[nextMode][0]);
+                  }}
+                  disabled={matchmakingLoading || isQueued}
+                >
                   {label}
-                </option>
+                </button>
               ))}
-            </select>
-            <select
-              value={timeControl}
-              onChange={(e) => setTimeControl(e.target.value)}
-              required
-              style={{ padding: '12px', borderRadius: '5px', border: '1px solid #ddd', fontSize: '16px' }}
-              disabled={matchmakingLoading || isQueued}
-            >
-              {TIME_CONTROLS[gameMode].map((tc) => (
-                <option key={tc} value={tc}>
-                  {tc}
-                </option>
-              ))}
-            </select>
-            {!isQueued ? (
-              <button type="submit" disabled={matchmakingLoading}>
-                Найти матч
+            </div>
+            <div className="custom-row">
+              <button
+                type="button"
+                className={`mode-btn custom-btn ${selectedType === 'custom' ? 'active' : ''}`}
+                onClick={() => setSelectedType('custom')}
+                disabled={matchmakingLoading || isQueued}
+              >
+                Custom
               </button>
-            ) : (
-              <button type="button" onClick={handleLeaveMatchmaking} disabled={matchmakingLoading}>
+            </div>
+            {selectedType === 'custom' && (
+              <div className="custom-controls">
+                <div className="color-buttons">
+                  {[
+                    { key: 'random', label: 'Random' },
+                    { key: 'white', label: 'White' },
+                    { key: 'black', label: 'Black' },
+                  ].map((item) => (
+                    <button
+                      key={item.key}
+                      type="button"
+                      className={`color-btn ${customColor === item.key ? 'active' : ''}`}
+                      onClick={() => setCustomColor(item.key as 'white' | 'black' | 'random')}
+                      disabled={matchmakingLoading}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="slider-group">
+                  <div className="slider-row">
+                    <div className="slider-label">Минуты: {customMinutes}</div>
+                    <input
+                      type="range"
+                      min={1}
+                      max={120}
+                      value={customMinutes}
+                      onChange={(e) => setCustomMinutes(Number(e.target.value))}
+                      disabled={matchmakingLoading}
+                    />
+                  </div>
+                  <div className="slider-row">
+                    <div className="slider-label">Инкремент: {customIncrement} сек</div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={120}
+                      value={customIncrement}
+                      onChange={(e) => setCustomIncrement(Number(e.target.value))}
+                      disabled={matchmakingLoading}
+                    />
+                  </div>
+                </div>
+                <div className="checkbox-group">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={isRated}
+                      onChange={(e) => setIsRated(e.target.checked)}
+                      disabled={matchmakingLoading}
+                    />
+                    <span>Рейтинговая игра</span>
+                  </label>
+                </div>
+                <button
+                  type="button"
+                  className="matchmaking-btn"
+                  onClick={handleStartCustomMatch}
+                  disabled={matchmakingLoading}
+                >
+                  Играть {customMinutes}+{customIncrement}
+                </button>
+              </div>
+            )}
+            {selectedType && selectedType !== 'custom' && (
+              <div className="time-control-options">
+                {getRulesForType().map((tc) => (
+                  <button
+                    key={tc}
+                    type="button"
+                    className={`time-control-btn ${timeControl === tc ? 'active' : ''}`}
+                    onClick={() => {
+                      handleJoinMatchmaking(selectedType, tc);
+                    }}
+                    disabled={matchmakingLoading || isQueued}
+                  >
+                    {tc}
+                  </button>
+                ))}
+              </div>
+            )}
+            {isQueued && (
+              <button
+                type="button"
+                className="matchmaking-btn"
+                onClick={handleLeaveMatchmaking}
+                disabled={matchmakingLoading}
+              >
                 Выйти из очереди
               </button>
             )}
-          </form>
+          </div>
           {matchmakingMessage && <p>{matchmakingMessage}</p>}
         </div>
 
         <div className="section">
           <h2>Пригласить по ссылке</h2>
-          <form onSubmit={handleCreateInvite} className="invite-form">
-            <select
-              value={inviteGameMode}
-              onChange={(e) => {
-                const mode = e.target.value as 'bullet' | 'blitz' | 'rapid';
-                setInviteGameMode(mode);
-                setInviteTimeControl(TIME_CONTROLS[mode][0]);
-              }}
-              required
-              disabled={inviteLoading}
-            >
+          <div className="time-control-selector">
+            <div className="mode-buttons">
               {Object.entries(GAME_MODE_LABELS).map(([mode, label]) => (
-                <option key={mode} value={mode}>
+                <button
+                  key={mode}
+                  type="button"
+                  className={`mode-btn ${inviteSelectedType === mode ? 'active' : ''}`}
+                  onClick={() => {
+                    const nextMode = mode as 'bullet' | 'blitz' | 'rapid';
+                    setInviteSelectedType(nextMode);
+                    setInviteGameMode(nextMode);
+                    setInviteTimeControl(TIME_CONTROLS[nextMode][0]);
+                  }}
+                  disabled={inviteLoading}
+                >
                   {label}
-                </option>
+                </button>
               ))}
-            </select>
-            <select
-              value={inviteTimeControl}
-              onChange={(e) => setInviteTimeControl(e.target.value)}
-              required
-              disabled={inviteLoading}
-            >
-              {TIME_CONTROLS[inviteGameMode].map((tc) => (
-                <option key={tc} value={tc}>
-                  {tc}
-                </option>
-              ))}
-            </select>
-            {inviteLink ? (
+            </div>
+            <div className="custom-row">
               <button
                 type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleHideInvite();
-                }}
+                className={`mode-btn custom-btn ${inviteSelectedType === 'custom' ? 'active' : ''}`}
+                onClick={() => setInviteSelectedType('custom')}
                 disabled={inviteLoading}
               >
-                Скрыть
+                Custom
               </button>
-            ) : (
-              <button type="submit" disabled={inviteLoading}>
-                Сгенерировать ссылку
-              </button>
+            </div>
+            {inviteSelectedType && (
+              <>
+                {inviteSelectedType !== 'custom' && (
+                  <div className="time-buttons">
+                    {TIME_CONTROLS[inviteGameMode].map((tc) => (
+                      <button
+                        key={tc}
+                        type="button"
+                        className={`time-btn ${inviteTimeControl === tc ? 'active' : ''}`}
+                        onClick={() => setInviteTimeControl(tc)}
+                        disabled={inviteLoading}
+                      >
+                        {tc}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {inviteSelectedType === 'custom' && (
+                  <div className="custom-controls">
+                    <div className="color-buttons">
+                      {[
+                        { key: 'random', label: 'Random' },
+                        { key: 'white', label: 'White' },
+                        { key: 'black', label: 'Black' },
+                      ].map((item) => (
+                        <button
+                          key={item.key}
+                          type="button"
+                          className={`color-btn ${invitePreferredColor === item.key ? 'active' : ''}`}
+                          onClick={() => setInvitePreferredColor(item.key as 'white' | 'black' | 'random')}
+                          disabled={inviteLoading}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="slider-group">
+                      <div className="slider-row">
+                        <div className="slider-label">Минуты: {inviteCustomMinutes}</div>
+                        <input
+                          type="range"
+                          min="1"
+                          max="120"
+                          value={inviteCustomMinutes}
+                          onChange={(e) => setInviteCustomMinutes(parseInt(e.target.value))}
+                          disabled={inviteLoading}
+                        />
+                      </div>
+                      <div className="slider-row">
+                        <div className="slider-label">Инкремент: {inviteCustomIncrement}</div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="120"
+                          value={inviteCustomIncrement}
+                          onChange={(e) => setInviteCustomIncrement(parseInt(e.target.value))}
+                          disabled={inviteLoading}
+                        />
+                      </div>
+                    </div>
+                    <div className="checkbox-group">
+                      <label className="checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={inviteIsRated}
+                          onChange={(e) => setInviteIsRated(e.target.checked)}
+                          disabled={inviteLoading}
+                        />
+                        <span>Рейтинговая игра</span>
+                      </label>
+                    </div>
+                    {inviteLink ? (
+                      <button
+                        type="button"
+                        className="hide-btn"
+                        onClick={handleHideInvite}
+                        disabled={inviteLoading}
+                      >
+                        Скрыть
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="generate-btn"
+                        onClick={handleCreateInvite}
+                        disabled={inviteLoading}
+                      >
+                        Сгенерировать ссылку
+                      </button>
+                    )}
+                  </div>
+                )}
+                {inviteSelectedType !== 'custom' && (
+                  inviteLink ? (
+                    <button
+                      type="button"
+                      className="hide-btn"
+                      onClick={handleHideInvite}
+                      disabled={inviteLoading}
+                    >
+                      Скрыть
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="generate-btn"
+                      onClick={handleCreateInvite}
+                      disabled={inviteLoading}
+                    >
+                      Сгенерировать ссылку
+                    </button>
+                  )
+                )}
+              </>
             )}
-          </form>
+          </div>
           {inviteLink && (
             <div className="invite-link-box">
               <div className="invite-link-row">
@@ -305,60 +592,114 @@ export const Dashboard: React.FC = () => {
         </div>
 
         <div className="section">
-          <h2>Мои игры ({games.length})</h2>
-          {games.length === 0 ? (
-            <p>У вас пока нет активных игр</p>
-          ) : (
-            <div className="games-list">
-              {games.map((game) => (
-                <div key={game.id} className="game-card">
-                  <div className="game-status">{game.status}</div>
-                  {game.result && <div className="game-result">{game.result}</div>}
-                  <a href={`/game/${game.id}`} className="game-link">Посмотреть игру</a>
-                </div>
-              ))}
-            </div>
-          )}
+          <Lobby onGameCancelled={() => setMatchmakingMessage('')} />
         </div>
 
         <div className="section">
-          <h2>Завершенные игры ({finishedGames.length})</h2>
-          {finishedGames.length === 0 ? (
-            <p>У вас пока нет завершенных игр</p>
+          <h2>Мои игры ({games.length + finishedGames.length})</h2>
+          {games.length === 0 && finishedGames.length === 0 ? (
+            <p>У вас пока нет игр</p>
           ) : (
-            <div className="finished-games-list">
-              {finishedGames.map((game) => {
-                const isWhite = game.whitePlayerId === user?.id;
-                const opponentName = isWhite ? game.blackUsername : game.whiteUsername;
-                const userWon = 
-                  (isWhite && game.result === 'white_win') ||
-                  (!isWhite && game.result === 'black_win');
-                const isDraw = game.result === 'draw';
-
-                return (
-                  <div key={game.id} className={`finished-game-card ${userWon ? 'won' : isDraw ? 'draw' : 'lost'}`}>
-                    <div className="game-header">
-                      <span className={`result-icon ${userWon ? 'win' : isDraw ? 'draw' : 'loss'}`}>
-                        {userWon ? '✓' : isDraw ? '=' : '✗'}
-                      </span>
-                      <span className="opponent">vs {opponentName || 'Unknown'}</span>
-                      {game.ratingChange !== undefined && (
-                        <span className={`rating-change ${game.ratingChange >= 0 ? 'positive' : 'negative'}`}>
-                          {game.ratingChange >= 0 ? '+' : ''}{game.ratingChange}
-                        </span>
-                      )}
-                    </div>
-                    <div className="game-details">
-                      <span className="time-control">{game.timeControl}</span>
-                      <span className="result-reason">{game.resultReason}</span>
-                      {game.createdAt && (
-                        <span className="game-date">{formatDateTime(game.createdAt)}</span>
-                      )}
-                    </div>
-                    <a href={`/game/${game.id}`} className="game-link">Просмотреть</a>
+            <div className="all-games-list">
+              {games.length > 0 && (
+                <>
+                  <div className="games-group-title">Активные игры ({games.length})</div>
+                  <div className="finished-games-list">
+                    {(showAllActiveGames ? games : games.slice(0, 2)).map((game) => {
+                      const isWhite = game.whitePlayerId === user?.id;
+                      const opponentName = isWhite ? game.blackUsername : game.whiteUsername;
+                      
+                      return (
+                        <div key={game.id} className="finished-game-card active-game">
+                          <div className="game-row">
+                            <span className="game-status-label">Active</span>
+                            <span className="opponent-name">vs {opponentName || 'Ожидание'}</span>
+                          </div>
+                          <div className="game-divider"></div>
+                          <div className="game-row">
+                            <span className="time-control">{game.timeControl}</span>
+                            {game.createdAt && (
+                              <span className="game-date">{formatDateTime(game.createdAt)}</span>
+                            )}
+                            <a href={`/game/${game.id}`} className="game-action-link">Играть</a>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
+                  {games.length > 2 && (
+                    <button
+                      className="show-more-btn"
+                      onClick={() => setShowAllActiveGames(!showAllActiveGames)}
+                    >
+                      {showAllActiveGames ? 'Скрыть' : `Показать ещё ${games.length - 2}`}
+                    </button>
+                  )}
+                </>
+              )}
+              
+              {finishedGames.length > 0 && (
+                <>
+                  <div className="games-group-title">История ({finishedGames.length})</div>
+                  <div className="finished-games-list">
+                    {finishedGames.slice(finishedGamesPage * 3, (finishedGamesPage + 1) * 3).map((game) => {
+                      const isWhite = game.whitePlayerId === user?.id;
+                      const opponentName = isWhite ? game.blackUsername : game.whiteUsername;
+                      const userWon = 
+                        (isWhite && game.result === '1-0') ||
+                        (!isWhite && game.result === '0-1');
+                      const isDraw = game.result === '1/2-1/2' || game.result === 'draw' || game.resultReason === 'agreement';
+                      const resultLabel = userWon ? '✓' : isDraw ? '=' : '✗';
+
+                      return (
+                        <div key={game.id} className={`finished-game-card ${userWon ? 'won' : isDraw ? 'draw' : 'lost'}`}>
+                          <div className="game-row">
+                            <span className="game-result-label">{resultLabel}</span>
+                            <span className="opponent-name">vs {opponentName || 'Unknown'}</span>
+                            {game.ratingChange !== undefined && (
+                              <span
+                                className={`rating-change ${isDraw ? 'draw' : game.ratingChange >= 0 ? 'positive' : 'negative'}`}
+                              >
+                                {game.ratingChange >= 0 ? '+' : ''}{game.ratingChange}
+                              </span>
+                            )}
+                          </div>
+                          <div className="game-divider"></div>
+                          <div className="game-row">
+                            <span className="time-control">{game.timeControl}</span>
+                            <span className="result-reason">{game.resultReason}</span>
+                            {(game.finishedAt || game.createdAt) && (
+                              <span className="game-date">{formatDateTime(game.finishedAt || game.createdAt)}</span>
+                            )}
+                            <a href={`/game/${game.id}`} className="game-action-link">Посмотреть</a>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {finishedGames.length > 3 && (
+                    <div className="pagination-controls">
+                      <button
+                        className="pagination-btn"
+                        onClick={() => setFinishedGamesPage(Math.max(0, finishedGamesPage - 1))}
+                        disabled={finishedGamesPage === 0}
+                      >
+                        ←
+                      </button>
+                      <span className="pagination-info">
+                        {finishedGamesPage + 1} / {Math.ceil(finishedGames.length / 3)}
+                      </span>
+                      <button
+                        className="pagination-btn"
+                        onClick={() => setFinishedGamesPage(Math.min(Math.ceil(finishedGames.length / 3) - 1, finishedGamesPage + 1))}
+                        disabled={finishedGamesPage >= Math.ceil(finishedGames.length / 3) - 1}
+                      >
+                        →
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           )}
         </div>

@@ -1,0 +1,136 @@
+.no-games {
+  text-align: center;
+  color: #999;
+  padding: 40px 20px;
+  font-size: 14px;
+}
+
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.lobby-game-card {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #fafafa;
+  transition: all 0.2s;
+}
+
+.lobby-game-card:hover {
+  border-color: #333;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+}
+
+.creator-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.creator-name {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.creator-rating {
+  background: #f0f0f0;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+.game-type {
+  display: flex;
+  gap: 6px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge.rated {
+  background: #333;
+  color: white;
+}
+
+.badge.casual {
+  background: #ddd;
+  color: #333;
+}
+
+.game-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.detail-row .label {
+  color: #666;
+  font-weight: 500;
+}
+
+.detail-row .value {
+  color: #333;
+  font-weight: 600;
+}
+
+.join-btn {
+  padding: 10px 16px;
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 13px;
+  transition: all 0.2s;
+  margin-top: 4px;
+}
+
+.join-btn:hover:not(:disabled) {
+  background: #555;
+}
+
+.join-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #d32f2f;
+  padding: 12px;
+  background: #ffebee;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}

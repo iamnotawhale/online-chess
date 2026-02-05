@@ -1,1 +1,1 @@
-{"root":["./src/App.tsx","./src/api.ts","./src/main.tsx","./src/websocket.ts","./src/components/Dashboard.tsx","./src/components/Game.tsx","./src/components/Login.tsx","./src/components/Register.tsx"],"errors":true,"version":"5.9.3"}
+{"root":["./src/App.tsx","./src/api.ts","./src/main.tsx","./src/websocket.ts","./src/components/Dashboard.tsx","./src/components/Game.tsx","./src/components/InviteAccept.tsx","./src/components/Lobby.tsx","./src/components/Login.tsx","./src/components/Register.tsx"],"version":"5.9.3"}

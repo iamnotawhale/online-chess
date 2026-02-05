@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
@@ -15,6 +15,7 @@ interface GameData {
   status: string;
   fen: string;
   timeControl?: string;
+  rated?: boolean;
   whiteTimeLeftMs?: number;
   blackTimeLeftMs?: number;
   lastMoveAt?: string;
@@ -48,7 +49,9 @@ export const GameView: React.FC = () => {
   const [moveFens, setMoveFens] = useState<string[]>([]);
   const [currentMoveIndex, setCurrentMoveIndex] = useState<number>(-1);
   const [isViewingHistory, setIsViewingHistory] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
+  const lastDrawOfferRef = useRef<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type?: 'info' | 'error' } | null>(null);
+  const toastTimeoutRef = useRef<number | null>(null);
   const [boardWidth, setBoardWidth] = useState<number>(() => {
     if (typeof window === 'undefined') return 400;
     return Math.min(440, Math.max(280, window.innerWidth - 32));
@@ -88,6 +91,22 @@ export const GameView: React.FC = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) {
+        window.clearTimeout(toastTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const showToast = (message: string, type: 'info' | 'error' = 'info', timeout = 3000) => {
+    setToast({ message, type });
+    if (toastTimeoutRef.current) {
+      window.clearTimeout(toastTimeoutRef.current);
+    }
+    toastTimeoutRef.current = window.setTimeout(() => setToast(null), timeout);
+  };
 
   const handleGameUpdate = (update: GameUpdate) => {
     console.log('📨 Game update received:', {
@@ -155,12 +174,21 @@ export const GameView: React.FC = () => {
         whiteTimeLeftMs: update.whiteTimeLeftMs ?? prevGame.whiteTimeLeftMs,
         blackTimeLeftMs: update.blackTimeLeftMs ?? prevGame.blackTimeLeftMs,
         lastMoveAt: update.lastMoveAt ?? prevGame.lastMoveAt,
+        drawOfferedById: update.drawOfferedById ?? prevGame.drawOfferedById,
       };
       if (update.whiteTimeLeftMs !== undefined) {
         setWhiteTimeLeftMs(update.whiteTimeLeftMs);
       }
       if (update.blackTimeLeftMs !== undefined) {
         setBlackTimeLeftMs(update.blackTimeLeftMs);
+      }
+      if (update.drawOfferedById !== undefined) {
+        const nextOfferId = update.drawOfferedById || null;
+        const prevOfferId = lastDrawOfferRef.current;
+        if (nextOfferId && nextOfferId !== prevOfferId && currentUser?.id && nextOfferId !== currentUser.id) {
+          showToast('Соперник предложил ничью', 'info', 4000);
+        }
+        lastDrawOfferRef.current = nextOfferId;
       }
       return updatedGame;
     });
@@ -190,6 +218,7 @@ export const GameView: React.FC = () => {
         status: gameResponse.status,
         fen: gameResponse.fenCurrent,
         timeControl: gameResponse.timeControl,
+        rated: gameResponse.rated,
         whiteTimeLeftMs: gameResponse.whiteTimeLeftMs,
         blackTimeLeftMs: gameResponse.blackTimeLeftMs,
         lastMoveAt: gameResponse.lastMoveAt,
@@ -341,13 +370,11 @@ export const GameView: React.FC = () => {
       const moves = chessInstance.moves({ square: square as any, verbose: true });
       const destinations = moves.map(m => m.to);
       setLegalMoves(destinations);
-      setIsDragging(true);
     }
   };
 
   const handlePieceDragEnd = () => {
     setLegalMoves([]);
-    setIsDragging(false);
   };
 
   const getSquareStyles = () => {
@@ -545,12 +572,19 @@ export const GameView: React.FC = () => {
 
   return (
     <div className="game-container">
+      {toast && (
+        <div className={`game-toast ${toast.type || 'info'}`}>
+          {toast.message}
+        </div>
+      )}
       <div className="game-header">
         <h1>Шахматная игра</h1>
         <div className="game-status">
-          <span className="status-badge">{game.status.toUpperCase()}</span>
+          <span className={`status-badge ${game.status === 'finished' ? 'finished' : 'active'}`}>
+            {game.status === 'finished' ? 'FINISHED' : game.status === 'active' ? 'ACTIVE' : game.status.toUpperCase()}
+          </span>
           {game.result && <span className="result-badge">{game.result}</span>}
-          {wsConnected && <span className="ws-badge">🟢 Live</span>}
+          {wsConnected && game.status === 'active' && <span className="ws-badge">🟢 Live</span>}
         </div>
       </div>
 
@@ -637,13 +671,14 @@ export const GameView: React.FC = () => {
             <h3>Информация об игре</h3>
             <p><strong>ID:</strong> {game.id}</p>
             <p><strong>Статус:</strong> {game.status}</p>
+            <p><strong>Тип:</strong> {game.rated ? 'Рейтинговая' : 'Обычная'}</p>
             {game.timeControl && (
               <p>
                 <strong>Контроль:</strong> {game.timeControl}
                 {incrementSeconds > 0 && <span> (инкремент +{incrementSeconds}s)</span>}
               </p>
             )}
-            <p><strong>Ходов:</strong> {Math.floor(chessInstance.moves().length / 2)}</p>
+            <p><strong>Ходов:</strong> {Math.ceil(moveHistory.length / 2)}</p>
             {game.resultReason && (
               <p><strong>Причина:</strong> {game.resultReason}</p>
             )}

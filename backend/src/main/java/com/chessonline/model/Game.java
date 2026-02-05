@@ -32,6 +32,9 @@ public class Game {
     @Column(name = "time_control", nullable = false, length = 20)
     private String timeControl; // format: "5+3" (minutes+increment in seconds)
 
+    @Column(nullable = false)
+    private boolean rated; // Is this a rated game?
+
     @Column(length = 100)
     private String pgn; // Portable Game Notation
 
@@ -73,11 +76,12 @@ public class Game {
     // Constructors
     public Game() {}
 
-    public Game(User playerWhite, User playerBlack, String timeControl, Invite invite) {
+    public Game(User playerWhite, User playerBlack, String timeControl, Invite invite, boolean rated) {
         this.playerWhite = playerWhite;
         this.playerBlack = playerBlack;
         this.timeControl = timeControl;
         this.invite = invite;
+        this.rated = rated;
         this.fenCurrent = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; // Starting position
     }
 
@@ -136,6 +140,14 @@ public class Game {
 
     public void setTimeControl(String timeControl) {
         this.timeControl = timeControl;
+    }
+
+    public boolean isRated() {
+        return rated;
+    }
+
+    public void setRated(boolean rated) {
+        this.rated = rated;
     }
 
     public String getPgn() {

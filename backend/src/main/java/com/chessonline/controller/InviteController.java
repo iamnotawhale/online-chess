@@ -42,7 +42,9 @@ public class InviteController {
                     userId,
                     request.getGameMode(),
                     request.getTimeControl(),
-                    request.getExpirationHours()
+                    request.getExpirationHours(),
+                    request.isRated(),
+                    request.getPreferredColor()
             );
 
             InviteResponse response = mapToResponse(invite);
@@ -155,6 +157,8 @@ public class InviteController {
         response.setInviteUrl(frontendUrl + "/invite/" + invite.getCode());
         response.setGameMode(invite.getGameMode());
         response.setTimeControl(invite.getTimeControl());
+        response.setRated(invite.isRated());
+        response.setPreferredColor(invite.getPreferredColor());
         response.setExpiresAt(invite.getExpiresAt());
         response.setUsed(invite.getUsed());
         response.setUsedAt(invite.getUsedAt());

@@ -28,7 +28,8 @@ public class MatchmakingController {
             MatchmakingService.MatchmakingResult result = matchmakingService.join(
                     userId,
                     request.getGameMode(),
-                    request.getTimeControl()
+                    request.getTimeControl(),
+                    request.getPreferredColor()
             );
 
             MatchmakingJoinResponse response = new MatchmakingJoinResponse();

@@ -39,7 +39,7 @@ public class GameService {
      * Create a new game from an invite or matchmaking
      */
     @Transactional
-    public Game createGame(UUID whiteId, UUID blackId, String timeControl, Invite invite) {
+    public Game createGame(UUID whiteId, UUID blackId, String timeControl, Invite invite, boolean rated) {
         User white = userRepository.findById(whiteId)
                 .orElseThrow(() -> new RuntimeException("White player not found"));
         User black = userRepository.findById(blackId)
@@ -49,7 +49,7 @@ public class GameService {
             throw new RuntimeException("Cannot play against yourself");
         }
 
-        Game game = new Game(white, black, timeControl, invite);
+        Game game = new Game(white, black, timeControl, invite, rated);
         
         // Parse time control (e.g., "5+3")
         String[] timeParts = timeControl.split("\\+");
@@ -157,6 +157,7 @@ public class GameService {
         System.out.println("🔍 Game end check for FEN: " + newFen + " -> State: " + endState);
         if (endState != GameEndState.ONGOING) {
             game.setStatus("finished");
+            game.setFinishedAt(LocalDateTime.now());
             if (endState == GameEndState.CHECKMATE) {
                 // The player who just moved wins (turn in newFen is now the loser's turn)
                 String[] fenParts = newFen.split(" ");
@@ -173,6 +174,11 @@ public class GameService {
         }
         
         Game savedGame = gameRepository.save(game);
+        
+        // Update ratings if game finished
+        if ("finished".equals(savedGame.getStatus())) {
+            ratingService.updateRatingsForGame(savedGame);
+        }
         
         // Send WebSocket notification
         notifyGameUpdate(savedGame);
@@ -221,6 +227,7 @@ public class GameService {
         msg.setWhiteTimeLeftMs(getEffectiveTimeLeftMs(game, true));
         msg.setBlackTimeLeftMs(getEffectiveTimeLeftMs(game, false));
         msg.setLastMoveAt(game.getLastMoveAt());
+        msg.setDrawOfferedById(game.getDrawOfferedBy() != null ? game.getDrawOfferedBy().getId() : null);
         return msg;
     }
     
@@ -234,6 +241,7 @@ public class GameService {
         private Long whiteTimeLeftMs;
         private Long blackTimeLeftMs;
         private LocalDateTime lastMoveAt;
+        private UUID drawOfferedById;
         
         public UUID getGameId() { return gameId; }
         public void setGameId(UUID gameId) { this.gameId = gameId; }
@@ -251,6 +259,8 @@ public class GameService {
         public void setBlackTimeLeftMs(Long blackTimeLeftMs) { this.blackTimeLeftMs = blackTimeLeftMs; }
         public LocalDateTime getLastMoveAt() { return lastMoveAt; }
         public void setLastMoveAt(LocalDateTime lastMoveAt) { this.lastMoveAt = lastMoveAt; }
+        public UUID getDrawOfferedById() { return drawOfferedById; }
+        public void setDrawOfferedById(UUID drawOfferedById) { this.drawOfferedById = drawOfferedById; }
     }
 
     private boolean updateClocksOnMove(Game game, boolean isWhiteToMove) {

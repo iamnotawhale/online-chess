@@ -39,12 +39,13 @@ public class GameController {
             @RequestParam UUID opponentId,
             @RequestParam(defaultValue = "5+3") String timeControl,
             @RequestParam(required = false) String inviteCode,
+            @RequestParam(defaultValue = "true") boolean rated,
             Authentication authentication) {
         try {
             UUID userId = UUID.fromString(authentication.getName());
             
             // TODO: Implement invite lookup when creating game
-            Game game = gameService.createGame(userId, opponentId, timeControl, null);
+            Game game = gameService.createGame(userId, opponentId, timeControl, null, rated);
             
             GameResponse response = mapToResponse(game, 0);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -275,6 +276,7 @@ public class GameController {
         response.setResult(game.getResult());
         response.setResultReason(game.getResultReason());
         response.setTimeControl(game.getTimeControl());
+        response.setRated(game.isRated());
         response.setFenCurrent(game.getFenCurrent());
         response.setWhiteTimeLeftMs(gameService.getEffectiveTimeLeftMs(game, true));
         response.setBlackTimeLeftMs(gameService.getEffectiveTimeLeftMs(game, false));

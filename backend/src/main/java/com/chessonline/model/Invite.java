@@ -25,6 +25,12 @@ public class Invite {
     @Column(name = "time_control", length = 20)
     private String timeControl; // e.g., "10+0", "5+3", "3+2"
 
+    @Column(name = "preferred_color", length = 10)
+    private String preferredColor; // white, black, random
+
+    @Column(name = "rated", nullable = false)
+    private boolean rated = true;
+
     @Column(name = "expires_at", nullable = false)
     private LocalDateTime expiresAt;
 
@@ -57,6 +63,15 @@ public class Invite {
         this.creator = creator;
         this.gameMode = gameMode;
         this.timeControl = timeControl;
+    }
+
+    public Invite(String code, User creator, String gameMode, String timeControl, boolean rated, String preferredColor) {
+        this.code = code;
+        this.creator = creator;
+        this.gameMode = gameMode;
+        this.timeControl = timeControl;
+        this.rated = rated;
+        this.preferredColor = preferredColor;
     }
 
     // Getters and Setters
@@ -98,6 +113,22 @@ public class Invite {
 
     public void setTimeControl(String timeControl) {
         this.timeControl = timeControl;
+    }
+
+    public boolean isRated() {
+        return rated;
+    }
+
+    public void setRated(boolean rated) {
+        this.rated = rated;
+    }
+
+    public String getPreferredColor() {
+        return preferredColor;
+    }
+
+    public void setPreferredColor(String preferredColor) {
+        this.preferredColor = preferredColor;
     }
 
     public LocalDateTime getExpiresAt() {

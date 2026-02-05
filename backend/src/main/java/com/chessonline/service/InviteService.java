@@ -55,12 +55,13 @@ public class InviteService {
      * Create a new invite
      */
     @Transactional
-    public Invite createInvite(UUID creatorId, String gameMode, String timeControl, Integer expirationHours) {
+    public Invite createInvite(UUID creatorId, String gameMode, String timeControl, Integer expirationHours, boolean rated, String preferredColor) {
         User creator = userRepository.findById(creatorId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         String code = generateUniqueCode();
-        Invite invite = new Invite(code, creator, gameMode, timeControl);
+        String normalizedColor = preferredColor != null ? preferredColor : "random";
+        Invite invite = new Invite(code, creator, gameMode, timeControl, rated, normalizedColor);
         
         if (expirationHours != null) {
             invite.setExpiresAt(LocalDateTime.now().plusHours(expirationHours));
@@ -114,11 +115,34 @@ public class InviteService {
 
         inviteRepository.save(invite);
 
+        UUID whiteId = invite.getCreator().getId();
+        UUID blackId = acceptor.getId();
+
+        String preferredColor = invite.getPreferredColor() != null ? invite.getPreferredColor() : "random";
+        switch (preferredColor) {
+            case "black":
+                whiteId = acceptor.getId();
+                blackId = invite.getCreator().getId();
+                break;
+            case "white":
+                whiteId = invite.getCreator().getId();
+                blackId = acceptor.getId();
+                break;
+            case "random":
+            default:
+                if (Math.random() < 0.5) {
+                    whiteId = acceptor.getId();
+                    blackId = invite.getCreator().getId();
+                }
+                break;
+        }
+
         return gameService.createGame(
-            invite.getCreator().getId(),
-            acceptor.getId(),
+            whiteId,
+            blackId,
             invite.getTimeControl(),
-            invite
+            invite,
+            invite.isRated()
         );
     }
 

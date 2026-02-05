@@ -30,6 +30,7 @@ interface GameResponse {
   resultReason?: string;
   fenCurrent: string;
   timeControl?: string;
+  rated?: boolean;
   whiteTimeLeftMs?: number;
   blackTimeLeftMs?: number;
   lastMoveAt?: string;
@@ -40,8 +41,22 @@ interface GameResponse {
 }
 
 interface MatchmakingJoinRequest {
-  gameMode: 'bullet' | 'blitz' | 'rapid';
+  gameMode: 'bullet' | 'blitz' | 'rapid' | 'custom';
   timeControl: string;
+  preferredColor?: 'white' | 'black' | 'random';
+  isRated?: boolean;
+}
+
+interface LobbyGameResponse {
+  id: string;
+  creatorId: string;
+  creatorUsername: string;
+  creatorRating: number;
+  gameMode: string;
+  timeControl: string;
+  preferredColor: string;
+  rated: boolean;
+  createdAt: string;
 }
 
 interface MatchmakingJoinResponse {
@@ -59,6 +74,7 @@ interface MatchmakingStatusResponse {
   gameId?: string;
   gameMode?: string;
   timeControl?: string;
+  preferredColor?: string;
 }
 
 interface InviteResponse {
@@ -67,6 +83,8 @@ interface InviteResponse {
   inviteUrl: string;
   gameMode: string;
   timeControl?: string;
+  rated: boolean;
+  preferredColor?: string;
   expiresAt: string;
   used: boolean;
   usedAt?: string;
@@ -202,7 +220,7 @@ class ApiService {
     return this.client.get('/games/my/finished').then(res => res.data);
   }
 
-  createInvite(data: { gameMode: string; timeControl: string; expirationHours?: number }): Promise<InviteResponse> {
+  createInvite(data: { gameMode: string; timeControl: string; expirationHours?: number; isRated?: boolean; preferredColor?: string }): Promise<InviteResponse> {
     return this.client.post('/invites', data).then(res => res.data);
   }
 
@@ -216,6 +234,22 @@ class ApiService {
 
   getMyInvites(): Promise<any[]> {
     return this.client.get('/invites').then(res => res.data);
+  }
+
+  createLobbyGame(data: { gameMode: string; timeControl: string; preferredColor: string; isRated: boolean }): Promise<LobbyGameResponse> {
+    return this.client.post('/lobby/create', data).then(res => res.data);
+  }
+
+  getLobbyGames(): Promise<LobbyGameResponse[]> {
+    return this.client.get('/lobby/games').then(res => res.data);
+  }
+
+  joinLobbyGame(gameId: string): Promise<{ gameId: string; message: string }> {
+    return this.client.post(`/lobby/join/${gameId}`).then(res => res.data);
+  }
+
+  cancelLobbyGame(gameId: string): Promise<{ message: string }> {
+    return this.client.delete(`/lobby/${gameId}`).then(res => res.data);
   }
 
   isAuthenticated(): boolean {

@@ -32,6 +32,8 @@ CREATE TABLE invites (
   creator_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   game_mode VARCHAR(20) NOT NULL, -- standard, rapid, blitz, bullet
   time_control VARCHAR(20),
+  rated BOOLEAN NOT NULL DEFAULT TRUE,
+  preferred_color VARCHAR(10) DEFAULT 'random',
   expires_at TIMESTAMP NOT NULL,
   used BOOLEAN DEFAULT FALSE,
   used_at TIMESTAMP,

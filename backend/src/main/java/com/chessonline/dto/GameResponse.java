@@ -13,6 +13,7 @@ public class GameResponse {
     private String result;
     private String resultReason;
     private String timeControl;
+    private boolean rated;
     private String fenCurrent;
     private Long whiteTimeLeftMs;
     private Long blackTimeLeftMs;
@@ -95,6 +96,14 @@ public class GameResponse {
 
     public void setTimeControl(String timeControl) {
         this.timeControl = timeControl;
+    }
+
+    public boolean isRated() {
+        return rated;
+    }
+
+    public void setRated(boolean rated) {
+        this.rated = rated;
     }
 
     public String getFenCurrent() {
