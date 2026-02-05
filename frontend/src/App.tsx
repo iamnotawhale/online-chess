@@ -6,6 +6,7 @@ import { Register } from './components/Register';
 import { Dashboard } from './components/Dashboard';
 import { GameView } from './components/Game';
 import { InviteAccept } from './components/InviteAccept';
+import { useTranslation } from './i18n/LanguageContext';
 import './App.css';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -27,6 +28,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const isAuthenticated = !!localStorage.getItem('authToken');
 
   const handleLogout = () => {
@@ -37,10 +39,19 @@ const Header: React.FC = () => {
   return (
     <header className="header">
       <div className="header-content">
-        <h1 className="logo">♟ Шахматы Online</h1>
+        <div className="logo">
+          <div className="logo-icon">
+            <span className="chess-piece">♔</span>
+            <span className="chess-piece">♚</span>
+          </div>
+          <span className="logo-text">ON-CHESS</span>
+        </div>
         {isAuthenticated && (
           <button onClick={handleLogout} className="logout-btn">
-            Выход
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6 14H3.33333C2.97971 14 2.64057 13.8595 2.39052 13.6095C2.14048 13.3594 2 13.0203 2 12.6667V3.33333C2 2.97971 2.14048 2.64057 2.39052 2.39052C2.64057 2.14048 2.97971 2 3.33333 2H6M10.6667 11.3333L14 8M14 8L10.6667 4.66667M14 8H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span>{t('logout')}</span>
           </button>
         )}
       </div>

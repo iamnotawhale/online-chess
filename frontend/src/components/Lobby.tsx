@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { apiService } from '../api';
+import { useTranslation } from '../i18n/LanguageContext';
 import './Lobby.css';
 
 interface LobbyGame {
@@ -20,6 +21,7 @@ interface LobbyProps {
 }
 
 export const Lobby: React.FC<LobbyProps> = ({ onGameStart, onGameCancelled }) => {
+  const { t } = useTranslation();
   const [games, setGames] = useState<LobbyGame[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -48,7 +50,7 @@ export const Lobby: React.FC<LobbyProps> = ({ onGameStart, onGameCancelled }) =>
       setGames(response);
       setError('');
     } catch (err) {
-      setError('Ошибка загрузки лобби');
+      setError(t('error'));
       console.error(err);
     } finally {
       setLoading(false);
@@ -64,7 +66,7 @@ export const Lobby: React.FC<LobbyProps> = ({ onGameStart, onGameCancelled }) =>
       }
       setGames(games.filter(g => g.id !== gameId));
     } catch (err) {
-      setError('Ошибка присоединения к игре');
+      setError(t('error'));
       console.error(err);
     } finally {
       setJoiningGameId(null);
@@ -79,7 +81,7 @@ export const Lobby: React.FC<LobbyProps> = ({ onGameStart, onGameCancelled }) =>
       setError('');
       onGameCancelled?.();
     } catch (err) {
-      setError('Ошибка отмены игры');
+      setError(t('error'));
       console.error(err);
     } finally {
       setJoiningGameId(null);
@@ -88,9 +90,9 @@ export const Lobby: React.FC<LobbyProps> = ({ onGameStart, onGameCancelled }) =>
 
   const getColorLabel = (color: string) => {
     const colors: Record<string, string> = {
-      white: 'Белые',
-      black: 'Чёрные',
-      random: 'Случайные',
+      white: t('white'),
+      black: t('black'),
+      random: t('random'),
     };
     return colors[color] || color;
   };
@@ -113,16 +115,16 @@ export const Lobby: React.FC<LobbyProps> = ({ onGameStart, onGameCancelled }) =>
   };
 
   if (loading && games.length === 0) {
-    return <><p>Загрузка лобби...</p></>;
+    return <><p>{t('loading')}</p></>;
   }
 
   return (
     <>
-      <h2>Лобби</h2>
+      <h2>{t('lobby')}</h2>
       {error && <p className="error">{error}</p>}
       
       {games.length === 0 ? (
-        <p className="no-games">Нет доступных игр. Создайте свою!</p>
+        <p className="no-games">{t('noAvailableGames')}</p>
       ) : (
         <div className="games-grid">
           {games.map((game) => (
@@ -133,21 +135,21 @@ export const Lobby: React.FC<LobbyProps> = ({ onGameStart, onGameCancelled }) =>
                   <span className="creator-rating">{game.creatorRating}</span>
                 </div>
                 <div className="game-type">
-                  {game.rated ? <span className="badge rated">Рейтинг</span> : <span className="badge casual">Casual</span>}
+                  {game.rated ? <span className="badge rated">{t('rated')}</span> : <span className="badge casual">{t('unrated')}</span>}
                 </div>
               </div>
               
               <div className="game-details">
                 <div className="detail-row">
-                  <span className="label">Тип:</span>
-                  <span className="value">{game.gameMode === 'custom' ? 'Кастом' : game.gameMode}</span>
+                  <span className="label">{t('gameMode')}:</span>
+                  <span className="value">{game.gameMode === 'custom' ? t('custom') : game.gameMode}</span>
                 </div>
                 <div className="detail-row">
-                  <span className="label">Время:</span>
+                  <span className="label">{t('timeControl')}:</span>
                   <span className="value">{game.timeControl}</span>
                 </div>
                 <div className="detail-row">
-                  <span className="label">Цвет:</span>
+                  <span className="label">{t('preferredColor')}:</span>
                   <span className="value">{getColorLabel(getDisplayColor(game))}</span>
                 </div>
               </div>
@@ -158,8 +160,8 @@ export const Lobby: React.FC<LobbyProps> = ({ onGameStart, onGameCancelled }) =>
                 disabled={joiningGameId === game.id}
               >
                 {joiningGameId === game.id 
-                  ? (currentUserId === game.creatorId ? 'Отмена...' : 'Присоединение...')
-                  : (currentUserId === game.creatorId ? 'Отмена' : 'Присоединиться')
+                  ? (currentUserId === game.creatorId ? `${t('cancel')}...` : `${t('join')}...`)
+                  : (currentUserId === game.creatorId ? t('cancel') : t('join'))
                 }
               </button>
             </div>

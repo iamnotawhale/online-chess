@@ -1,0 +1,343 @@
+export const translations = {
+  en: {
+    // Auth
+    login: 'Login',
+    register: 'Register',
+    email: 'Email',
+    username: 'Username',
+    password: 'Password',
+    logout: 'Logout',
+    
+    // Dashboard
+    rating: 'Rating',
+    matchmaking: 'Matchmaking',
+    inviteByLink: 'Invite by Link',
+    myGames: 'My Games',
+    activeGames: 'Active Games',
+    history: 'History',
+    noGames: 'No games yet',
+    
+    // Game modes
+    bullet: 'Bullet',
+    blitz: 'Blitz',
+    rapid: 'Rapid',
+    custom: 'Custom',
+    
+    // Custom controls
+    random: 'Random',
+    white: 'White',
+    black: 'Black',
+    minutes: 'Minutes',
+    increment: 'Increment',
+    sec: 'sec',
+    ratedGame: 'Rated game',
+    
+    // Matchmaking
+    play: 'Play',
+    leaveQueue: 'Leave queue',
+    inQueue: 'In queue for a match',
+    gameCreated: 'Game created in lobby. Waiting for opponent...',
+    matchmakingError: 'Matchmaking error',
+    
+    // Invite
+    generateLink: 'Generate link',
+    hide: 'Hide',
+    copy: 'Copy',
+    linkCopied: 'Link copied',
+    inviteError: 'Error creating invite',
+    
+    // Game
+    youAre: 'You are',
+    opponentIs: 'Opponent is',
+    yourTurn: 'Your turn',
+    opponentTurn: "Opponent's turn",
+    gameOver: 'Game over',
+    gameFinished: 'Game Finished',
+    waiting: 'Waiting',
+    draw: 'Draw',
+    resign: 'Resign',
+    offerDraw: 'Offer Draw',
+    acceptDraw: 'Accept Draw',
+    cancelDrawOffer: 'Cancel Draw Offer',
+    drawOffered: 'Draw offered',
+    youOfferedDraw: 'You offered a draw',
+    opponentOfferedDraw: 'Opponent offered a draw',
+    
+    // Game results
+    won: 'Won',
+    lost: 'Lost',
+    active: 'Active',
+    finished: 'Finished',
+    vs: 'vs',
+    view: 'View',
+    showMore: 'Show more',
+    
+    // Result reasons
+    checkmate: 'Checkmate',
+    resignation: 'Resignation',
+    timeout: 'Time out',
+    stalemate: 'Stalemate',
+    agreement: 'Agreement',
+    
+    // Lobby
+    lobby: 'Lobby',
+    availableGames: 'Available Games',
+    noAvailableGames: 'No available games',
+    join: 'Join',
+    cancel: 'Cancel',
+    yourGame: 'Your game',
+    
+    // Accept invite
+    acceptInvite: 'Accept Invite',
+    inviteDetails: 'Invite Details',
+    gameMode: 'Game Mode',
+    timeControl: 'Time Control',
+    rated: 'Rated',
+    unrated: 'Unrated',
+    preferredColor: 'Preferred Color',
+    accept: 'Accept',
+    loading: 'Loading...',
+    inviteNotFound: 'Invite not found',
+    inviteExpired: 'Invite has expired or been used',
+    inviteAccepted: 'Invite accepted! Redirecting to game...',
+    
+    // Common
+    error: 'Error',
+    back: 'Back',
+    
+    // Game component
+    you: 'You',
+    whites: 'White',
+    blacks: 'Black',
+    gameInfo: 'Game Information',
+    id: 'ID',
+    status: 'Status',
+    type: 'Type',
+    control: 'Time Control',
+    incrementSuffix: 'increment',
+    moves: 'Moves',
+    reason: 'Reason',
+    opponentOffersDrawMsg: 'Opponent offers a draw',
+    acceptBtn: 'Accept',
+    declineBtn: 'Decline',
+    waitingForDrawResponse: 'Waiting for response to draw offer...',
+    moveHistory: 'Move History',
+    toStart: 'To Start',
+    previous: 'Previous',
+    next: 'Next',
+    toLatest: 'To Latest',
+    noMoves: 'No moves yet',
+    notYourTurn: 'Not your turn',
+    confirmResign: 'Are you sure you want to resign?',
+    confirmOfferDraw: 'Offer a draw?',
+    errorResign: 'Error resigning',
+    errorOfferDraw: 'Error offering draw',
+    errorRespondDraw: 'Error responding to draw offer',
+    
+    // Login
+    loginTitle: 'Login',
+    loginButton: 'Login',
+    noAccount: 'No account?',
+    registerLink: 'Register',
+    loginError: 'Login error',
+    
+    // Register
+    registerTitle: 'Registration',
+    registerButton: 'Register',
+    usernameLabel: 'Username (3-32 characters)',
+    passwordLabel: 'Password (minimum 6 characters)',
+    confirmPassword: 'Confirm Password',
+    alreadyHaveAccount: 'Already have an account?',
+    loginLinkText: 'Login',
+    usernameMinLength: 'Username must be at least 3 characters',
+    usernameMaxLength: 'Username must not exceed 32 characters',
+    passwordMinLength: 'Password must be at least 6 characters',
+    passwordsDoNotMatch: 'Passwords do not match',
+    registerError: 'Registration error',
+    
+    // Invite accept
+    inviteToGame: 'Invite to Game',
+    from: 'From',
+    mode: 'Mode',
+    friendly: 'Friendly',
+    creatorColor: 'Creator Color',
+    code: 'Code',
+    inviteAlreadyUsed: 'Invite already used',
+    acceptAndStart: 'Accept and Start Game',
+    loginToAccept: 'Login to Accept',
+    inviteNotFoundMsg: 'Invite not found',
+    failedToAccept: 'Failed to accept invite',
+  },
+  ru: {
+    // Auth
+    login: 'Войти',
+    register: 'Регистрация',
+    email: 'Email',
+    username: 'Имя пользователя',
+    password: 'Пароль',
+    logout: 'Выйти',
+    
+    // Dashboard
+    rating: 'Рейтинг',
+    matchmaking: 'Матчмейкинг',
+    inviteByLink: 'Пригласить по ссылке',
+    myGames: 'Мои игры',
+    activeGames: 'Активные игры',
+    history: 'История',
+    noGames: 'У вас пока нет игр',
+    
+    // Game modes
+    bullet: 'Bullet',
+    blitz: 'Blitz',
+    rapid: 'Rapid',
+    custom: 'Custom',
+    
+    // Custom controls
+    random: 'Random',
+    white: 'White',
+    black: 'Black',
+    minutes: 'Минуты',
+    increment: 'Инкремент',
+    sec: 'сек',
+    ratedGame: 'Рейтинговая игра',
+    
+    // Matchmaking
+    play: 'Играть',
+    leaveQueue: 'Выйти из очереди',
+    inQueue: 'Вы в очереди на матч',
+    gameCreated: 'Игра создана в лобби. Ожидание противника...',
+    matchmakingError: 'Ошибка матчмейкинга',
+    
+    // Invite
+    generateLink: 'Сгенерировать ссылку',
+    hide: 'Скрыть',
+    copy: 'Копировать',
+    linkCopied: 'Ссылка скопирована',
+    inviteError: 'Ошибка создания ссылки',
+    
+    // Game
+    youAre: 'Вы играете',
+    opponentIs: 'Противник играет',
+    yourTurn: 'Ваш ход',
+    opponentTurn: 'Ход противника',
+    gameOver: 'Игра окончена',
+    gameFinished: 'Игра окончена',
+    waiting: 'Ожидание',
+    draw: 'Ничья',
+    resign: 'Сдаться',
+    offerDraw: 'Предложить ничью',
+    acceptDraw: 'Принять ничью',
+    cancelDrawOffer: 'Отменить предложение',
+    drawOffered: 'Предложена ничья',
+    youOfferedDraw: 'Вы предложили ничью',
+    opponentOfferedDraw: 'Противник предложил ничью',
+    
+    // Game results
+    won: 'Победа',
+    lost: 'Поражение',
+    active: 'Активна',
+    finished: 'Завершена',
+    vs: 'vs',
+    view: 'Посмотреть',
+    showMore: 'Показать ещё',
+    
+    // Result reasons
+    checkmate: 'Мат',
+    resignation: 'Сдача',
+    timeout: 'Время',
+    stalemate: 'Пат',
+    agreement: 'Соглашение',
+    
+    // Lobby
+    lobby: 'Лобби',
+    availableGames: 'Доступные игры',
+    noAvailableGames: 'Нет доступных игр',
+    join: 'Присоединиться',
+    cancel: 'Отменить',
+    yourGame: 'Ваша игра',
+    
+    // Accept invite
+    acceptInvite: 'Принять приглашение',
+    inviteDetails: 'Детали приглашения',
+    gameMode: 'Режим игры',
+    timeControl: 'Контроль времени',
+    rated: 'Рейтинговая',
+    unrated: 'Нерейтинговая',
+    preferredColor: 'Предпочитаемый цвет',
+    accept: 'Принять',
+    loading: 'Загрузка...',
+    inviteNotFound: 'Приглашение не найдено',
+    inviteExpired: 'Приглашение истекло или уже использовано',
+    inviteAccepted: 'Приглашение принято! Переход к игре...',
+    
+    // Common
+    error: 'Ошибка',
+    back: 'Назад',
+    
+    // Game component
+    you: 'Вы',
+    whites: 'Белые',
+    blacks: 'Чёрные',
+    gameInfo: 'Информация об игре',
+    id: 'ID',
+    status: 'Статус',
+    type: 'Тип',
+    control: 'Контроль',
+    incrementSuffix: 'инкремент',
+    moves: 'Ходов',
+    reason: 'Причина',
+    opponentOffersDrawMsg: 'Противник предлагает ничью',
+    acceptBtn: 'Принять',
+    declineBtn: 'Отклонить',
+    waitingForDrawResponse: 'Ожидание ответа на предложение ничьи...',
+    moveHistory: 'История ходов',
+    toStart: 'В начало',
+    previous: 'Назад',
+    next: 'Вперед',
+    toLatest: 'К актуальной',
+    noMoves: 'Ходов пока нет',
+    notYourTurn: 'Сейчас не ваш ход',
+    confirmResign: 'Вы уверены, что хотите сдаться?',
+    confirmOfferDraw: 'Предложить ничью?',
+    errorResign: 'Ошибка при сдаче',
+    errorOfferDraw: 'Ошибка при предложении ничьи',
+    errorRespondDraw: 'Ошибка при ответе на предложение',
+    
+    // Login
+    loginTitle: 'Вход',
+    loginButton: 'Войти',
+    noAccount: 'Нет аккаунта?',
+    registerLink: 'Зарегистрироваться',
+    loginError: 'Ошибка входа',
+    
+    // Register
+    registerTitle: 'Регистрация',
+    registerButton: 'Зарегистрироваться',
+    usernameLabel: 'Имя пользователя (3-32 символа)',
+    passwordLabel: 'Пароль (минимум 6 символов)',
+    confirmPassword: 'Подтвердите пароль',
+    alreadyHaveAccount: 'Уже есть аккаунт?',
+    loginLinkText: 'Войти',
+    usernameMinLength: 'Имя пользователя должно быть минимум 3 символа',
+    usernameMaxLength: 'Имя пользователя не должно превышать 32 символа',
+    passwordMinLength: 'Пароль должен быть минимум 6 символов',
+    passwordsDoNotMatch: 'Пароли не совпадают',
+    registerError: 'Ошибка регистрации',
+    
+    // Invite accept
+    inviteToGame: 'Приглашение в игру',
+    from: 'От',
+    mode: 'Режим',
+    friendly: 'Дружеская',
+    creatorColor: 'Цвет создателя',
+    code: 'Код',
+    inviteAlreadyUsed: 'Приглашение уже использовано',
+    acceptAndStart: 'Принять и начать игру',
+    loginToAccept: 'Войти, чтобы принять',
+    inviteNotFoundMsg: 'Приглашение не найдено',
+    failedToAccept: 'Не удалось принять приглашение',
+  },
+};
+
+export type Language = keyof typeof translations;
+export type TranslationKey = keyof typeof translations.en;

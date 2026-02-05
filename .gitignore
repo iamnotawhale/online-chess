@@ -30,6 +30,7 @@ redis_data/
 # Build artifacts
 *.class
 *.jar
+*.tsbuildinfo
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/

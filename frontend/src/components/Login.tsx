@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { apiService } from '../api';
+import { useTranslation } from '../i18n/LanguageContext';
 import './Auth.css';
 
 interface LoginProps {
@@ -8,6 +9,7 @@ interface LoginProps {
 }
 
 export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -28,7 +30,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       onLoginSuccess();
       navigate(redirectTo);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Ошибка входа');
+      setError(err.response?.data?.message || t('loginError'));
     } finally {
       setLoading(false);
     }
@@ -37,11 +39,11 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   return (
     <div className="auth-container">
       <div className="auth-box">
-        <h1>Вход</h1>
+        <h1>{t('loginTitle')}</h1>
         {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleLogin}>
           <div className="form-group">
-            <label>Email:</label>
+            <label>{t('email')}:</label>
             <input
               type="email"
               value={email}
@@ -51,7 +53,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             />
           </div>
           <div className="form-group">
-            <label>Пароль:</label>
+            <label>{t('password')}:</label>
             <input
               type="password"
               value={password}
@@ -61,11 +63,11 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             />
           </div>
           <button type="submit" disabled={loading}>
-            {loading ? 'Загрузка...' : 'Войти'}
+            {loading ? t('loading') : t('loginButton')}
           </button>
         </form>
         <p className="auth-link">
-          Нет аккаунта? <a href={registerLink}>Зарегистрироваться</a>
+          {t('noAccount')} <a href={registerLink}>{t('registerLink')}</a>
         </p>
       </div>
     </div>

@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { apiService } from '../api';
 import { Lobby } from './Lobby';
+import { GameTypeSelector } from './GameTypeSelector';
+import { CustomGameControls } from './CustomGameControls';
+import { useTranslation } from '../i18n/LanguageContext';
 import './Dashboard.css';
 
 interface User {
@@ -26,6 +29,7 @@ interface Game {
 }
 
 export const Dashboard: React.FC = () => {
+  const { language, setLanguage, t } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
   const [rating, setRating] = useState<number>(0);
   const [games, setGames] = useState<Game[]>([]);
@@ -53,12 +57,6 @@ export const Dashboard: React.FC = () => {
   const [matchmakingLoading, setMatchmakingLoading] = useState(false);
   const [showAllActiveGames, setShowAllActiveGames] = useState(false);
   const [finishedGamesPage, setFinishedGamesPage] = useState(0);
-
-  const GAME_MODE_LABELS: Record<'bullet' | 'blitz' | 'rapid', string> = {
-    bullet: 'Bullet',
-    blitz: 'Blitz',
-    rapid: 'Rapid',
-  };
 
   const TIME_CONTROLS: Record<'bullet' | 'blitz' | 'rapid', string[]> = {
     bullet: ['1+0', '2+1'],
@@ -124,6 +122,18 @@ export const Dashboard: React.FC = () => {
     return `${year}-${month}-${day} ${hours}:${minutes}`;
   };
 
+  const getResultReasonLabel = (reason?: string): string => {
+    if (!reason) return '';
+    const reasons: Record<string, string> = {
+      checkmate: t('checkmate'),
+      resignation: t('resignation'),
+      timeout: t('timeout'),
+      stalemate: t('stalemate'),
+      agreement: t('agreement'),
+    };
+    return reasons[reason] || reason;
+  };
+
   useEffect(() => {
     if (!isQueued) return;
     const intervalId = setInterval(async () => {
@@ -168,7 +178,7 @@ export const Dashboard: React.FC = () => {
       });
       setInviteLink(response.inviteUrl);
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Ошибка создания ссылки');
+      alert(err.response?.data?.message || t('inviteError'));
     } finally {
       setInviteLoading(false);
     }
@@ -178,7 +188,7 @@ export const Dashboard: React.FC = () => {
     if (!inviteLink) return;
     try {
       await navigator.clipboard.writeText(inviteLink);
-      alert('Ссылка скопирована');
+      alert(t('linkCopied'));
       setTimeout(() => {
         setInviteLink('');
       }, 1500);
@@ -284,7 +294,7 @@ export const Dashboard: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="dashboard-container"><p>Загрузка...</p></div>;
+    return <div className="dashboard-container"><p>{t('loading')}</p></div>;
   }
 
   if (error) {
@@ -296,106 +306,67 @@ export const Dashboard: React.FC = () => {
       <div className="dashboard-header">
         <h1>{user?.username}</h1>
         <div className="rating-box">
-          <span className="rating-label">Рейтинг:</span>
+          <span className="rating-label">{t('rating')}:</span>
           <span className="rating-value">{rating}</span>
+        </div>
+        <div className="language-switcher">
+          <button
+            className={`lang-btn ${language === 'en' ? 'active' : ''}`}
+            onClick={() => setLanguage('en')}
+          >
+            EN
+          </button>
+          <button
+            className={`lang-btn ${language === 'ru' ? 'active' : ''}`}
+            onClick={() => setLanguage('ru')}
+          >
+            RU
+          </button>
         </div>
       </div>
 
       <div className="dashboard-content">
         <div className="section">
-          <h2>Матчмейкинг</h2>
+          <h2>{t('matchmaking')}</h2>
           <div className="time-control-selector">
-            <div className="mode-buttons">
-              {Object.entries(GAME_MODE_LABELS).map(([mode, label]) => (
-                <button
-                  key={mode}
-                  type="button"
-                  className={`mode-btn ${selectedType === mode ? 'active' : ''}`}
-                  onClick={() => {
-                    const nextMode = mode as 'bullet' | 'blitz' | 'rapid';
-                    setSelectedType(nextMode);
-                    setGameMode(nextMode);
-                    setTimeControl(TIME_CONTROLS[nextMode][0]);
-                  }}
-                  disabled={matchmakingLoading || isQueued}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            <div className="custom-row">
-              <button
-                type="button"
-                className={`mode-btn custom-btn ${selectedType === 'custom' ? 'active' : ''}`}
-                onClick={() => setSelectedType('custom')}
-                disabled={matchmakingLoading || isQueued}
-              >
-                Custom
-              </button>
-            </div>
+            <GameTypeSelector
+              selectedType={selectedType}
+              onSelectType={(type) => {
+                // Toggle: если кликнули на уже выбранную кнопку - деактивируем
+                if (selectedType === type) {
+                  setSelectedType(null);
+                } else {
+                  setSelectedType(type);
+                  if (type !== 'custom') {
+                    setGameMode(type);
+                    setTimeControl(TIME_CONTROLS[type][0]);
+                  }
+                }
+              }}
+              disabled={matchmakingLoading || isQueued}
+            />
             {selectedType === 'custom' && (
-              <div className="custom-controls">
-                <div className="color-buttons">
-                  {[
-                    { key: 'random', label: 'Random' },
-                    { key: 'white', label: 'White' },
-                    { key: 'black', label: 'Black' },
-                  ].map((item) => (
-                    <button
-                      key={item.key}
-                      type="button"
-                      className={`color-btn ${customColor === item.key ? 'active' : ''}`}
-                      onClick={() => setCustomColor(item.key as 'white' | 'black' | 'random')}
-                      disabled={matchmakingLoading}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-                <div className="slider-group">
-                  <div className="slider-row">
-                    <div className="slider-label">Минуты: {customMinutes}</div>
-                    <input
-                      type="range"
-                      min={1}
-                      max={120}
-                      value={customMinutes}
-                      onChange={(e) => setCustomMinutes(Number(e.target.value))}
-                      disabled={matchmakingLoading}
-                    />
-                  </div>
-                  <div className="slider-row">
-                    <div className="slider-label">Инкремент: {customIncrement} сек</div>
-                    <input
-                      type="range"
-                      min={0}
-                      max={120}
-                      value={customIncrement}
-                      onChange={(e) => setCustomIncrement(Number(e.target.value))}
-                      disabled={matchmakingLoading}
-                    />
-                  </div>
-                </div>
-                <div className="checkbox-group">
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={isRated}
-                      onChange={(e) => setIsRated(e.target.checked)}
-                      disabled={matchmakingLoading}
-                    />
-                    <span>Рейтинговая игра</span>
-                  </label>
-                </div>
+              <>
+                <CustomGameControls
+                  minutes={customMinutes}
+                  increment={customIncrement}
+                  color={customColor}
+                  isRated={isRated}
+                  onMinutesChange={setCustomMinutes}
+                  onIncrementChange={setCustomIncrement}
+                  onColorChange={setCustomColor}
+                  onRatedChange={setIsRated}
+                  disabled={matchmakingLoading}
+                />
                 <button
                   type="button"
                   className="matchmaking-btn"
                   onClick={handleStartCustomMatch}
                   disabled={matchmakingLoading}
                 >
-                  Играть {customMinutes}+{customIncrement}
+                  {t('play')} {customMinutes}+{customIncrement}
                 </button>
-              </div>
+              </>
             )}
             {selectedType && selectedType !== 'custom' && (
               <div className="time-control-options">
@@ -421,7 +392,7 @@ export const Dashboard: React.FC = () => {
                 onClick={handleLeaveMatchmaking}
                 disabled={matchmakingLoading}
               >
-                Выйти из очереди
+                {t('leaveQueue')}
               </button>
             )}
           </div>
@@ -429,36 +400,24 @@ export const Dashboard: React.FC = () => {
         </div>
 
         <div className="section">
-          <h2>Пригласить по ссылке</h2>
+          <h2>{t('inviteByLink')}</h2>
           <div className="time-control-selector">
-            <div className="mode-buttons">
-              {Object.entries(GAME_MODE_LABELS).map(([mode, label]) => (
-                <button
-                  key={mode}
-                  type="button"
-                  className={`mode-btn ${inviteSelectedType === mode ? 'active' : ''}`}
-                  onClick={() => {
-                    const nextMode = mode as 'bullet' | 'blitz' | 'rapid';
-                    setInviteSelectedType(nextMode);
-                    setInviteGameMode(nextMode);
-                    setInviteTimeControl(TIME_CONTROLS[nextMode][0]);
-                  }}
-                  disabled={inviteLoading}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            <div className="custom-row">
-              <button
-                type="button"
-                className={`mode-btn custom-btn ${inviteSelectedType === 'custom' ? 'active' : ''}`}
-                onClick={() => setInviteSelectedType('custom')}
-                disabled={inviteLoading}
-              >
-                Custom
-              </button>
-            </div>
+            <GameTypeSelector
+              selectedType={inviteSelectedType}
+              onSelectType={(type) => {
+                // Toggle: если кликнули на уже выбранную кнопку - деактивируем
+                if (inviteSelectedType === type) {
+                  setInviteSelectedType(null);
+                } else {
+                  setInviteSelectedType(type);
+                  if (type !== 'custom') {
+                    setInviteGameMode(type);
+                    setInviteTimeControl(TIME_CONTROLS[type][0]);
+                  }
+                }
+              }}
+              disabled={inviteLoading}
+            />
             {inviteSelectedType && (
               <>
                 {inviteSelectedType !== 'custom' && (
@@ -477,59 +436,18 @@ export const Dashboard: React.FC = () => {
                   </div>
                 )}
                 {inviteSelectedType === 'custom' && (
-                  <div className="custom-controls">
-                    <div className="color-buttons">
-                      {[
-                        { key: 'random', label: 'Random' },
-                        { key: 'white', label: 'White' },
-                        { key: 'black', label: 'Black' },
-                      ].map((item) => (
-                        <button
-                          key={item.key}
-                          type="button"
-                          className={`color-btn ${invitePreferredColor === item.key ? 'active' : ''}`}
-                          onClick={() => setInvitePreferredColor(item.key as 'white' | 'black' | 'random')}
-                          disabled={inviteLoading}
-                        >
-                          {item.label}
-                        </button>
-                      ))}
-                    </div>
-                    <div className="slider-group">
-                      <div className="slider-row">
-                        <div className="slider-label">Минуты: {inviteCustomMinutes}</div>
-                        <input
-                          type="range"
-                          min="1"
-                          max="120"
-                          value={inviteCustomMinutes}
-                          onChange={(e) => setInviteCustomMinutes(parseInt(e.target.value))}
-                          disabled={inviteLoading}
-                        />
-                      </div>
-                      <div className="slider-row">
-                        <div className="slider-label">Инкремент: {inviteCustomIncrement}</div>
-                        <input
-                          type="range"
-                          min="0"
-                          max="120"
-                          value={inviteCustomIncrement}
-                          onChange={(e) => setInviteCustomIncrement(parseInt(e.target.value))}
-                          disabled={inviteLoading}
-                        />
-                      </div>
-                    </div>
-                    <div className="checkbox-group">
-                      <label className="checkbox-label">
-                        <input
-                          type="checkbox"
-                          checked={inviteIsRated}
-                          onChange={(e) => setInviteIsRated(e.target.checked)}
-                          disabled={inviteLoading}
-                        />
-                        <span>Рейтинговая игра</span>
-                      </label>
-                    </div>
+                  <>
+                    <CustomGameControls
+                      minutes={inviteCustomMinutes}
+                      increment={inviteCustomIncrement}
+                      color={invitePreferredColor}
+                      isRated={inviteIsRated}
+                      onMinutesChange={setInviteCustomMinutes}
+                      onIncrementChange={setInviteCustomIncrement}
+                      onColorChange={setInvitePreferredColor}
+                      onRatedChange={setInviteIsRated}
+                      disabled={inviteLoading}
+                    />
                     {inviteLink ? (
                       <button
                         type="button"
@@ -537,7 +455,7 @@ export const Dashboard: React.FC = () => {
                         onClick={handleHideInvite}
                         disabled={inviteLoading}
                       >
-                        Скрыть
+                        {t('hide')}
                       </button>
                     ) : (
                       <button
@@ -546,10 +464,10 @@ export const Dashboard: React.FC = () => {
                         onClick={handleCreateInvite}
                         disabled={inviteLoading}
                       >
-                        Сгенерировать ссылку
+                        {t('generateLink')}
                       </button>
                     )}
-                  </div>
+                  </>
                 )}
                 {inviteSelectedType !== 'custom' && (
                   inviteLink ? (
@@ -579,7 +497,7 @@ export const Dashboard: React.FC = () => {
             <div className="invite-link-box">
               <div className="invite-link-row">
                 <input type="text" readOnly value={inviteLink} />
-                <button type="button" onClick={handleCopyInvite}>Копировать</button>
+                <button type="button" onClick={handleCopyInvite}>{t('copy')}</button>
               </div>
               <div className="invite-qr">
                 <img
@@ -596,14 +514,14 @@ export const Dashboard: React.FC = () => {
         </div>
 
         <div className="section">
-          <h2>Мои игры ({games.length + finishedGames.length})</h2>
+          <h2>{t('myGames')} ({games.length + finishedGames.length})</h2>
           {games.length === 0 && finishedGames.length === 0 ? (
-            <p>У вас пока нет игр</p>
+            <p>{t('noGames')}</p>
           ) : (
             <div className="all-games-list">
               {games.length > 0 && (
                 <>
-                  <div className="games-group-title">Активные игры ({games.length})</div>
+                  <div className="games-group-title">{t('activeGames')} ({games.length})</div>
                   <div className="finished-games-list">
                     {(showAllActiveGames ? games : games.slice(0, 2)).map((game) => {
                       const isWhite = game.whitePlayerId === user?.id;
@@ -612,8 +530,8 @@ export const Dashboard: React.FC = () => {
                       return (
                         <div key={game.id} className="finished-game-card active-game">
                           <div className="game-row">
-                            <span className="game-status-label">Active</span>
-                            <span className="opponent-name">vs {opponentName || 'Ожидание'}</span>
+                            <span className="game-status-label">{t('active')}</span>
+                            <span className="opponent-name">{t('vs')} {opponentName || t('waiting')}</span>
                           </div>
                           <div className="game-divider"></div>
                           <div className="game-row">
@@ -621,7 +539,7 @@ export const Dashboard: React.FC = () => {
                             {game.createdAt && (
                               <span className="game-date">{formatDateTime(game.createdAt)}</span>
                             )}
-                            <a href={`/game/${game.id}`} className="game-action-link">Играть</a>
+                            <a href={`/game/${game.id}`} className="game-action-link">{t('play')}</a>
                           </div>
                         </div>
                       );
@@ -632,7 +550,7 @@ export const Dashboard: React.FC = () => {
                       className="show-more-btn"
                       onClick={() => setShowAllActiveGames(!showAllActiveGames)}
                     >
-                      {showAllActiveGames ? 'Скрыть' : `Показать ещё ${games.length - 2}`}
+                      {showAllActiveGames ? t('hide') : `${t('showMore')} ${games.length - 2}`}
                     </button>
                   )}
                 </>
@@ -640,7 +558,7 @@ export const Dashboard: React.FC = () => {
               
               {finishedGames.length > 0 && (
                 <>
-                  <div className="games-group-title">История ({finishedGames.length})</div>
+                  <div className="games-group-title">{t('history')} ({finishedGames.length})</div>
                   <div className="finished-games-list">
                     {finishedGames.slice(finishedGamesPage * 3, (finishedGamesPage + 1) * 3).map((game) => {
                       const isWhite = game.whitePlayerId === user?.id;
@@ -667,11 +585,11 @@ export const Dashboard: React.FC = () => {
                           <div className="game-divider"></div>
                           <div className="game-row">
                             <span className="time-control">{game.timeControl}</span>
-                            <span className="result-reason">{game.resultReason}</span>
+                            <span className="result-reason">{getResultReasonLabel(game.resultReason)}</span>
                             {(game.finishedAt || game.createdAt) && (
                               <span className="game-date">{formatDateTime(game.finishedAt || game.createdAt)}</span>
                             )}
-                            <a href={`/game/${game.id}`} className="game-action-link">Посмотреть</a>
+                            <a href={`/game/${game.id}`} className="game-action-link">{t('view')}</a>
                           </div>
                         </div>
                       );

@@ -4,6 +4,7 @@ import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
 import { apiService } from '../api';
 import { wsService, GameUpdate } from '../websocket';
+import { useTranslation } from '../i18n/LanguageContext';
 import './Game.css';
 
 interface GameData {
@@ -32,6 +33,7 @@ interface User {
 }
 
 export const GameView: React.FC = () => {
+  const { t } = useTranslation();
   const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
   const { gameId } = useParams<{ gameId: string }>();
   const [game, setGame] = useState<GameData | null>(null);
@@ -287,7 +289,7 @@ export const GameView: React.FC = () => {
                         (!userIsWhite && chessInstance.turn() === 'b');
 
     if (!isUsersTurn) {
-      alert('Сейчас не ваш ход');
+      alert(t('notYourTurn'));
       return false;
     }
 
@@ -502,25 +504,25 @@ export const GameView: React.FC = () => {
 
   const handleResign = async () => {
     if (!gameId) return;
-    if (!confirm('Вы уверены, что хотите сдаться?')) return;
+    if (!confirm(t('confirmResign'))) return;
 
     try {
       await apiService.resignGame(gameId);
       loadGame();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Ошибка при сдаче');
+      alert(err.response?.data?.message || t('errorResign'));
     }
   };
 
   const handleOfferDraw = async () => {
     if (!gameId) return;
-    if (!confirm('Предложить ничью?')) return;
+    if (!confirm(t('confirmOfferDraw'))) return;
 
     try {
       await apiService.offerDraw(gameId);
       loadGame();
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Ошибка при предложении ничьи');
+      alert(err.response?.data?.error || t('errorOfferDraw'));
     }
   };
 
@@ -531,7 +533,7 @@ export const GameView: React.FC = () => {
       await apiService.respondToDraw(gameId, accept);
       loadGame();
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Ошибка при ответе на предложение');
+      alert(err.response?.data?.error || t('errorRespondDraw'));
     }
   };
 
@@ -548,6 +550,32 @@ export const GameView: React.FC = () => {
     if (parts.length < 2) return 0;
     const inc = parseInt(parts[1], 10);
     return Number.isNaN(inc) ? 0 : inc;
+  };
+
+  const getStatusLabel = (status: string): string => {
+    const statuses: Record<string, string> = {
+      active: t('active'),
+      finished: t('finished'),
+    };
+    return statuses[status] || status;
+  };
+
+  const getResultReasonLabel = (reason?: string): string => {
+    if (!reason) return '';
+    const reasons: Record<string, string> = {
+      checkmate: t('checkmate'),
+      resignation: t('resignation'),
+      timeout: t('timeout'),
+      stalemate: t('stalemate'),
+      agreement: t('agreement'),
+    };
+    return reasons[reason] || reason;
+  };
+
+  const getResultLabel = (result?: string): string => {
+    if (!result) return '';
+    if (result === 'draw' || result === '1/2-1/2') return t('draw');
+    return result;
   };
 
   if (loading) {
@@ -578,12 +606,12 @@ export const GameView: React.FC = () => {
         </div>
       )}
       <div className="game-header">
-        <h1>Шахматная игра</h1>
+        <h1>{t('gameInfo')}</h1>
         <div className="game-status">
           <span className={`status-badge ${game.status === 'finished' ? 'finished' : 'active'}`}>
-            {game.status === 'finished' ? 'FINISHED' : game.status === 'active' ? 'ACTIVE' : game.status.toUpperCase()}
+            {getStatusLabel(game.status).toUpperCase()}
           </span>
-          {game.result && <span className="result-badge">{game.result}</span>}
+          {game.result && <span className="result-badge">{getResultLabel(game.result)}</span>}
           {wsConnected && game.status === 'active' && <span className="ws-badge">🟢 Live</span>}
         </div>
       </div>
@@ -593,14 +621,14 @@ export const GameView: React.FC = () => {
           {userIsWhite ? (
             <div className="player-info black-player">
               <div className="player-name">
-                <strong>♚ Чёрные:</strong> {game.blackPlayerName || game.blackPlayerId}
+                <strong>♚ {t('blacks')}:</strong> {game.blackPlayerName || game.blackPlayerId}
               </div>
               <div className="player-time">{formatTime(blackTimeLeftMs)}</div>
             </div>
           ) : (
             <div className="player-info white-player">
               <div className="player-name">
-                <strong>♔ Белые:</strong> {game.whitePlayerName || game.whitePlayerId}
+                <strong>♔ {t('whites')}:</strong> {game.whitePlayerName || game.whitePlayerId}
               </div>
               <div className="player-time">{formatTime(whiteTimeLeftMs)}</div>
             </div>
@@ -610,9 +638,9 @@ export const GameView: React.FC = () => {
             {!isGameActive && !isViewingHistory && (
               <div className="game-over-overlay">
                 <div className="game-over-content">
-                  <h2>Игра окончена</h2>
-                  <p>{game.result}</p>
-                  {game.resultReason && <p>{game.resultReason}</p>}
+                  <h2>{t('gameFinished')}</h2>
+                  <p>{getResultLabel(game.result)}</p>
+                  {game.resultReason && <p>{getResultReasonLabel(game.resultReason)}</p>}
                 </div>
               </div>
             )}
@@ -636,16 +664,16 @@ export const GameView: React.FC = () => {
           {userIsWhite ? (
             <div className="player-info white-player">
               <div className="player-name">
-                <strong>♔ Белые:</strong> {game.whitePlayerName || game.whitePlayerId}
-                <span className="you-badge">Вы</span>
+                <strong>♔ {t('whites')}:</strong> {game.whitePlayerName || game.whitePlayerId}
+                <span className="you-badge">{t('you')}</span>
               </div>
               <div className="player-time">{formatTime(whiteTimeLeftMs)}</div>
             </div>
           ) : (
             <div className="player-info black-player">
               <div className="player-name">
-                <strong>♚ Чёрные:</strong> {game.blackPlayerName || game.blackPlayerId}
-                <span className="you-badge">Вы</span>
+                <strong>♙ {t('blacks')}:</strong> {game.blackPlayerName || game.blackPlayerId}
+                <span className="you-badge">{t('you')}</span>
               </div>
               <div className="player-time">{formatTime(blackTimeLeftMs)}</div>
             </div>
@@ -655,11 +683,11 @@ export const GameView: React.FC = () => {
             <div className="turn-indicator">
               {isUsersTurn ? (
                 <span className="your-turn">
-                  {chessInstance.turn() === 'w' ? '♔' : '♚'} Ваш ход
+                  {chessInstance.turn() === 'w' ? '♔' : '♚'} {t('yourTurn')}
                 </span>
               ) : (
                 <span className="opponent-turn">
-                  {chessInstance.turn() === 'w' ? '♔' : '♚'} Ход противника
+                  {chessInstance.turn() === 'w' ? '♔' : '♚'} {t('opponentTurn')}
                 </span>
               )}
             </div>
@@ -668,19 +696,19 @@ export const GameView: React.FC = () => {
 
         <div className="info-section">
           <div className="game-info">
-            <h3>Информация об игре</h3>
-            <p><strong>ID:</strong> {game.id}</p>
-            <p><strong>Статус:</strong> {game.status}</p>
-            <p><strong>Тип:</strong> {game.rated ? 'Рейтинговая' : 'Обычная'}</p>
+            <h3>{t('gameInfo')}</h3>
+            <p><strong>{t('id')}:</strong> {game.id}</p>
+            <p><strong>{t('status')}:</strong> {getStatusLabel(game.status)}</p>
+            <p><strong>{t('type')}:</strong> {game.rated ? t('rated') : t('unrated')}</p>
             {game.timeControl && (
               <p>
-                <strong>Контроль:</strong> {game.timeControl}
-                {incrementSeconds > 0 && <span> (инкремент +{incrementSeconds}s)</span>}
+                <strong>{t('control')}:</strong> {game.timeControl}
+                {incrementSeconds > 0 && <span> ({t('incrementSuffix')} +{incrementSeconds}s)</span>}
               </p>
             )}
-            <p><strong>Ходов:</strong> {Math.ceil(moveHistory.length / 2)}</p>
+            <p><strong>{t('moves')}:</strong> {Math.ceil(moveHistory.length / 2)}</p>
             {game.resultReason && (
-              <p><strong>Причина:</strong> {game.resultReason}</p>
+              <p><strong>{t('reason')}:</strong> {getResultReasonLabel(game.resultReason)}</p>
             )}
           </div>
 
@@ -688,44 +716,44 @@ export const GameView: React.FC = () => {
             <>
               {game.drawOfferedById && game.drawOfferedById !== currentUser?.id && (
                 <div className="draw-offer">
-                  <p>Противник предлагает ничью</p>
+                  <p>{t('opponentOffersDrawMsg')}</p>
                   <div className="draw-actions">
                     <button onClick={() => handleRespondToDraw(true)} className="accept-btn">
-                      Принять
+                      {t('acceptBtn')}
                     </button>
                     <button onClick={() => handleRespondToDraw(false)} className="decline-btn">
-                      Отклонить
+                      {t('declineBtn')}
                     </button>
                   </div>
                 </div>
               )}
               {game.drawOfferedById === currentUser?.id && (
                 <div className="draw-offer-sent">
-                  <p>Ожидание ответа на предложение ничьи...</p>
+                  <p>{t('waitingForDrawResponse')}</p>
                 </div>
               )}
               {!game.drawOfferedById && (
                 <button type="button" onClick={handleOfferDraw} className="offer-draw-btn">
-                  Предложить ничью
+                  {t('offerDraw')}
                 </button>
               )}
               <button type="button" onClick={handleResign} className="resign-btn">
-                Сдаться
+                {t('resign')}
               </button>
             </>
           )}
 
           <div className="move-history">
-            <h3>История ходов</h3>
+            <h3>{t('moveHistory')}</h3>
             <div className="history-controls">
-              <button onClick={goToStart} disabled={currentMoveIndex < 0}>⏮ В начало</button>
-              <button onClick={goToPreviousMove} disabled={currentMoveIndex < 0}>◀ Назад</button>
-              <button onClick={goToNextMove} disabled={currentMoveIndex >= moveHistory.length - 1}>Вперед ▶</button>
-              <button onClick={goToLatest} disabled={!isViewingHistory}>⏭ К актуальной</button>
+              <button onClick={goToStart} disabled={currentMoveIndex < 0}>⏮ {t('toStart')}</button>
+              <button onClick={goToPreviousMove} disabled={currentMoveIndex < 0}>◀ {t('previous')}</button>
+              <button onClick={goToNextMove} disabled={currentMoveIndex >= moveHistory.length - 1}>{t('next')} ▶</button>
+              <button onClick={goToLatest} disabled={!isViewingHistory}>⏭ {t('toLatest')}</button>
             </div>
             <div className="moves-list">
               {moveHistory.length === 0 ? (
-                <p className="no-moves">Ходов пока нет</p>
+                <p className="no-moves">{t('noMoves')}</p>
               ) : (
                 <div className="moves-grid">
                   {Array.from({ length: Math.ceil(moveHistory.length / 2) }).map((_, pairIndex) => {

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { apiService } from '../api';
+import { useTranslation } from '../i18n/LanguageContext';
 import './Auth.css';
 
 interface RegisterProps {
@@ -8,6 +9,7 @@ interface RegisterProps {
 }
 
 export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
+  const { t } = useTranslation();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,22 +27,22 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
     setError('');
 
     if (username.length < 3) {
-      setError('Имя пользователя должно быть минимум 3 символа');
+      setError(t('usernameMinLength'));
       return;
     }
 
     if (username.length > 32) {
-      setError('Имя пользователя не должно превышать 32 символа');
+      setError(t('usernameMaxLength'));
       return;
     }
 
     if (password.length < 6) {
-      setError('Пароль должен быть минимум 6 символов');
+      setError(t('passwordMinLength'));
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('Пароли не совпадают');
+      setError(t('passwordsDoNotMatch'));
       return;
     }
 
@@ -50,7 +52,7 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
       onRegisterSuccess();
       navigate(redirectTo);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Ошибка регистрации');
+      setError(err.response?.data?.message || t('registerError'));
     } finally {
       setLoading(false);
     }
@@ -59,11 +61,11 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
   return (
     <div className="auth-container">
       <div className="auth-box">
-        <h1>Регистрация</h1>
+        <h1>{t('registerTitle')}</h1>
         {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleRegister}>
           <div className="form-group">
-            <label>Имя пользователя (3-32 символа):</label>
+            <label>{t('usernameLabel')}:</label>
             <input
               type="text"
               value={username}
@@ -75,7 +77,7 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
             />
           </div>
           <div className="form-group">
-            <label>Email:</label>
+            <label>{t('email')}:</label>
             <input
               type="email"
               value={email}
@@ -85,7 +87,7 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
             />
           </div>
           <div className="form-group">
-            <label>Пароль (минимум 6 символов):</label>
+            <label>{t('passwordLabel')}:</label>
             <input
               type="password"
               value={password}
@@ -97,7 +99,7 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
             />
           </div>
           <div className="form-group">
-            <label>Подтвердите пароль:</label>
+            <label>{t('confirmPassword')}:</label>
             <input
               type="password"
               value={confirmPassword}
@@ -109,11 +111,11 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
             />
           </div>
           <button type="submit" disabled={loading}>
-            {loading ? 'Загрузка...' : 'Зарегистрироваться'}
+            {loading ? t('loading') : t('registerButton')}
           </button>
         </form>
         <p className="auth-link">
-          Уже есть аккаунт? <a href={loginLink}>Войти</a>
+          {t('alreadyHaveAccount')} <a href={loginLink}>{t('loginLinkText')}</a>
         </p>
       </div>
     </div>

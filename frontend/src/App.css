@@ -41,31 +41,86 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
+  padding: 12px 20px;
+  gap: 12px;
 }
 
 .logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 0;
+  cursor: default;
+  user-select: none;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.logo-icon {
+  display: flex;
+  gap: 1px;
   font-size: 20px;
+  position: relative;
+  color: #333;
+}
+
+.chess-piece {
+  transition: none;
+}
+
+.logo:hover .chess-piece:first-child {
+  transform: none;
+}
+
+.logo:hover .chess-piece:last-child {
+  transform: none;
+}
+
+.logo-text {
+  font-size: 18px;
   font-weight: 600;
-  letter-spacing: 0;
+  letter-spacing: 1px;
+  color: #333;
+  white-space: nowrap;
 }
 
 .logout-btn {
-  background: #f5f5f5;
-  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  color: #666;
   border: 1px solid #ddd;
-  padding: 8px 16px;
+  padding: 6px 12px;
   border-radius: 4px;
   cursor: pointer;
-  font-weight: 500;
-  font-size: 14px;
-  transition: all 0.2s;
+  font-weight: 400;
+  font-size: 13px;
+  transition: all 0.2s ease;
+  margin-left: auto;
+  flex: 0 0 auto;
+  width: auto;
 }
 
 .logout-btn:hover {
-  background: #efefef;
-  border-color: #bbb;
+  background: #f5f5f5;
+  border-color: #999;
+  color: #333;
+}
+
+.logout-btn:active {
+  transform: none;
+  background: #e5e5e5;
+}
+
+.logout-btn svg {
+  transition: none;
+  width: 14px;
+  height: 14px;
+}
+
+.logout-btn:hover svg {
+  transform: none;
 }
 
 .main-content {
@@ -85,12 +140,25 @@ body {
 
 @media (max-width: 768px) {
   .header-content {
-    flex-direction: column;
-    gap: 12px;
-    text-align: center;
+    flex-direction: row;
+    gap: 8px;
+    padding: 10px 16px;
   }
 
-  .logo {
+  .logo-text {
+    font-size: 16px;
+    letter-spacing: 0.5px;
+  }
+
+  .logo-icon {
     font-size: 18px;
+  }
+
+  .logout-btn span {
+    display: none;
+  }
+
+  .logout-btn {
+    padding: 6px 8px;
   }
 }
