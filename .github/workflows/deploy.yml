@@ -17,10 +17,9 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Copy .env file to server (optional)
-        if: ${{ secrets.ENV_FILE != '' }}
+      - name: Create .env file from secret
         run: |
-          echo "$ENV_FILE" > .env
+          echo "${{ secrets.ENV_FILE }}" > .env
         env:
           ENV_FILE: ${{ secrets.ENV_FILE }}
 
