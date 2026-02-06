@@ -2,6 +2,7 @@ package com.chessonline.service;
 
 import com.chessonline.model.*;
 import com.chessonline.repository.GameRepository;
+import com.chessonline.repository.LobbyGameRepository;
 import com.chessonline.repository.MoveRepository;
 import com.chessonline.repository.UserRepository;
 import com.github.bhlangonijr.chesslib.Board;
@@ -32,6 +33,9 @@ public class GameService {
     @Autowired
     private RatingService ratingService;
 
+    @Autowired
+    private LobbyGameRepository lobbyGameRepository;
+
     @Autowired(required = false)
     private SimpMessagingTemplate messagingTemplate;
 
@@ -57,7 +61,8 @@ public class GameService {
         
         game.setWhiteTimeLeftMs((long) minutes * 60 * 1000);
         game.setBlackTimeLeftMs((long) minutes * 60 * 1000);
-        game.setLastMoveAt(LocalDateTime.now());
+        // Don't set lastMoveAt - timer starts only after first move (chess rule)
+        // game.setLastMoveAt will be set in updateClocksOnMove on first move
 
         return gameRepository.save(game);
     }
@@ -178,6 +183,8 @@ public class GameService {
         // Update ratings if game finished
         if ("finished".equals(savedGame.getStatus())) {
             ratingService.updateRatingsForGame(savedGame);
+            // Remove from lobby if it was created via matchmaking
+            removeLobbyGameByPlayers(savedGame.getPlayerWhite().getId(), savedGame.getPlayerBlack().getId());
         }
         
         // Send WebSocket notification
@@ -267,6 +274,7 @@ public class GameService {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime lastMoveAt = game.getLastMoveAt();
 
+        // First move: just set timestamp, don't update time (chess rule)
         if (lastMoveAt == null) {
             game.setLastMoveAt(now);
             return false;
@@ -318,10 +326,9 @@ public class GameService {
 
     private void finishGameOnTimeout(Game game, boolean whiteTimedOut) {
         game.setStatus("finished");
-        game.setResult(whiteTimedOut ? "black_win" : "white_win");
+        game.setResult(whiteTimedOut ? "0-1" : "1-0");
         game.setResultReason("timeout");
         game.setFinishedAt(LocalDateTime.now());
-        game.setFenFinal(game.getFenCurrent());
     }
 
     public long getEffectiveTimeLeftMs(Game game, boolean whiteSide) {
@@ -349,9 +356,8 @@ public class GameService {
         }
         LocalDateTime now = LocalDateTime.now();
         for (Game game : activeGames) {
+            // Skip games with no moves yet (timer hasn't started)
             if (game.getLastMoveAt() == null) {
-                game.setLastMoveAt(now);
-                gameRepository.save(game);
                 continue;
             }
 
@@ -369,6 +375,8 @@ public class GameService {
                 finishGameOnTimeout(game, whiteToMove);
                 Game savedGame = gameRepository.save(game);
                 ratingService.updateRatingsForGame(savedGame);
+                // Remove from lobby if it was created via matchmaking
+                removeLobbyGameByPlayers(savedGame.getPlayerWhite().getId(), savedGame.getPlayerBlack().getId());
                 notifyGameUpdate(savedGame);
                 continue;
             }
@@ -397,9 +405,9 @@ public class GameService {
         game.setFinishedAt(LocalDateTime.now());
 
         if (game.isPlayerWhite(userId)) {
-            game.setResult("black_win");
+            game.setResult("0-1");
         } else {
-            game.setResult("white_win");
+            game.setResult("1-0");
         }
         game.setResultReason("resignation");
 
@@ -407,6 +415,9 @@ public class GameService {
         
         // Update ratings
         ratingService.updateRatingsForGame(savedGame);
+        
+        // Remove from lobby if it was created via matchmaking
+        removeLobbyGameByPlayers(savedGame.getPlayerWhite().getId(), savedGame.getPlayerBlack().getId());
         
         // Send WebSocket notification
         notifyGameUpdate(savedGame);
@@ -468,7 +479,7 @@ public class GameService {
             // Accept draw
             game.setStatus("finished");
             game.setFinishedAt(LocalDateTime.now());
-            game.setResult("draw");
+            game.setResult("1/2-1/2");
             game.setResultReason("agreement");
             game.setDrawOfferedBy(null);
             
@@ -476,6 +487,9 @@ public class GameService {
             
             // Update ratings
             ratingService.updateRatingsForGame(savedGame);
+            
+            // Remove from lobby if it was created via matchmaking
+            removeLobbyGameByPlayers(savedGame.getPlayerWhite().getId(), savedGame.getPlayerBlack().getId());
             
             // Notify via WebSocket
             notifyGameUpdate(savedGame);
@@ -563,13 +577,7 @@ public class GameService {
         pgn.append("[TimeControl \"").append(game.getTimeControl()).append("\"]\n");
 
         if (game.getResult() != null) {
-            String result = "1/2-1/2";
-            if ("white_win".equals(game.getResult())) {
-                result = "1-0";
-            } else if ("black_win".equals(game.getResult())) {
-                result = "0-1";
-            }
-            pgn.append("[Result \"").append(result).append("\"]\n");
+            pgn.append("[Result \"").append(game.getResult()).append("\"]");
         }
 
         pgn.append("\n");
@@ -583,13 +591,7 @@ public class GameService {
         }
 
         if (game.getResult() != null) {
-            String result = "1/2-1/2";
-            if ("white_win".equals(game.getResult())) {
-                result = "1-0";
-            } else if ("black_win".equals(game.getResult())) {
-                result = "0-1";
-            }
-            pgn.append(result);
+            pgn.append(game.getResult());
         }
 
         return pgn.toString();
@@ -627,6 +629,25 @@ public class GameService {
             System.err.println("Error checking game end with chesslib: " + e.getMessage());
             e.printStackTrace();
             return GameEndState.ONGOING;
+        }
+    }
+
+    /**
+     * Remove lobby game entry by player IDs (for matchmaking-created games)
+     */
+    private void removeLobbyGameByPlayers(UUID whiteId, UUID blackId) {
+        try {
+            lobbyGameRepository.findAll().stream()
+                .filter(lg -> {
+                    UUID creatorId = lg.getCreator().getId();
+                    return creatorId.equals(whiteId) || creatorId.equals(blackId);
+                })
+                .forEach(lg -> {
+                    lobbyGameRepository.delete(lg);
+                    System.out.println("🗑️ Removed lobby game: " + lg.getId() + " after game finished");
+                });
+        } catch (Exception e) {
+            System.err.println("Error removing lobby game: " + e.getMessage());
         }
     }
 }

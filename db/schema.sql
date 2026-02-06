@@ -47,17 +47,16 @@ CREATE TABLE games (
   player_white_id UUID NOT NULL REFERENCES users(id),
   player_black_id UUID NOT NULL REFERENCES users(id),
   status VARCHAR(16) DEFAULT 'active', -- active, finished, abandoned
-  result VARCHAR(16), -- white_win, black_win, draw
+  result VARCHAR(16), -- 1-0 (white win), 0-1 (black win), 1/2-1/2 (draw)
   result_reason VARCHAR(32), -- checkmate, resignation, timeout, stalemate, agreement, abandonment
   time_control VARCHAR(20) NOT NULL, -- format: "5+3" (minutes+increment)
-  pgn TEXT,
-  fen_final TEXT,
   fen_current TEXT DEFAULT 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
   invite_id UUID REFERENCES invites(id),
   white_time_left_ms BIGINT,
   black_time_left_ms BIGINT,
   last_move_at TIMESTAMP,
   draw_offered_by_id UUID REFERENCES users(id),
+  rated BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   finished_at TIMESTAMP
 );
@@ -84,20 +83,6 @@ CREATE TABLE rating_history (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Matchmaking Queue
-CREATE TABLE matchmaking_queue (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  time_control VARCHAR(16) NOT NULL,
-  minutes INTEGER NOT NULL,
-  increment_sec INTEGER DEFAULT 0,
-  rating_min INTEGER,
-  rating_max INTEGER,
-  status VARCHAR(16) DEFAULT 'waiting', -- waiting, matched, cancelled
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE(user_id, status)
-);
-
 -- Indexes for performance
 CREATE INDEX idx_users_username ON users(username);
 CREATE INDEX idx_users_email ON users(email);
@@ -117,8 +102,6 @@ CREATE INDEX idx_moves_game_move ON moves(game_id, move_number);
 
 CREATE INDEX idx_rating_history_user_id ON rating_history(user_id);
 CREATE INDEX idx_rating_history_created_at ON rating_history(created_at DESC);
-
-CREATE INDEX idx_matchmaking_status ON matchmaking_queue(status, time_control, rating_min, rating_max);
 
 -- Trigger для автообновления updated_at
 CREATE OR REPLACE FUNCTION update_updated_at()

@@ -17,6 +17,7 @@ interface User {
   email: string;
   username: string;
   rating: number;
+  avatarUrl?: string | null;
 }
 
 interface GameResponse {
@@ -156,6 +157,14 @@ class ApiService {
 
   getUser(userId: string): Promise<User> {
     return this.client.get(`/users/${userId}`).then(res => res.data);
+  }
+
+  getUserByUsername(username: string): Promise<any> {
+    return this.client.get(`/users/${username}`).then(res => res.data);
+  }
+
+  updateProfile(data: { username?: string; password?: string; country?: string; bio?: string; avatarUrl?: string }): Promise<any> {
+    return this.client.patch('/users/me', data).then(res => res.data);
   }
 
   getAllUsers(): Promise<User[]> {

@@ -33,6 +33,12 @@ class WebSocketService {
         return;
       }
 
+      if (!token || token.trim() === '') {
+        console.warn('⚠️ Cannot connect WebSocket: token is empty');
+        reject(new Error('Auth token is required for WebSocket connection'));
+        return;
+      }
+
       this.client = new Client({
         webSocketFactory: () => new SockJS('http://localhost:8082/ws') as WebSocket,
         connectHeaders: {
@@ -47,19 +53,28 @@ class WebSocketService {
       });
 
       this.client.onConnect = () => {
-        console.log('WebSocket connected');
+        console.log('✅ WebSocket connected successfully');
         this.connected = true;
         resolve();
       };
 
       this.client.onStompError = (frame) => {
-        console.error('WebSocket error:', frame.headers['message']);
+        console.error('❌ WebSocket STOMP error:', frame.headers['message']);
         console.error('Details:', frame.body);
+        
+        // If authorization error, don't retry
+        if (frame.headers['message']?.includes('ExecutorSubscribableChannel') || 
+            frame.headers['message']?.includes('Authorization')) {
+          console.warn('🔒 Authorization error - stopping reconnection attempts');
+          this.client?.deactivate();
+          this.connected = false;
+        }
+        
         reject(new Error(frame.headers['message']));
       };
 
       this.client.onWebSocketError = (event) => {
-        console.error('WebSocket connection error:', event);
+        console.error('❌ WebSocket connection error:', event);
         reject(event);
       };
 
@@ -183,6 +198,37 @@ class WebSocketService {
       destination: `/app/game/${gameId}/move`,
       body: JSON.stringify({ move }),
     });
+  }
+
+  subscribeToGameStarted(callback: (message: { gameId: string; message: string }) => void): () => void {
+    const topic = '/user/queue/game-started';
+    
+    if (!this.connected || !this.client) {
+      console.warn('❌ WebSocket not connected, cannot subscribe to game-started');
+      return () => {};
+    }
+
+    if (this.client) {
+      const subscription = this.client.subscribe(topic, (message) => {
+        try {
+          const body = JSON.parse(message.body);
+          callback(body);
+        } catch (err) {
+          console.error('Error parsing game-started message:', err);
+        }
+      });
+
+      this.subscriptions.set(topic, subscription);
+      console.log('✅ Subscribed to game-started');
+
+      return () => {
+        subscription.unsubscribe();
+        this.subscriptions.delete(topic);
+        console.log('Unsubscribed from game-started');
+      };
+    }
+
+    return () => {};
   }
 
   isConnected(): boolean {

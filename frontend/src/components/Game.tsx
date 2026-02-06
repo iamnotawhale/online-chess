@@ -22,7 +22,7 @@ interface GameData {
   lastMoveAt?: string;
   result?: string;
   resultReason?: string;
-  drawOfferedById?: string;
+  drawOfferedById?: string | null;
 }
 
 interface User {
@@ -55,8 +55,8 @@ export const GameView: React.FC = () => {
   const [toast, setToast] = useState<{ message: string; type?: 'info' | 'error' } | null>(null);
   const toastTimeoutRef = useRef<number | null>(null);
   const [boardWidth, setBoardWidth] = useState<number>(() => {
-    if (typeof window === 'undefined') return 400;
-    return Math.min(440, Math.max(280, window.innerWidth - 32));
+    if (typeof window === 'undefined') return 600;
+    return Math.min(700, Math.max(320, window.innerWidth - 32));
   });
 
   useEffect(() => {
@@ -86,7 +86,7 @@ export const GameView: React.FC = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      setBoardWidth(Math.min(440, Math.max(280, window.innerWidth - 32)));
+      setBoardWidth(Math.min(700, Math.max(320, window.innerWidth - 32)));
     };
 
     handleResize();
@@ -176,7 +176,8 @@ export const GameView: React.FC = () => {
         whiteTimeLeftMs: update.whiteTimeLeftMs ?? prevGame.whiteTimeLeftMs,
         blackTimeLeftMs: update.blackTimeLeftMs ?? prevGame.blackTimeLeftMs,
         lastMoveAt: update.lastMoveAt ?? prevGame.lastMoveAt,
-        drawOfferedById: update.drawOfferedById ?? prevGame.drawOfferedById,
+        // Always update drawOfferedById even if it's null (draw declined)
+        drawOfferedById: 'drawOfferedById' in update ? update.drawOfferedById : prevGame.drawOfferedById,
       };
       if (update.whiteTimeLeftMs !== undefined) {
         setWhiteTimeLeftMs(update.whiteTimeLeftMs);
@@ -187,9 +188,17 @@ export const GameView: React.FC = () => {
       if (update.drawOfferedById !== undefined) {
         const nextOfferId = update.drawOfferedById || null;
         const prevOfferId = lastDrawOfferRef.current;
+        
+        // New draw offer
         if (nextOfferId && nextOfferId !== prevOfferId && currentUser?.id && nextOfferId !== currentUser.id) {
-          showToast('Соперник предложил ничью', 'info', 4000);
+          showToast(t('opponentOffersDrawMsg'), 'info', 4000);
         }
+        
+        // Draw offer declined (was set, now null, and current user was the one who offered)
+        if (prevOfferId && !nextOfferId && prevOfferId === currentUser?.id) {
+          showToast(t('drawDeclined'), 'info', 3000);
+        }
+        
         lastDrawOfferRef.current = nextOfferId;
       }
       return updatedGame;
@@ -574,7 +583,7 @@ export const GameView: React.FC = () => {
 
   const getResultLabel = (result?: string): string => {
     if (!result) return '';
-    if (result === 'draw' || result === '1/2-1/2') return t('draw');
+    if (result === '1/2-1/2') return t('draw');
     return result;
   };
 

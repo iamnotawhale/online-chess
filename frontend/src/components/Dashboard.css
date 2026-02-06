@@ -19,6 +19,16 @@
   margin: 0;
   font-size: 28px;
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.country-flag-dashboard {
+  width: 24px;
+  height: auto;
+  vertical-align: middle;
+  border-radius: 2px;
 }
 
 .rating-box {
@@ -597,15 +607,15 @@
 }
 
 .finished-game-card.won {
-  border-left-color: var(--success-text);
+  border-left-color: var(--success-text) !important;
 }
 
 .finished-game-card.lost {
-  border-left-color: var(--danger-text);
+  border-left-color: var(--danger-text) !important;
 }
 
 .finished-game-card.draw {
-  border-left-color: var(--neutral-text);
+  border-left-color: var(--muted) !important;
 }
 
 .game-row {

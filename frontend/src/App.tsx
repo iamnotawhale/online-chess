@@ -6,10 +6,34 @@ import { Register } from './components/Register';
 import { Dashboard } from './components/Dashboard';
 import { GameView } from './components/Game';
 import { InviteAccept } from './components/InviteAccept';
+import { Profile } from './components/Profile';
 import { useTranslation } from './i18n/LanguageContext';
 import './App.css';
 
 type ThemeMode = 'light' | 'dark';
+
+const DEFAULT_AVATARS = [
+  { id: 'king-gold', icon: '♔', gradient: 'linear-gradient(135deg, #C9A46A, #B58B52)' },
+  { id: 'queen-purple', icon: '♕', gradient: 'linear-gradient(135deg, #9B8CCB, #7E6FB1)' },
+  { id: 'rook-blue', icon: '♖', gradient: 'linear-gradient(135deg, #7C93B8, #5F779C)' },
+  { id: 'bishop-green', icon: '♗', gradient: 'linear-gradient(135deg, #7FAF9B, #5E8F7C)' },
+  { id: 'knight-red', icon: '♘', gradient: 'linear-gradient(135deg, #C98686, #AA6A6A)' },
+  { id: 'pawn-gray', icon: '♙', gradient: 'linear-gradient(135deg, #808895, #6B7380)' },
+  { id: 'king-dark', icon: '♚', gradient: 'linear-gradient(135deg, #404552, #2F3440)' },
+  { id: 'queen-pink', icon: '♛', gradient: 'linear-gradient(135deg, #C58FA6, #AA718C)' },
+  { id: 'rook-cyan', icon: '♜', gradient: 'linear-gradient(135deg, #7DA9B3, #5C8D98)' },
+  { id: 'bishop-orange', icon: '♝', gradient: 'linear-gradient(135deg, #C79B7A, #B07E5C)' },
+  { id: 'knight-teal', icon: '♞', gradient: 'linear-gradient(135deg, #7BA9A4, #5E8F8A)' },
+  { id: 'pawn-indigo', icon: '♟', gradient: 'linear-gradient(135deg, #7B84A6, #5F688D)' },
+  { id: 'king-emerald', icon: '♔', gradient: 'linear-gradient(135deg, #8CB8A0, #6F9A84)' },
+  { id: 'queen-amber', icon: '♕', gradient: 'linear-gradient(135deg, #C7A36E, #B08956)' },
+  { id: 'rook-rose', icon: '♖', gradient: 'linear-gradient(135deg, #C18A8A, #A86F6F)' },
+  { id: 'bishop-violet', icon: '♗', gradient: 'linear-gradient(135deg, #9E8CBF, #806FA6)' },
+  { id: 'knight-lime', icon: '♘', gradient: 'linear-gradient(135deg, #9CB579, #7F985E)' },
+  { id: 'pawn-slate', icon: '♙', gradient: 'linear-gradient(135deg, #7A8699, #5E6B80)' },
+  { id: 'king-sky', icon: '♚', gradient: 'linear-gradient(135deg, #7FA6B9, #5F8CA3)' },
+  { id: 'queen-fuchsia', icon: '♛', gradient: 'linear-gradient(135deg, #B98AA9, #A06E90)' },
+];
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -37,16 +61,75 @@ const Header: React.FC<HeaderProps> = ({ themeMode, onToggleTheme }) => {
   const navigate = useNavigate();
   const { language, setLanguage, t } = useTranslation();
   const isAuthenticated = !!localStorage.getItem('authToken');
+  const [username, setUsername] = React.useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null);
+  const [showProfileMenu, setShowProfileMenu] = React.useState(false);
+
+  React.useEffect(() => {
+    const fetchMe = () => {
+      if (isAuthenticated) {
+        apiService.getMe().then(user => {
+          setUsername(user.username);
+          setAvatarUrl(user.avatarUrl || null);
+        }).catch(() => {
+          setUsername(null);
+          setAvatarUrl(null);
+        });
+      }
+    };
+
+    fetchMe();
+
+    const handleProfileUpdated = () => fetchMe();
+    window.addEventListener('profileUpdated', handleProfileUpdated);
+    return () => window.removeEventListener('profileUpdated', handleProfileUpdated);
+  }, [isAuthenticated]);
 
   const handleLogout = () => {
     apiService.logout();
+    setShowProfileMenu(false);
     navigate('/login');
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const renderAvatar = () => {
+    const defaultAvatar = DEFAULT_AVATARS.find(avatar => avatar.id === avatarUrl);
+
+    if (defaultAvatar) {
+      return (
+        <div className="avatar-circle" style={{ background: defaultAvatar.gradient }}>
+          <span className="avatar-icon">{defaultAvatar.icon}</span>
+        </div>
+      );
+    }
+
+    if (avatarUrl) {
+      return (
+        <div className="avatar-circle avatar-image">
+          <img src={avatarUrl} alt={username || 'avatar'} />
+        </div>
+      );
+    }
+
+    return (
+      <div className="avatar-circle">
+        {getInitials(username || '')}
+      </div>
+    );
   };
 
   return (
     <header className="header">
       <div className="header-content">
-        <div className="logo">
+        <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
           <div className="logo-icon">
             <span className="chess-piece">♔</span>
             <span className="chess-piece">♚</span>
@@ -79,13 +162,45 @@ const Header: React.FC<HeaderProps> = ({ themeMode, onToggleTheme }) => {
               {themeMode === 'dark' ? '🌙' : '☀️'}
             </span>
           </button>
-          {isAuthenticated && (
-            <button onClick={handleLogout} className="logout-btn">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M6 14H3.33333C2.97971 14 2.64057 13.8595 2.39052 13.6095C2.14048 13.3594 2 13.0203 2 12.6667V3.33333C2 2.97971 2.14048 2.64057 2.39052 2.39052C2.64057 2.14048 2.97971 2 3.33333 2H6M10.6667 11.3333L14 8M14 8L10.6667 4.66667M14 8H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              <span>{t('logout')}</span>
-            </button>
+          {isAuthenticated && username && (
+            <div className="profile-menu-container">
+              <button 
+                className="profile-avatar-btn"
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                title={username}
+              >
+                {renderAvatar()}
+                <span className="username-text">{username}</span>
+              </button>
+              
+              {showProfileMenu && (
+                <div className="profile-dropdown">
+                  <button 
+                    className="dropdown-item"
+                    onClick={() => {
+                      navigate(`/profile/${username}`);
+                      setShowProfileMenu(false);
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="8" cy="5" r="3" stroke="currentColor" strokeWidth="1.5"/>
+                      <path d="M2 14C2 11.5817 4.68629 10 8 10C11.3137 10 14 11.5817 14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                    <span>{t('profile')}</span>
+                  </button>
+                  <div className="dropdown-divider"></div>
+                  <button 
+                    className="dropdown-item logout-item"
+                    onClick={handleLogout}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M6 14H3.33333C2.97971 14 2.64057 13.8595 2.39052 13.6095C2.14048 13.3594 2 13.0203 2 12.6667V3.33333C2 2.97971 2.14048 2.64057 2.39052 2.39052C2.64057 2.14048 2.97971 2 3.33333 2H6M10.6667 11.3333L14 8M14 8L10.6667 4.66667M14 8H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    <span>{t('logout')}</span>
+                  </button>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -138,6 +253,14 @@ function App() {
             }
           />
           <Route path="/invite/:code" element={<InviteAccept />} />
+          <Route
+            path="/profile/:username"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>

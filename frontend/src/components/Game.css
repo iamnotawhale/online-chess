@@ -1,5 +1,5 @@
 .game-container {
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 16px;
 }
@@ -120,8 +120,15 @@
 
 .game-content {
   display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 24px;
+  grid-template-columns: 1fr 400px;
+  gap: 32px;
+}
+
+@media (max-width: 1400px) {
+  .game-content {
+    grid-template-columns: 1fr 350px;
+    gap: 24px;
+  }
 }
 
 @media (max-width: 1024px) {
@@ -148,8 +155,8 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  max-width: 440px;
-  font-size: 13px;
+  max-width: 700px;
+  font-size: 14px;
 }
 
 @media (max-width: 600px) {
@@ -192,7 +199,7 @@
 
 .chess-board-wrapper {
   position: relative;
-  max-width: 440px;
+  max-width: 700px;
   width: 100%;
   margin: 0 auto;
   touch-action: none;
@@ -265,9 +272,9 @@
   border: 1px solid var(--border);
   font-weight: 500;
   background: var(--surface);
-  max-width: 440px;
+  max-width: 700px;
   width: 100%;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .your-turn {

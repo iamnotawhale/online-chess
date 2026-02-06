@@ -14,32 +14,31 @@
 .lobby-game-card {
   border: 1px solid var(--border-2);
   border-radius: 4px;
-  padding: 16px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  background: var(--surface-2);
+  gap: 8px;
+  background: var(--surface);
   transition: all 0.2s;
+  cursor: pointer;
+  position: relative;
 }
 
-.lobby-game-card:hover {
+.lobby-game-card.own-game {
+  cursor: default;
+}
+
+.lobby-game-card:not(.own-game):hover {
   border-color: var(--accent);
-  background: var(--surface);
+  background: var(--surface-2);
   box-shadow: 0 2px 8px var(--shadow);
 }
 
-.game-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 8px;
-}
-
-.creator-info {
+.lobby-card-top {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  font-size: 14px;
 }
 
 .creator-name {
@@ -57,71 +56,52 @@
   font-weight: 500;
 }
 
-.game-type {
-  display: flex;
-  gap: 6px;
-}
-
-.badge {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 3px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.badge.rated {
-  background: var(--accent);
-  color: var(--accent-contrast);
-}
-
-.badge.casual {
-  background: var(--surface-3);
-  color: var(--text);
-}
-
-.game-details {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.detail-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.game-type-label {
+  margin-left: auto;
   font-size: 13px;
-}
-
-.detail-row .label {
   color: var(--muted);
-  font-weight: 500;
+  font-weight: 400;
 }
 
-.detail-row .value {
+.lobby-card-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 2px 0;
+}
+
+.lobby-card-bottom {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
   color: var(--text);
-  font-weight: 600;
 }
 
-.join-btn {
-  padding: 10px 16px;
+.info-label {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.cancel-small-btn {
+  width: 100%;
+  padding: 6px 12px;
   background: var(--accent);
   color: var(--accent-contrast);
   border: none;
   border-radius: 4px;
   cursor: pointer;
   font-weight: 500;
-  font-size: 13px;
+  font-size: 12px;
   transition: all 0.2s;
   margin-top: 4px;
 }
 
-.join-btn:hover:not(:disabled) {
+.cancel-small-btn:hover:not(:disabled) {
   background: var(--text);
 }
 
-.join-btn:disabled {
+.cancel-small-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }

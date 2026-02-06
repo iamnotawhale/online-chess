@@ -127,45 +127,48 @@ export const Lobby: React.FC<LobbyProps> = ({ onGameStart, onGameCancelled }) =>
         <p className="no-games">{t('noAvailableGames')}</p>
       ) : (
         <div className="games-grid">
-          {games.map((game) => (
-            <div key={game.id} className="lobby-game-card">
-              <div className="game-header">
-                <div className="creator-info">
+          {games.map((game) => {
+            const isOwnGame = currentUserId === game.creatorId;
+            const gameType = game.rated ? t('rated') : t('unrated');
+            const gameMode = game.gameMode === 'custom' ? t('custom') : game.gameMode;
+            const colorLabel = getColorLabel(getDisplayColor(game));
+            
+            return (
+              <div 
+                key={game.id} 
+                className={`lobby-game-card ${isOwnGame ? 'own-game' : ''}`}
+                onClick={() => !isOwnGame && handleJoinGame(game.id)}
+                title={!isOwnGame ? `${t('join')} • ${game.creatorUsername}` : undefined}
+              >
+                <div className="lobby-card-top">
                   <span className="creator-name">{game.creatorUsername}</span>
                   <span className="creator-rating">{game.creatorRating}</span>
+                  <span className="game-type-label">{gameType}</span>
                 </div>
-                <div className="game-type">
-                  {game.rated ? <span className="badge rated">{t('rated')}</span> : <span className="badge casual">{t('unrated')}</span>}
+                
+                <div className="lobby-card-divider"></div>
+                
+                <div className="lobby-card-bottom">
+                  <span><span className="info-label">{t('modeLabel')}:</span> {gameMode}</span>
+                  <span><span className="info-label">{t('timeLabel')}:</span> {game.timeControl}</span>
+                  <span><span className="info-label">{t('colorLabel')}:</span> {colorLabel}</span>
                 </div>
-              </div>
-              
-              <div className="game-details">
-                <div className="detail-row">
-                  <span className="label">{t('gameMode')}:</span>
-                  <span className="value">{game.gameMode === 'custom' ? t('custom') : game.gameMode}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="label">{t('timeControl')}:</span>
-                  <span className="value">{game.timeControl}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="label">{t('preferredColor')}:</span>
-                  <span className="value">{getColorLabel(getDisplayColor(game))}</span>
-                </div>
-              </div>
 
-              <button
-                className="join-btn"
-                onClick={() => currentUserId === game.creatorId ? handleCancelGame(game.id) : handleJoinGame(game.id)}
-                disabled={joiningGameId === game.id}
-              >
-                {joiningGameId === game.id 
-                  ? (currentUserId === game.creatorId ? `${t('cancel')}...` : `${t('join')}...`)
-                  : (currentUserId === game.creatorId ? t('cancel') : t('join'))
-                }
-              </button>
-            </div>
-          ))}
+                {isOwnGame && (
+                  <button
+                    className="cancel-small-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCancelGame(game.id);
+                    }}
+                    disabled={joiningGameId === game.id}
+                  >
+                    {joiningGameId === game.id ? `${t('cancel')}...` : t('cancel')}
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </>

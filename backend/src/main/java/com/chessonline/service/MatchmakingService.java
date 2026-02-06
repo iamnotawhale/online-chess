@@ -1,6 +1,10 @@
 package com.chessonline.service;
 
 import com.chessonline.model.Game;
+import com.chessonline.model.LobbyGame;
+import com.chessonline.model.User;
+import com.chessonline.repository.LobbyGameRepository;
+import com.chessonline.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +33,12 @@ public class MatchmakingService {
 
     @Autowired
     private GameService gameService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private LobbyGameRepository lobbyGameRepository;
 
     public MatchmakingResult join(UUID userId, String gameMode, String timeControl, String preferredColor) {
         validateTimeControl(gameMode, timeControl);
@@ -67,7 +77,7 @@ public class MatchmakingService {
                         blackId = whiteId.equals(userId) ? opponentId : userId;
                     }
                     
-                    boolean rated = "rated".equals(gameMode);
+                    boolean rated = !"custom".equals(gameMode); // Rated for all non-custom modes (bullet, blitz, rapid)
                     Game game = gameService.createGame(whiteId, blackId, timeControl, null, rated);
                     matchedGames.put(opponentId, game.getId());
                     return MatchmakingResult.matched(game.getId(), gameMode, timeControl);
@@ -76,6 +86,21 @@ public class MatchmakingService {
 
             queue.add(userId);
             userQueueKeys.put(userId, key);
+            
+            // Add to lobby for non-custom modes (always rated)
+            if (!"custom".equals(gameMode)) {
+                try {
+                    User creator = userRepository.findById(userId)
+                            .orElseThrow(() -> new RuntimeException("User not found"));
+                    String color = preferredColor != null ? preferredColor : "random";
+                    LobbyGame lobbyGame = new LobbyGame(creator, gameMode, timeControl, color, true); // Always rated for matchmaking
+                    lobbyGameRepository.save(lobbyGame);
+                } catch (Exception e) {
+                    // Log error but don't fail matchmaking
+                    System.err.println("Error creating lobby game for matchmaking: " + e.getMessage());
+                }
+            }
+            
             return MatchmakingResult.queued(gameMode, timeControl);
         }
     }
@@ -89,6 +114,19 @@ public class MatchmakingService {
             Deque<UUID> queue = queues.get(key);
             if (queue != null) {
                 queue.remove(userId);
+            }
+            
+            // Also remove from lobby if it was created for this user
+            try {
+                var lobbyGames = lobbyGameRepository.findAll()
+                        .stream()
+                        .filter(game -> game.getCreator().getId().equals(userId))
+                        .toList();
+                if (!lobbyGames.isEmpty()) {
+                    lobbyGameRepository.deleteAll(lobbyGames);
+                }
+            } catch (Exception e) {
+                System.err.println("Error removing lobby game when leaving queue: " + e.getMessage());
             }
         }
     }

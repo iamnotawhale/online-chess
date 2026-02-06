@@ -24,7 +24,7 @@ public class Game {
     private String status; // active, finished, abandoned
 
     @Column(length = 16)
-    private String result; // white_win, black_win, draw
+    private String result; // 1-0, 0-1, 1/2-1/2
 
     @Column(name = "result_reason", length = 32)
     private String resultReason; // checkmate, resignation, timeout, stalemate, agreement, abandonment
@@ -34,12 +34,6 @@ public class Game {
 
     @Column(nullable = false)
     private boolean rated; // Is this a rated game?
-
-    @Column(length = 100)
-    private String pgn; // Portable Game Notation
-
-    @Column(name = "fen_final", length = 255)
-    private String fenFinal; // Final FEN position
 
     @Column(name = "fen_current", length = 255)
     private String fenCurrent; // Current FEN position
@@ -148,22 +142,6 @@ public class Game {
 
     public void setRated(boolean rated) {
         this.rated = rated;
-    }
-
-    public String getPgn() {
-        return pgn;
-    }
-
-    public void setPgn(String pgn) {
-        this.pgn = pgn;
-    }
-
-    public String getFenFinal() {
-        return fenFinal;
-    }
-
-    public void setFenFinal(String fenFinal) {
-        this.fenFinal = fenFinal;
     }
 
     public String getFenCurrent() {

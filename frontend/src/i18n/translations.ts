@@ -89,6 +89,9 @@ export const translations = {
     join: 'Join',
     cancel: 'Cancel',
     yourGame: 'Your game',
+    modeLabel: 'mode',
+    timeLabel: 'time',
+    colorLabel: 'color',
     
     // Accept invite
     acceptInvite: 'Accept Invite',
@@ -136,6 +139,7 @@ export const translations = {
     errorResign: 'Error resigning',
     errorOfferDraw: 'Error offering draw',
     errorRespondDraw: 'Error responding to draw offer',
+    drawDeclined: 'Draw offer declined',
     
     // Login
     loginTitle: 'Login',
@@ -170,6 +174,22 @@ export const translations = {
     loginToAccept: 'Login to Accept',
     inviteNotFoundMsg: 'Invite not found',
     failedToAccept: 'Failed to accept invite',
+    
+    // Profile
+    profile: 'Profile',
+    editProfile: 'Edit Profile',
+    statistics: 'Statistics',
+    country: 'Country',
+    bio: 'Bio',
+    games: 'Games',
+    wins: 'Wins',
+    losses: 'Losses',
+    draws: 'Draws',
+    winRate: 'Win Rate',
+    newPassword: 'New Password (optional)',
+    avatarUrl: 'Avatar URL (optional)',
+    chooseAvatar: 'Choose avatar',
+    save: 'Save',
   },
   ru: {
     // Auth
@@ -252,15 +272,18 @@ export const translations = {
     resignation: 'Сдача',
     timeout: 'Время',
     stalemate: 'Пат',
-    agreement: 'Ничья по соглашению',
+    agreement: 'Ничья',
     
     // Lobby
     lobby: 'Лобби',
     availableGames: 'Доступные игры',
     noAvailableGames: 'Нет доступных игр',
     join: 'Присоединиться',
-    cancel: 'Отменить',
+    cancel: 'Отмена',
     yourGame: 'Ваша игра',
+    modeLabel: 'режим',
+    timeLabel: 'время',
+    colorLabel: 'цвет',
     
     // Accept invite
     acceptInvite: 'Принять приглашение',
@@ -268,7 +291,7 @@ export const translations = {
     gameMode: 'Режим игры',
     timeControl: 'Контроль времени',
     rated: 'Рейтинговая',
-    unrated: 'Нерейтинговая',
+    unrated: 'Обычная',
     preferredColor: 'Предпочитаемый цвет',
     accept: 'Принять',
     loading: 'Загрузка...',
@@ -307,8 +330,7 @@ export const translations = {
     confirmOfferDraw: 'Предложить ничью?',
     errorResign: 'Ошибка при сдаче',
     errorOfferDraw: 'Ошибка при предложении ничьи',
-    errorRespondDraw: 'Ошибка при ответе на предложение',
-    
+    errorRespondDraw: 'Ошибка при ответе на предложение',    drawDeclined: 'Предложение ничьи отклонено',    
     // Login
     loginTitle: 'Вход',
     loginButton: 'Войти',
@@ -342,6 +364,22 @@ export const translations = {
     loginToAccept: 'Войти, чтобы принять',
     inviteNotFoundMsg: 'Приглашение не найдено',
     failedToAccept: 'Не удалось принять приглашение',
+    
+    // Профиль
+    profile: 'Профиль',
+    editProfile: 'Редактировать',
+    statistics: 'Статистика',
+    country: 'Страна',
+    bio: 'О себе',
+    games: 'Партии',
+    wins: 'Победы',
+    losses: 'Поражения',
+    draws: 'Ничьи',
+    winRate: 'Процент побед',
+    newPassword: 'Новый пароль (необязательно)',
+    avatarUrl: 'URL аватара (необязательно)',
+    chooseAvatar: 'Выберите аватар',
+    save: 'Сохранить',
   },
 };
 

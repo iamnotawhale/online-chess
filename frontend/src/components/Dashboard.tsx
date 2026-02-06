@@ -4,6 +4,7 @@ import { Lobby } from './Lobby';
 import { GameTypeSelector } from './GameTypeSelector';
 import { CustomGameControls } from './CustomGameControls';
 import { useTranslation } from '../i18n/LanguageContext';
+import { wsService } from '../websocket';
 import './Dashboard.css';
 
 interface User {
@@ -11,6 +12,7 @@ interface User {
   email: string;
   username: string;
   rating: number;
+  country?: string;
 }
 
 interface Game {
@@ -151,6 +153,38 @@ export const Dashboard: React.FC = () => {
 
     return () => clearInterval(intervalId);
   }, [isQueued]);
+
+  // Connect to WebSocket and subscribe to game-started events
+  useEffect(() => {
+    const token = apiService.getToken();
+    if (!token) {
+      console.warn('No auth token found, skipping WebSocket connection');
+      return;
+    }
+
+    // Connect to WebSocket first
+    wsService.connect(token)
+      .then(() => {
+        console.log('✅ WebSocket connected in Dashboard');
+        // Now subscribe to game-started events
+        const unsubscribe = wsService.subscribeToGameStarted((message) => {
+          console.log('Game started via WebSocket:', message);
+          if (message.gameId) {
+            window.location.href = `/game/${message.gameId}`;
+          }
+        });
+        
+        // Store unsubscribe function for cleanup
+        return unsubscribe;
+      })
+      .catch((err) => {
+        console.error('Failed to connect WebSocket in Dashboard:', err);
+      });
+
+    return () => {
+      // Cleanup handled by wsService
+    };
+  }, []);
 
   // Reset invite link when game mode or time control changes
   useEffect(() => {
@@ -304,7 +338,18 @@ export const Dashboard: React.FC = () => {
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
-        <h1>{user?.username}</h1>
+        <h1>
+          {user?.username}
+          {user?.country && (
+            <img
+              className="country-flag-dashboard"
+              src={`https://flagcdn.com/w20/${user.country.toLowerCase()}.png`}
+              srcSet={`https://flagcdn.com/w40/${user.country.toLowerCase()}.png 2x`}
+              alt={user.country.toUpperCase()}
+              loading="lazy"
+            />
+          )}
+        </h1>
         <div className="rating-box">
           <span className="rating-label">{t('rating')}:</span>
           <span className="rating-value">{rating}</span>
@@ -549,20 +594,40 @@ export const Dashboard: React.FC = () => {
                     {finishedGames.slice(finishedGamesPage * 3, (finishedGamesPage + 1) * 3).map((game) => {
                       const isWhite = game.whitePlayerId === user?.id;
                       const opponentName = isWhite ? game.blackUsername : game.whiteUsername;
-                      const userWon = 
-                        (isWhite && game.result === '1-0') ||
-                        (!isWhite && game.result === '0-1');
-                      const isDraw = game.result === '1/2-1/2' || game.result === 'draw' || game.resultReason === 'agreement';
-                      const resultLabel = userWon ? '✓' : isDraw ? '=' : '✗';
+                      
+                      // Определяем результат игры для пользователя
+                      const getGameResult = (): 'won' | 'lost' | 'draw' => {
+                        if (!game.result) return 'lost';
+                        
+                        // Ничья
+                        if (game.result === '1/2-1/2') {
+                          return 'draw';
+                        }
+                        
+                        // Победа белых
+                        if (game.result === '1-0') {
+                          return isWhite ? 'won' : 'lost';
+                        }
+                        
+                        // Победа черных
+                        if (game.result === '0-1') {
+                          return isWhite ? 'lost' : 'won';
+                        }
+                        
+                        return 'lost';
+                      };
+                      
+                      const gameResult = getGameResult();
+                      const resultLabel = gameResult === 'won' ? '✓' : gameResult === 'draw' ? '=' : '✗';
 
                       return (
-                        <div key={game.id} className={`finished-game-card ${userWon ? 'won' : isDraw ? 'draw' : 'lost'}`}>
+                        <div key={game.id} className={`finished-game-card ${gameResult}`}>
                           <div className="game-row">
                             <span className="game-result-label">{resultLabel}</span>
                             <span className="opponent-name">vs {opponentName || 'Unknown'}</span>
                             {game.ratingChange !== undefined && (
                               <span
-                                className={`rating-change ${isDraw ? 'draw' : game.ratingChange >= 0 ? 'positive' : 'negative'}`}
+                                className={`rating-change ${gameResult === 'draw' ? 'draw' : game.ratingChange >= 0 ? 'positive' : 'negative'}`}
                               >
                                 {game.ratingChange >= 0 ? '+' : ''}{game.ratingChange}
                               </span>

@@ -73,10 +73,10 @@ public class RatingService {
         double whiteScore;
         double blackScore;
 
-        if ("1-0".equals(game.getResult()) || "white_win".equals(game.getResult())) {
+        if ("1-0".equals(game.getResult())) {
             whiteScore = 1.0;
             blackScore = 0.0;
-        } else if ("0-1".equals(game.getResult()) || "black_win".equals(game.getResult())) {
+        } else if ("0-1".equals(game.getResult())) {
             whiteScore = 0.0;
             blackScore = 1.0;
         } else {
@@ -123,13 +123,13 @@ public class RatingService {
     private void updateUserStats(User player, Game game, boolean isWhite) {
         UserStats stats = player.getStats();
 
-        if ("white_win".equals(game.getResult())) {
+        if ("1-0".equals(game.getResult())) {
             if (isWhite) {
                 stats.setWins(stats.getWins() + 1);
             } else {
                 stats.setLosses(stats.getLosses() + 1);
             }
-        } else if ("black_win".equals(game.getResult())) {
+        } else if ("0-1".equals(game.getResult())) {
             if (isWhite) {
                 stats.setLosses(stats.getLosses() + 1);
             } else {
@@ -140,6 +140,7 @@ public class RatingService {
         }
 
         stats.setGamesPlayed(stats.getGamesPlayed() + 1);
+        stats.setTotalGames(stats.getWins() + stats.getLosses() + stats.getDraws());
     }
 
     /**

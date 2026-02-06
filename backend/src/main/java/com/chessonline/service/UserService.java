@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -14,16 +15,20 @@ import com.chessonline.dto.user.UpdateProfileRequest;
 import com.chessonline.dto.user.UserResponse;
 import com.chessonline.dto.user.UserStatsResponse;
 import com.chessonline.model.User;
-import com.chessonline.model.UserStats;
+import com.chessonline.repository.GameRepository;
 import com.chessonline.repository.UserRepository;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
+    private final GameRepository gameRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, GameRepository gameRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.gameRepository = gameRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public User getCurrentUserEntity() {
@@ -62,6 +67,24 @@ public class UserService {
 
     public UserResponse updateProfile(UpdateProfileRequest request) {
         User user = getCurrentUserEntity();
+        
+        // Update username if provided
+        if (request.getUsername() != null && !request.getUsername().trim().isEmpty()) {
+            String newUsername = request.getUsername().trim();
+            if (!newUsername.equals(user.getUsername())) {
+                // Check if username is already taken
+                if (userRepository.existsByUsername(newUsername)) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already taken");
+                }
+                user.setUsername(newUsername);
+            }
+        }
+        
+        // Update password if provided
+        if (request.getPassword() != null && !request.getPassword().trim().isEmpty()) {
+            user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        }
+        
         if (request.getCountry() != null) {
             user.setCountry(request.getCountry());
         }
@@ -77,16 +100,7 @@ public class UserService {
     }
 
     public UserResponse toUserResponse(User user, boolean includeEmail) {
-        UserStats stats = user.getStats();
-        UserStatsResponse statsResponse = null;
-        if (stats != null) {
-            statsResponse = new UserStatsResponse(
-                stats.getWins(),
-                stats.getLosses(),
-                stats.getDraws(),
-                stats.getTotalGames()
-            );
-        }
+        UserStatsResponse statsResponse = calculateStats(user);
 
         return new UserResponse(
             user.getId(),
@@ -99,5 +113,40 @@ public class UserService {
             user.getCreatedAt(),
             statsResponse
         );
+    }
+
+    private UserStatsResponse calculateStats(User user) {
+        int wins = 0;
+        int losses = 0;
+        int draws = 0;
+
+        List<com.chessonline.model.Game> games = gameRepository.findFinishedGamesByUserId("finished", user.getId());
+        for (com.chessonline.model.Game game : games) {
+            String result = game.getResult();
+            if (result == null) {
+                continue;
+            }
+
+            boolean isWhite = game.getPlayerWhite().getId().equals(user.getId());
+
+            if ("1-0".equals(result)) {
+                if (isWhite) {
+                    wins++;
+                } else {
+                    losses++;
+                }
+            } else if ("0-1".equals(result)) {
+                if (isWhite) {
+                    losses++;
+                } else {
+                    wins++;
+                }
+            } else if ("1/2-1/2".equals(result)) {
+                draws++;
+            }
+        }
+
+        int totalGames = wins + losses + draws;
+        return new UserStatsResponse(wins, losses, draws, totalGames);
     }
 }
