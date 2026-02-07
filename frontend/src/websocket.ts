@@ -39,8 +39,11 @@ class WebSocketService {
         return;
       }
 
+      const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
+      const wsHost = window.location.hostname;
+      const wsUrl = `${wsProtocol}://${wsHost}/ws`;
       this.client = new Client({
-        webSocketFactory: () => new SockJS('http://localhost:8082/ws') as WebSocket,
+        webSocketFactory: () => new SockJS(wsUrl) as WebSocket,
         connectHeaders: {
           Authorization: `Bearer ${token}`,
         },
