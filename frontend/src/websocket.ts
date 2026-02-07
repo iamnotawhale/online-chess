@@ -39,11 +39,11 @@ class WebSocketService {
         return;
       }
 
-      const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
-      const wsHost = window.location.hostname;
-      const wsUrl = `${wsProtocol}://${wsHost}/ws`;
+      const sockJsUrl = window.location.protocol === "https:" 
+        ? "https://onchess.online/ws" 
+        : "http://onchess.online/ws";
       this.client = new Client({
-        webSocketFactory: () => new SockJS(wsUrl) as WebSocket,
+        webSocketFactory: () => new SockJS(sockJsUrl) as WebSocket,
         connectHeaders: {
           Authorization: `Bearer ${token}`,
         },
