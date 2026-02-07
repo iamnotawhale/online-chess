@@ -134,7 +134,7 @@ const Header: React.FC<HeaderProps> = ({ themeMode, onToggleTheme }) => {
             <span className="chess-piece">♔</span>
             <span className="chess-piece">♚</span>
           </div>
-          <span className="logo-text">ON-CHESS</span>
+          <span className="logo-text">ONCHESS</span>
         </div>
         <div className="header-actions">
           <div className="language-switcher">
