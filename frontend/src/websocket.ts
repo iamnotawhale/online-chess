@@ -39,9 +39,14 @@ class WebSocketService {
         return;
       }
 
-      const sockJsUrl = window.location.protocol === "https:" 
-        ? "https://onchess.online/ws" 
-        : "http://onchess.online/ws";
+      let sockJsUrl;
+      if (window.location.hostname === "localhost") {
+        sockJsUrl = "http://localhost:8082/ws";
+      } else {
+        sockJsUrl = window.location.protocol === "https:" 
+          ? "https://onchess.online/ws" 
+          : "http://onchess.online/ws";
+      }
       this.client = new Client({
         webSocketFactory: () => new SockJS(sockJsUrl) as WebSocket,
         connectHeaders: {

@@ -33,6 +33,9 @@ interface User {
 }
 
 export const GameView: React.FC = () => {
+    // Таймер для плавного уменьшения времени
+    const timerRef = useRef<number | null>(null);
+
   const { t } = useTranslation();
   const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
   const { gameId } = useParams<{ gameId: string }>();
@@ -59,10 +62,45 @@ export const GameView: React.FC = () => {
     return Math.min(700, Math.max(320, window.innerWidth - 32));
   });
 
+  // Очистить таймер при размонтировании
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, []);
+
+  // Запустить таймер, если партия активна
+  useEffect(() => {
+    if (!game || !chessInstance || !wsConnected || game.status !== 'active') {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      return;
+    }
+    const turn = chessInstance.turn();
+    timerRef.current = setInterval(() => {
+      if (game.status !== 'active') return;
+      if (turn === 'w') {
+        setWhiteTimeLeftMs(prev => Math.max(prev - 1000, 0));
+      } else {
+        setBlackTimeLeftMs(prev => Math.max(prev - 1000, 0));
+      }
+    }, 1000);
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [game, chessInstance, wsConnected]);
+
   useEffect(() => {
     loadGame();
     loadCurrentUser();
-    
     // Connect to WebSocket
     const token = apiService.getToken();
     if (token && gameId) {
@@ -76,7 +114,6 @@ export const GameView: React.FC = () => {
           console.error('WebSocket connection failed:', err);
         });
     }
-
     return () => {
       if (gameId) {
         wsService.unsubscribeFromGame(gameId);
@@ -390,22 +427,20 @@ export const GameView: React.FC = () => {
 
   const getSquareStyles = () => {
     const styles: { [square: string]: React.CSSProperties } = {};
-    
+
     // Highlight selected square
     if (selectedSquare) {
       styles[selectedSquare] = {
         backgroundColor: 'rgba(255, 255, 0, 0.4)',
       };
     }
-    
+
     // Highlight legal move squares
     legalMoves.forEach(square => {
       styles[square] = {
         background: 'radial-gradient(circle, rgba(0,0,0,.1) 25%, transparent 25%)',
         borderRadius: '50%',
       };
-      
-      // If there's a piece on this square (capture), show different highlight
       if (chessInstance?.get(square as any)) {
         styles[square] = {
           background: 'radial-gradient(circle, rgba(0,0,0,.1) 85%, transparent 85%)',
@@ -413,6 +448,42 @@ export const GameView: React.FC = () => {
         };
       }
     });
+
+    // Подсветка последнего хода
+    if (moveHistory.length > 0 && !isViewingHistory) {
+      // Получаем последний ход в SAN или UCI
+      const lastMove = moveHistory[moveHistory.length - 1];
+      // Попробуем извлечь from/to из SAN или UCI
+      let fromSquare = null;
+      let toSquare = null;
+      // UCI: e2e4, SAN: e4, Nf3, exd5, etc.
+      const uciPattern = /^[a-h][1-8][a-h][1-8][qrbn]?$/i;
+      if (uciPattern.test(lastMove)) {
+        fromSquare = lastMove.slice(0, 2);
+        toSquare = lastMove.slice(2, 4);
+      } else {
+        // chess.js move history: get last move object
+        try {
+          const tempChess = new Chess(START_FEN);
+          moveHistory.forEach(m => tempChess.move(m));
+          const history = tempChess.history({ verbose: true });
+          if (history.length > 0) {
+            fromSquare = history[history.length - 1].from;
+            toSquare = history[history.length - 1].to;
+          }
+        } catch {}
+      }
+      if (fromSquare) {
+        styles[fromSquare] = {
+          backgroundColor: 'rgba(52, 152, 219, 0.18)',
+        };
+      }
+      if (toSquare) {
+        styles[toSquare] = {
+          backgroundColor: 'rgba(52, 152, 219, 0.28)',
+        };
+      }
+    }
 
     // Highlight king in check
     try {
@@ -449,7 +520,7 @@ export const GameView: React.FC = () => {
     } catch (e) {
       console.error('Failed to compute check highlight', e);
     }
-    
+
     return styles;
   };
 
