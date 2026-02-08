@@ -41,8 +41,8 @@ interface GameResponse {
   ratingChange?: number;
 }
 
-interface MatchmakingJoinRequest {
-  gameMode: 'bullet' | 'blitz' | 'rapid' | 'custom';
+export interface MatchmakingJoinRequest {
+  gameMode: 'bullet' | 'blitz' | 'rapid' | 'classic' | 'custom';
   timeControl: string;
   preferredColor?: 'white' | 'black' | 'random';
   isRated?: boolean;
