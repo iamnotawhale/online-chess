@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Pattern;
 public class MatchmakingJoinRequest {
 
     @NotBlank
-    @Pattern(regexp = "bullet|blitz|rapid|custom", message = "Invalid game mode")
+    @Pattern(regexp = "bullet|blitz|rapid|classic|custom", message = "Invalid game mode")
     private String gameMode;
 
     @NotBlank

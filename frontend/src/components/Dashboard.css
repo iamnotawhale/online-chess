@@ -227,12 +227,6 @@
   width: 100%;
 }
 
-.custom-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
 .color-buttons {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -261,104 +255,6 @@
   background: var(--accent);
   color: var(--accent-contrast);
   border-color: var(--accent);
-}
-
-.slider-group {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 0;
-}
-
-.slider-row {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.slider-label {
-  font-size: 13px;
-  color: var(--muted);
-  font-weight: 500;
-}
-
-.slider-row input[type="range"] {
-  width: 100%;
-  height: 4px;
-  outline: none;
-  -webkit-appearance: none;
-  appearance: none;
-  cursor: pointer;
-  background: transparent;
-}
-
-/* WebKit (Chrome, Safari, Edge) */
-.slider-row input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--accent);
-  cursor: pointer;
-  border: none;
-  transition: transform 0.15s ease;
-}
-
-.slider-row input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.1);
-}
-
-.slider-row input[type="range"]::-webkit-slider-runnable-track {
-  width: 100%;
-  height: 4px;
-  background: var(--border);
-  border-radius: 2px;
-  border: none;
-}
-
-/* Firefox */
-.slider-row input[type="range"]::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--accent);
-  cursor: pointer;
-  border: none;
-  transition: transform 0.15s ease;
-}
-
-.slider-row input[type="range"]::-moz-range-thumb:hover {
-  transform: scale(1.1);
-}
-
-.slider-row input[type="range"]::-moz-range-track {
-  background: var(--border);
-  border-radius: 2px;
-  border: none;
-  height: 4px;
-}
-
-.slider-row input[type="range"]::-moz-range-progress {
-  background: var(--accent);
-  height: 4px;
-  border-radius: 2px;
-}
-
-/* Disabled state */
-.slider-row input[type="range"][disabled] {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.slider-row input[type="range"][disabled]::-webkit-slider-thumb {
-  background: var(--muted-2);
-  cursor: not-allowed;
-}
-
-.slider-row input[type="range"][disabled]::-moz-range-thumb {
-  background: var(--muted-2);
-  cursor: not-allowed;
 }
 
 .checkbox-group {
@@ -392,67 +288,12 @@
   cursor: not-allowed;
 }
 
-.mode-btn {
-  flex: 1;
-  padding: 12px 10px;
-  min-height: 48px;
-  border: 1px solid var(--border-2);
-  background: var(--surface);
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-  font-size: 14px;
-  color: var(--text);
-  text-align: center;
-  transition: all 0.2s;
-}
-
-.mode-btn:hover {
-  border-color: var(--accent);
-}
-
-.mode-btn.active {
-  background: var(--accent);
-  color: var(--accent-contrast);
-  border-color: var(--accent);
-}
-
-.time-control-options {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.time-control-btn {
-  padding: 12px 10px;
-  min-height: 48px;
-  border: 1px solid var(--border-2);
-  background: var(--surface);
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-  font-size: 13px;
-  color: var(--text);
-  text-align: center;
-  transition: all 0.2s;
-}
-
-.time-control-btn:hover {
-  border-color: var(--accent);
-}
-
-.time-control-btn.active {
-  background: var(--accent);
-  color: var(--accent-contrast);
-  border-color: var(--accent);
-}
-
 .matchmaking-btn {
   width: 100%;
   padding: 14px 12px;
   min-height: 48px;
   background: var(--accent);
-  color: var(--accent-contrast);
+  color: var(--surface);
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -470,44 +311,106 @@
   cursor: not-allowed;
 }
 
-.time-buttons {
+.matchmaking-presets {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
-.time-btn {
-  padding: 12px 10px;
-  min-height: 48px;
-  border: 1px solid var(--border-2);
+.preset-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 10px;
+  min-height: 56px;
   background: var(--surface);
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-  font-size: 13px;
+  border: 2px solid var(--border);
   color: var(--text);
-  text-align: center;
-  transition: all 0.2s;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: normal;
 }
 
-.time-btn:hover {
+.preset-btn:hover:not(:disabled) {
   border-color: var(--accent);
+  background: var(--surface-2);
+  transform: translateY(-1px);
 }
 
-.time-btn.active {
+.preset-btn.active {
+  background: var(--accent);
+  color: var(--surface);
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.preset-btn.active:hover:not(:disabled) {
+  background: var(--surface-2);
+  color: var(--text);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.preset-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.preset-btn.custom-btn {
   background: var(--accent);
   color: var(--accent-contrast);
   border-color: var(--accent);
 }
 
+.preset-btn.custom-btn:hover:not(:disabled) {
+  background: var(--muted);
+  border-color: var(--muted);
+  transform: translateY(-1px);
+}
+
+.preset-btn.custom-matchmaking-btn {
+  grid-column: 1 / -1;
+}
+
+.invite-btn-standalone {
+  width: 100%;
+  margin-top: 0;
+}
+
+.preset-label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.preset-time {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.preset-mode {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.8;
+  line-height: 1.2;
+}
+
 .custom-controls {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+  margin-top: 16px;
+  margin-bottom: 16px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 16px;
-  background: var(--surface-2);
-  border-radius: 4px;
-  margin-bottom: 12px;
 }
 
 .control-group {
@@ -517,40 +420,109 @@
 }
 
 .control-group label {
+  font-size: 13px;
   font-weight: 500;
-  font-size: 14px;
   color: var(--text);
 }
 
 .control-group input[type="range"] {
   width: 100%;
+  height: 4px;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
   cursor: pointer;
+  background: transparent;
 }
 
-.generate-btn,
-.hide-btn {
+.control-group input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: none;
+  transition: transform 0.15s ease;
+}
+
+.control-group input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+.control-group input[type="range"]::-webkit-slider-runnable-track {
   width: 100%;
-  padding: 14px 12px;
-  min-height: 48px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  border: none;
+}
+
+.control-group input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: none;
+  transition: transform 0.15s ease;
+}
+
+.control-group input[type="range"]::-moz-range-thumb:hover {
+  transform: scale(1.1);
+}
+
+.control-group input[type="range"]::-moz-range-track {
+  background: var(--border);
+  border-radius: 2px;
+  border: none;
+  height: 4px;
+}
+
+/* Queue info display */
+.queued-info {
+  margin-top: 16px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.queued-info p {
+  display: none;
+}
+
+.leave-queue-btn {
+  padding: 10px 20px;
   background: var(--accent);
   color: var(--accent-contrast);
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-weight: 600;
-  font-size: 16px;
+  font-size: 14px;
+  font-weight: 500;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
-.generate-btn:hover:not(:disabled),
-.hide-btn:hover:not(:disabled) {
-  background: var(--text);
+.leave-queue-btn:hover:not(:disabled) {
+  background: var(--muted);
+  transform: translateY(-1px);
 }
 
-.generate-btn:disabled,
-.hide-btn:disabled {
-  background: var(--muted-2);
+.leave-queue-btn:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
+}
+
+.matchmaking-message {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--info-bg);
+  color: var(--text);
+  border-radius: 4px;
+  font-size: 13px;
 }
 
 .games-list {

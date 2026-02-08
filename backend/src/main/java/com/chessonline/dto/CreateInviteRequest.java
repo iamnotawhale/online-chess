@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Pattern;
 public class CreateInviteRequest {
 
     @NotBlank(message = "Game mode is required")
-    @Pattern(regexp = "rated|casual|standard|rapid|blitz|bullet|custom", message = "Invalid game mode")
+    @Pattern(regexp = "rated|casual|standard|rapid|blitz|bullet|classic|custom", message = "Invalid game mode")
     private String gameMode;
 
     @Pattern(regexp = "\\d+\\+\\d+", message = "Time control format must be 'minutes+increment' (e.g., 10+0)")

@@ -23,6 +23,7 @@ public class MatchmakingService {
             "bullet", List.of("1+0", "2+1"),
             "blitz", List.of("3+0", "3+2", "5+0", "5+3"),
             "rapid", List.of("10+0", "10+5", "15+10", "25+0"),
+            "classic", List.of("30+0", "30+30"),
             "custom", List.of() // Custom allows any time control
     );
 
@@ -77,7 +78,7 @@ public class MatchmakingService {
                         blackId = whiteId.equals(userId) ? opponentId : userId;
                     }
                     
-                    boolean rated = !"custom".equals(gameMode); // Rated for all non-custom modes (bullet, blitz, rapid)
+                    boolean rated = !"custom".equals(gameMode); // Rated for all non-custom modes (bullet, blitz, rapid, classic)
                     Game game = gameService.createGame(whiteId, blackId, timeControl, null, rated);
                     matchedGames.put(opponentId, game.getId());
                     return MatchmakingResult.matched(game.getId(), gameMode, timeControl);

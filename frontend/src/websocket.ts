@@ -211,12 +211,81 @@ class WebSocketService {
   subscribeToGameStarted(callback: (message: { gameId: string; message: string }) => void): () => void {
     const topic = '/user/queue/game-started';
     
-    if (!this.connected || !this.client) {
-      console.warn('❌ WebSocket not connected, cannot subscribe to game-started');
+    if (!this.client) {
+      console.warn('❌ WebSocket client not initialized');
       return () => {};
     }
 
-    if (this.client) {
+    // If already subscribed, return unsubscribe function
+    if (this.subscriptions.has(topic)) {
+      console.log('✅ Already subscribed to', topic);
+      const existingSub = this.subscriptions.get(topic);
+      return () => {
+        existingSub?.unsubscribe();
+        this.subscriptions.delete(topic);
+        console.log('Unsubscribed from game-started');
+      };
+    }
+
+    // If not connected yet, wait and retry
+    if (!this.client.connected) {
+      console.warn('⏳ WebSocket not connected yet for game-started, waiting for connection...');
+      
+      let retryAttempts = 0;
+      const maxRetries = 20;
+      
+      const retryInterval = setInterval(() => {
+        retryAttempts++;
+        console.log(`⏳ Retry ${retryAttempts}/${maxRetries}: checking connection for game-started...`);
+        
+        if (this.client?.connected) {
+          console.log('✅ WebSocket connected! Subscribing to game-started now...');
+          clearInterval(retryInterval);
+          
+          // Check again if not already subscribed
+          if (!this.subscriptions.has(topic)) {
+            this.doSubscribeGameStarted(topic, callback);
+          } else {
+            console.log('⚠️ Already subscribed during retry, skipping');
+          }
+        } else if (retryAttempts >= maxRetries) {
+          console.error('❌ Failed to connect after', maxRetries, 'attempts');
+          clearInterval(retryInterval);
+        }
+      }, 300);
+      
+      return () => {
+        clearInterval(retryInterval);
+        const sub = this.subscriptions.get(topic);
+        if (sub) {
+          sub.unsubscribe();
+          this.subscriptions.delete(topic);
+        }
+      };
+    }
+
+    // Connected now, subscribe immediately
+    return this.doSubscribeGameStarted(topic, callback);
+  }
+
+  private doSubscribeGameStarted(topic: string, callback: (message: { gameId: string; message: string }) => void): () => void {
+    if (!this.client || !this.client.connected) {
+      console.error('❌ Cannot subscribe to game-started: client not connected');
+      return () => {};
+    }
+
+    // Double-check we're not already subscribed
+    if (this.subscriptions.has(topic)) {
+      console.log('⚠️ Already subscribed to', topic);
+      const existingSub = this.subscriptions.get(topic);
+      return () => {
+        existingSub?.unsubscribe();
+        this.subscriptions.delete(topic);
+      };
+    }
+
+    try {
+      console.log('📡 Subscribing to', topic);
       const subscription = this.client.subscribe(topic, (message) => {
         try {
           const body = JSON.parse(message.body);
@@ -234,9 +303,10 @@ class WebSocketService {
         this.subscriptions.delete(topic);
         console.log('Unsubscribed from game-started');
       };
+    } catch (error) {
+      console.error('Error subscribing to game-started:', error);
+      return () => {};
     }
-
-    return () => {};
   }
 
   isConnected(): boolean {

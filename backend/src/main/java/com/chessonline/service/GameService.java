@@ -64,7 +64,31 @@ public class GameService {
         // Don't set lastMoveAt - timer starts only after first move (chess rule)
         // game.setLastMoveAt will be set in updateClocksOnMove on first move
 
-        return gameRepository.save(game);
+        Game savedGame = gameRepository.save(game);
+        
+        // Notify both players that game has started via WebSocket
+        if (messagingTemplate != null) {
+            java.util.Map<String, Object> gameStartedMessage = java.util.Map.of(
+                "gameId", savedGame.getId(),
+                "message", "Игра началась"
+            );
+            
+            // Send to white player
+            messagingTemplate.convertAndSendToUser(
+                    white.getId().toString(),
+                    "/queue/game-started",
+                    gameStartedMessage
+            );
+            
+            // Send to black player
+            messagingTemplate.convertAndSendToUser(
+                    black.getId().toString(),
+                    "/queue/game-started",
+                    gameStartedMessage
+            );
+        }
+        
+        return savedGame;
     }
 
     /**
@@ -224,6 +248,34 @@ public class GameService {
         }
     }
     
+    /**
+     * Get half-move count from FEN (number of half-moves played)
+     */
+    private int getHalfMoveCount(String fen) {
+        if (fen == null || fen.isEmpty()) {
+            return 0;
+        }
+        String[] parts = fen.split(" ");
+        if (parts.length < 6) {
+            return 0;
+        }
+        
+        // parts[1] = active color (w/b)
+        // parts[5] = fullmove number (starts at 1)
+        try {
+            int fullMoveNumber = Integer.parseInt(parts[5]);
+            boolean isWhiteToMove = "w".equals(parts[1]);
+            
+            // Calculate half-moves: (fullMoveNumber - 1) * 2 + (isWhiteToMove ? 0 : 1)
+            // fullMoveNumber=1, white to move = 0 half-moves (start position)
+            // fullMoveNumber=1, black to move = 1 half-move (white moved)
+            // fullMoveNumber=2, white to move = 2 half-moves (white & black moved)
+            return (fullMoveNumber - 1) * 2 + (isWhiteToMove ? 0 : 1);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+    
     private GameUpdateMessage createGameUpdateMessage(Game game) {
         GameUpdateMessage msg = new GameUpdateMessage();
         msg.setGameId(game.getId());
@@ -274,14 +326,19 @@ public class GameService {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime lastMoveAt = game.getLastMoveAt();
 
-        // First move: just set timestamp, don't update time (chess rule)
-        if (lastMoveAt == null) {
+        // Count existing moves BEFORE this move
+        int moveCount = moveRepository.findByGameIdOrderByMoveNumber(game.getId()).size();
+        
+        // For first two half-moves (first move of each player): just set timestamp, don't update time
+        if (lastMoveAt == null || moveCount < 2) {
             game.setLastMoveAt(now);
             return false;
         }
 
         long elapsedMs = Duration.between(lastMoveAt, now).toMillis();
-        long incrementMs = parseIncrementMs(game.getTimeControl());
+        
+        // Increment is NOT applied to first move of each player (moves 1 and 2)
+        long incrementMs = (moveCount >= 2) ? parseIncrementMs(game.getTimeControl()) : 0L;
 
         if (isWhiteToMove) {
             long remaining = safeTimeLeft(game.getWhiteTimeLeftMs()) - elapsedMs;
@@ -300,7 +357,8 @@ public class GameService {
             }
             game.setBlackTimeLeftMs(remaining + incrementMs);
         }
-
+        
+        game.setLastMoveAt(now);
         return false;
     }
 
@@ -358,6 +416,12 @@ public class GameService {
         for (Game game : activeGames) {
             // Skip games with no moves yet (timer hasn't started)
             if (game.getLastMoveAt() == null) {
+                continue;
+            }
+            
+            // Skip games with less than 2 half-moves (timer starts after first move of each player)
+            int halfMoveCount = getHalfMoveCount(game.getFenCurrent());
+            if (halfMoveCount < 2) {
                 continue;
             }
 

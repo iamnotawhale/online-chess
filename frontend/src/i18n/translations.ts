@@ -24,6 +24,7 @@ export const translations = {
     bullet: 'Bullet',
     blitz: 'Blitz',
     rapid: 'Rapid',
+    classic: 'Classic',
     custom: 'Custom',
     
     // Custom controls
@@ -41,6 +42,8 @@ export const translations = {
     inQueue: 'In queue for a match',
     gameCreated: 'Game created in lobby. Waiting for opponent...',
     matchmakingError: 'Matchmaking error',
+    waitingForOpponent: 'Waiting for opponent...',
+    selectGameTypeAndTimeControl: 'Select game type and time control',
     
     // Invite
     generateLink: 'Generate link',
@@ -48,6 +51,8 @@ export const translations = {
     copy: 'Copy',
     linkCopied: 'Link copied',
     inviteError: 'Error creating invite',
+    inviteLinkCreated: 'Invite link created!',
+    createAnother: 'Create another',
     
     // Game
     youAre: 'You are',
@@ -216,6 +221,7 @@ export const translations = {
     bullet: 'Bullet',
     blitz: 'Blitz',
     rapid: 'Rapid',
+    classic: 'Classic',
     custom: 'Custom',
     
     // Custom controls
@@ -233,6 +239,8 @@ export const translations = {
     inQueue: 'Вы в очереди на матч',
     gameCreated: 'Игра создана в лобби. Ожидание противника...',
     matchmakingError: 'Ошибка матчмейкинга',
+    waitingForOpponent: 'Ожидание противника...',
+    selectGameTypeAndTimeControl: 'Выберите тип игры и контроль времени',
     
     // Invite
     generateLink: 'Сгенерировать ссылку',
@@ -240,6 +248,8 @@ export const translations = {
     copy: 'Копировать',
     linkCopied: 'Ссылка скопирована',
     inviteError: 'Ошибка создания ссылки',
+    inviteLinkCreated: 'Ссылка приглашения создана!',
+    createAnother: 'Создать ещё одну',
     
     // Game
     youAre: 'Вы играете',

@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { apiService } from '../api';
 import { Lobby } from './Lobby';
-import { GameTypeSelector } from './GameTypeSelector';
-import { CustomGameControls } from './CustomGameControls';
 import { useTranslation } from '../i18n/LanguageContext';
 import { wsService } from '../websocket';
+import { InviteByLinkModal } from './InviteByLinkModal.tsx';
 import './Dashboard.css';
 
 interface User {
@@ -38,33 +37,36 @@ export const Dashboard: React.FC = () => {
   const [finishedGames, setFinishedGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [inviteLink, setInviteLink] = useState('');
-  const [inviteLoading, setInviteLoading] = useState(false);
-  const [inviteSelectedType, setInviteSelectedType] = useState<'bullet' | 'blitz' | 'rapid' | 'custom' | null>(null);
-  const [inviteGameMode, setInviteGameMode] = useState<'bullet' | 'blitz' | 'rapid'>('blitz');
-  const [inviteTimeControl, setInviteTimeControl] = useState('5+3');
-  const [inviteCustomMinutes, setInviteCustomMinutes] = useState(5);
-  const [inviteCustomIncrement, setInviteCustomIncrement] = useState(0);
-  const [inviteIsRated, setInviteIsRated] = useState(false);
-  const [invitePreferredColor, setInvitePreferredColor] = useState<'white' | 'black' | 'random'>('random');
-  const [gameMode, setGameMode] = useState<'bullet' | 'blitz' | 'rapid'>('blitz');
-  const [selectedType, setSelectedType] = useState<'bullet' | 'blitz' | 'rapid' | 'custom' | null>(null);
-  const [customMinutes, setCustomMinutes] = useState(5);
-  const [customIncrement, setCustomIncrement] = useState(0);
-  const [customColor, setCustomColor] = useState<'white' | 'black' | 'random'>('random');
-  const [isRated, setIsRated] = useState(false);
-  const [timeControl, setTimeControl] = useState('5+3');
-  const [isQueued, setIsQueued] = useState(false);
   const [matchmakingMessage, setMatchmakingMessage] = useState('');
   const [matchmakingLoading, setMatchmakingLoading] = useState(false);
   const [showAllActiveGames, setShowAllActiveGames] = useState(false);
   const [finishedGamesPage, setFinishedGamesPage] = useState(0);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [isQueued, setIsQueued] = useState(false);
+  const [queuedMode, setQueuedMode] = useState<string>('');
+  const [queuedTimeControl, setQueuedTimeControl] = useState<string>('');
+  const [showCustomForm, setShowCustomForm] = useState(false);
+  const [customMinutes, setCustomMinutes] = useState(10);
+  const [customIncrement, setCustomIncrement] = useState(0);
+  const [customColor, setCustomColor] = useState<'random' | 'white' | 'black'>('random');
+  const [customIsRated, setCustomIsRated] = useState(true);
 
-  const TIME_CONTROLS: Record<'bullet' | 'blitz' | 'rapid', string[]> = {
-    bullet: ['1+0', '2+1'],
-    blitz: ['3+0', '3+2', '5+0', '5+3'],
-    rapid: ['10+0', '10+5', '15+10', '25+0'],
-  };
+  // Matchmaking presets
+  const MATCHMAKING_PRESETS = [
+     { gameMode: 'bullet' as const, timeControl: '1+0' },
+     { gameMode: 'bullet' as const, timeControl: '2+1' },
+     { gameMode: 'blitz' as const, timeControl: '3+0' },
+     { gameMode: 'blitz' as const, timeControl: '3+2' },
+     { gameMode: 'blitz' as const, timeControl: '5+0' },
+     { gameMode: 'blitz' as const, timeControl: '5+3' },
+     { gameMode: 'rapid' as const, timeControl: '10+0' },
+     { gameMode: 'rapid' as const, timeControl: '10+5' },
+     { gameMode: 'rapid' as const, timeControl: '15+10' },
+     { gameMode: 'rapid' as const, timeControl: '25+0' },
+     { gameMode: 'classic' as const, timeControl: '30+0' },
+     { gameMode: 'classic' as const, timeControl: '30+30' },
+     { gameMode: 'custom' as const, timeControl: 'custom' },
+  ];
 
   useEffect(() => {
     loadDashboard();
@@ -87,15 +89,8 @@ export const Dashboard: React.FC = () => {
       
       // Восстанавливаем параметры матчмейкинга если пользователь в очереди
       if (matchmakingStatus.queued && matchmakingStatus.gameMode && matchmakingStatus.timeControl) {
-        const mode = matchmakingStatus.gameMode as 'bullet' | 'blitz' | 'rapid' | 'custom';
-        if (mode !== 'custom') {
-          setGameMode(mode);
-        }
-        setTimeControl(matchmakingStatus.timeControl);
-        setSelectedType(mode === 'custom' ? 'custom' : mode);
-        if (matchmakingStatus.preferredColor) {
-          setCustomColor(matchmakingStatus.preferredColor as 'white' | 'black' | 'random');
-        }
+        setQueuedMode(matchmakingStatus.gameMode);
+        setQueuedTimeControl(matchmakingStatus.timeControl);
       }
       
       // Сортируем завершенные игры по времени окончания (новые сверху)
@@ -186,55 +181,6 @@ export const Dashboard: React.FC = () => {
     };
   }, []);
 
-  // Reset invite link when game mode or time control changes
-  useEffect(() => {
-    if (inviteLink) {
-      setInviteLink('');
-    }
-  }, [inviteGameMode, inviteTimeControl, inviteCustomMinutes, inviteCustomIncrement, inviteIsRated, invitePreferredColor]);
-
-  const handleCreateInvite = async () => {
-    setInviteLoading(true);
-    try {
-      const timeControl = inviteSelectedType === 'custom' 
-        ? `${inviteCustomMinutes}+${inviteCustomIncrement}`
-        : inviteTimeControl;
-
-      const gameMode = inviteSelectedType === 'custom' ? 'custom' : inviteGameMode;
-      const isRated = inviteSelectedType === 'custom' ? inviteIsRated : true;
-      const preferredColor = inviteSelectedType === 'custom' ? invitePreferredColor : undefined;
-      
-      const response = await apiService.createInvite({
-        gameMode: gameMode,
-        timeControl: timeControl,
-        isRated: isRated,
-        preferredColor: preferredColor,
-      });
-      setInviteLink(response.inviteUrl);
-    } catch (err: any) {
-      alert(err.response?.data?.message || t('inviteError'));
-    } finally {
-      setInviteLoading(false);
-    }
-  };
-
-  const handleCopyInvite = async () => {
-    if (!inviteLink) return;
-    try {
-      await navigator.clipboard.writeText(inviteLink);
-      alert(t('linkCopied'));
-      setTimeout(() => {
-        setInviteLink('');
-      }, 1500);
-    } catch (err) {
-      console.error('Failed to copy invite link', err);
-    }
-  };
-
-  const handleHideInvite = () => {
-    setInviteLink('');
-  };
-
   // Вспомогательная функция для установки сообщения с автоматическим таймаутом
   const setMessageWithTimeout = (message: string, timeout: number = 3000) => {
     setMatchmakingMessage(message);
@@ -245,31 +191,29 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  const handleJoinMatchmaking = async (
-    selectedMode?: 'bullet' | 'blitz' | 'rapid' | 'custom',
-    selectedTimeControl?: string,
-    preferredColor?: 'white' | 'black' | 'random'
-  ) => {
+  const handleJoinMatchmaking = async (gameMode: 'bullet' | 'blitz' | 'rapid' | 'classic' | 'custom', timeControl: string) => {
     if (matchmakingLoading || isQueued) return;
-    const modeToUse = selectedMode ?? gameMode;
-    const timeToUse = selectedTimeControl ?? timeControl;
-    if (modeToUse !== 'custom') {
-      setGameMode(modeToUse);
+    
+    // Handle custom mode
+    if (gameMode === 'custom' && timeControl === 'custom') {
+      setShowCustomForm(!showCustomForm);
+      return;
     }
-    setTimeControl(timeToUse);
+    
     setMatchmakingLoading(true);
     setMatchmakingMessage('');
     try {
       const response = await apiService.joinMatchmaking({
-        gameMode: modeToUse,
-        timeControl: timeToUse,
-        preferredColor,
+        gameMode,
+        timeControl,
       });
       if (response.matched && response.gameId) {
         window.location.href = `/game/${response.gameId}`;
         return;
       }
       setIsQueued(true);
+      setQueuedMode(gameMode);
+      setQueuedTimeControl(timeControl);
       setMessageWithTimeout(response.message || 'Вы в очереди на матч');
     } catch (err: any) {
       setMessageWithTimeout(err.response?.data?.error || 'Ошибка матчмейкинга');
@@ -278,37 +222,29 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  const getRulesForType = () => {
-    if (!selectedType) return [];
-    if (selectedType === 'custom') {
-      return Array.from(new Set([
-        ...TIME_CONTROLS.bullet,
-        ...TIME_CONTROLS.blitz,
-        ...TIME_CONTROLS.rapid,
-      ]));
-    }
-    return TIME_CONTROLS[selectedType];
-  };
-
-  const handleStartCustomMatch = async () => {
-    const timeControlValue = `${customMinutes}+${customIncrement}`;
+  const handleStartCustomMatchmaking = async () => {
+    const timeControl = `${customMinutes}+${customIncrement}`;
+    setShowCustomForm(false);
+    
     setMatchmakingLoading(true);
+    setMatchmakingMessage('');
     try {
-      await apiService.createLobbyGame({
+      const response = await apiService.joinMatchmaking({
         gameMode: 'custom',
-        timeControl: timeControlValue,
+        timeControl,
         preferredColor: customColor,
-        isRated: isRated,
+        isRated: customIsRated,
       });
-      setMatchmakingMessage(`Игра создана в лобби. Ожидание противника...`);
-      setSelectedType(null);
-      setCustomMinutes(5);
-      setCustomIncrement(0);
-      setCustomColor('random');
-      setIsRated(false);
-    } catch (error) {
-      setMessageWithTimeout('Ошибка создания игры');
-      console.error(error);
+      if (response.matched && response.gameId) {
+        window.location.href = `/game/${response.gameId}`;
+        return;
+      }
+      setIsQueued(true);
+      setQueuedMode('custom');
+      setQueuedTimeControl(timeControl);
+      setMessageWithTimeout(response.message || 'Вы в очереди на матч');
+    } catch (err: any) {
+      setMessageWithTimeout(err.response?.data?.error || 'Ошибка матчмейкинга');
     } finally {
       setMatchmakingLoading(false);
     }
@@ -319,11 +255,21 @@ export const Dashboard: React.FC = () => {
     try {
       await apiService.leaveMatchmaking();
       setIsQueued(false);
+      setQueuedMode('');
+      setQueuedTimeControl('');
       setMatchmakingMessage('');
     } catch (err: any) {
       setMessageWithTimeout(err.response?.data?.error || 'Ошибка выхода из очереди');
     } finally {
       setMatchmakingLoading(false);
+    }
+  };
+
+  const handleGameCancelled = async () => {
+    if (isQueued) {
+      await handleLeaveMatchmaking();
+    } else {
+      setMatchmakingMessage('');
     }
   };
 
@@ -359,189 +305,130 @@ export const Dashboard: React.FC = () => {
       <div className="dashboard-content">
         <div className="section">
           <h2>{t('matchmaking')}</h2>
-          <div className="time-control-selector">
-            <GameTypeSelector
-              selectedType={selectedType}
-              onSelectType={(type) => {
-                // Toggle: если кликнули на уже выбранную кнопку - деактивируем
-                if (selectedType === type) {
-                  setSelectedType(null);
-                } else {
-                  setSelectedType(type);
-                  if (type !== 'custom') {
-                    setGameMode(type);
-                    setTimeControl(TIME_CONTROLS[type][0]);
-                  }
-                }
-              }}
-              disabled={matchmakingLoading || isQueued}
-            />
-            {selectedType === 'custom' && (
-              <>
-                <CustomGameControls
-                  minutes={customMinutes}
-                  increment={customIncrement}
-                  color={customColor}
-                  isRated={isRated}
-                  onMinutesChange={setCustomMinutes}
-                  onIncrementChange={setCustomIncrement}
-                  onColorChange={setCustomColor}
-                  onRatedChange={setIsRated}
-                  disabled={matchmakingLoading}
-                />
+          <div className="matchmaking-presets">
+            {MATCHMAKING_PRESETS.map((preset) => (
+              <button
+                key={`${preset.gameMode}-${preset.timeControl}`}
+                type="button"
+                className={`preset-btn ${preset.timeControl === 'custom' ? 'custom-matchmaking-btn' : ''} ${isQueued && queuedMode === preset.gameMode && queuedTimeControl === preset.timeControl ? 'active' : ''} ${showCustomForm && preset.timeControl === 'custom' ? 'active' : ''}`}
+                onClick={() => handleJoinMatchmaking(preset.gameMode, preset.timeControl)}
+                disabled={matchmakingLoading || (isQueued && !(preset.gameMode === 'custom' && preset.timeControl === 'custom'))}
+              >
+                {preset.timeControl === 'custom' ? (
+                  <div className="preset-label">Custom</div>
+                ) : (
+                  <>
+                    <div className="preset-time">{preset.timeControl}</div>
+                    <div className="preset-mode">{preset.gameMode}</div>
+                  </>
+                )}
+              </button>
+            ))}
+          </div>
+          
+          {showCustomForm && (
+            <div className="custom-controls">
+              <div className="color-buttons">
                 <button
                   type="button"
-                  className="matchmaking-btn"
-                  onClick={handleStartCustomMatch}
-                  disabled={matchmakingLoading}
+                  className={`color-btn ${customColor === 'random' ? 'active' : ''}`}
+                  onClick={() => setCustomColor('random')}
                 >
-                  {t('play')} {customMinutes}+{customIncrement}
+                  {t('random')}
                 </button>
-              </>
-            )}
-            {selectedType && selectedType !== 'custom' && (
-              <div className="time-control-options">
-                {getRulesForType().map((tc) => (
-                  <button
-                    key={tc}
-                    type="button"
-                    className={`time-control-btn ${timeControl === tc ? 'active' : ''}`}
-                    onClick={() => {
-                      handleJoinMatchmaking(selectedType, tc);
-                    }}
-                    disabled={matchmakingLoading || isQueued}
-                  >
-                    {tc}
-                  </button>
-                ))}
+                <button
+                  type="button"
+                  className={`color-btn ${customColor === 'white' ? 'active' : ''}`}
+                  onClick={() => setCustomColor('white')}
+                >
+                  {t('white')}
+                </button>
+                <button
+                  type="button"
+                  className={`color-btn ${customColor === 'black' ? 'active' : ''}`}
+                  onClick={() => setCustomColor('black')}
+                >
+                  {t('black')}
+                </button>
               </div>
-            )}
-            {isQueued && (
+              
+              <div className="control-group">
+                <label>{t('minutes')}: {customMinutes}</label>
+                <input
+                  type="range"
+                  min="0"
+                  max="120"
+                  value={customMinutes}
+                  onChange={(e) => setCustomMinutes(parseInt(e.target.value))}
+                />
+              </div>
+              
+              <div className="control-group">
+                <label>{t('increment')}: {customIncrement}</label>
+                <input
+                  type="range"
+                  min="0"
+                  max="120"
+                  value={customIncrement}
+                  onChange={(e) => setCustomIncrement(parseInt(e.target.value))}
+                />
+              </div>
+              
+              <div className="checkbox-group">
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={customIsRated}
+                    onChange={(e) => setCustomIsRated(e.target.checked)}
+                  />
+                  {t('ratedGame')}
+                </label>
+              </div>
+              
               <button
                 type="button"
                 className="matchmaking-btn"
+                onClick={handleStartCustomMatchmaking}
+                disabled={matchmakingLoading || isQueued}
+              >
+                {t('play')}
+              </button>
+            </div>
+          )}
+          
+          <button
+            type="button"
+            className="preset-btn custom-btn invite-btn-standalone"
+            onClick={() => setIsInviteModalOpen(true)}
+            disabled={matchmakingLoading}
+          >
+            {t('inviteByLink')}
+          </button>
+          
+          {isQueued && (
+            <div className="queued-info">
+              <p>{queuedMode.toUpperCase()} {queuedTimeControl} - {t('waitingForOpponent')}</p>
+              <button
+                type="button"
+                className="leave-queue-btn"
                 onClick={handleLeaveMatchmaking}
                 disabled={matchmakingLoading}
               >
                 {t('leaveQueue')}
               </button>
-            )}
-          </div>
-          {matchmakingMessage && <p>{matchmakingMessage}</p>}
-        </div>
-
-        <div className="section">
-          <h2>{t('inviteByLink')}</h2>
-          <div className="time-control-selector">
-            <GameTypeSelector
-              selectedType={inviteSelectedType}
-              onSelectType={(type) => {
-                // Toggle: если кликнули на уже выбранную кнопку - деактивируем
-                if (inviteSelectedType === type) {
-                  setInviteSelectedType(null);
-                } else {
-                  setInviteSelectedType(type);
-                  if (type !== 'custom') {
-                    setInviteGameMode(type);
-                    setInviteTimeControl(TIME_CONTROLS[type][0]);
-                  }
-                }
-              }}
-              disabled={inviteLoading}
-            />
-            {inviteSelectedType && (
-              <>
-                {inviteSelectedType !== 'custom' && (
-                  <div className="time-buttons">
-                    {TIME_CONTROLS[inviteGameMode].map((tc) => (
-                      <button
-                        key={tc}
-                        type="button"
-                        className={`time-btn ${inviteTimeControl === tc ? 'active' : ''}`}
-                        onClick={() => setInviteTimeControl(tc)}
-                        disabled={inviteLoading}
-                      >
-                        {tc}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {inviteSelectedType === 'custom' && (
-                  <>
-                    <CustomGameControls
-                      minutes={inviteCustomMinutes}
-                      increment={inviteCustomIncrement}
-                      color={invitePreferredColor}
-                      isRated={inviteIsRated}
-                      onMinutesChange={setInviteCustomMinutes}
-                      onIncrementChange={setInviteCustomIncrement}
-                      onColorChange={setInvitePreferredColor}
-                      onRatedChange={setInviteIsRated}
-                      disabled={inviteLoading}
-                    />
-                    {inviteLink ? (
-                      <button
-                        type="button"
-                        className="hide-btn"
-                        onClick={handleHideInvite}
-                        disabled={inviteLoading}
-                      >
-                        {t('hide')}
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        className="generate-btn"
-                        onClick={handleCreateInvite}
-                        disabled={inviteLoading}
-                      >
-                        {t('generateLink')}
-                      </button>
-                    )}
-                  </>
-                )}
-                {inviteSelectedType !== 'custom' && (
-                  inviteLink ? (
-                    <button
-                      type="button"
-                      className="hide-btn"
-                      onClick={handleHideInvite}
-                      disabled={inviteLoading}
-                    >
-                      Скрыть
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      className="generate-btn"
-                      onClick={handleCreateInvite}
-                      disabled={inviteLoading}
-                    >
-                      Сгенерировать ссылку
-                    </button>
-                  )
-                )}
-              </>
-            )}
-          </div>
-          {inviteLink && (
-            <div className="invite-link-box">
-              <div className="invite-link-row">
-                <input type="text" readOnly value={inviteLink} />
-                <button type="button" onClick={handleCopyInvite}>{t('copy')}</button>
-              </div>
-              <div className="invite-qr">
-                <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(inviteLink)}`}
-                  alt="QR"
-                />
-              </div>
             </div>
           )}
+          {matchmakingMessage && <p className="matchmaking-message">{matchmakingMessage}</p>}
         </div>
+          {isInviteModalOpen && (
+            <InviteByLinkModal 
+              onClose={() => setIsInviteModalOpen(false)}
+            />
+          )}
+
 
         <div className="section">
-          <Lobby onGameCancelled={() => setMatchmakingMessage('')} />
+          <Lobby onGameCancelled={handleGameCancelled} />
         </div>
 
         <div className="section">

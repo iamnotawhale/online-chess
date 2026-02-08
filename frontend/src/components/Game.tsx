@@ -16,6 +16,7 @@ interface GameData {
   status: string;
   fen: string;
   timeControl?: string;
+  gameMode?: string;
   rated?: boolean;
   whiteTimeLeftMs?: number;
   blackTimeLeftMs?: number;
@@ -47,6 +48,10 @@ export const GameView: React.FC = () => {
   const [chessInstance, setChessInstance] = useState<Chess | null>(null);
   const [whiteTimeLeftMs, setWhiteTimeLeftMs] = useState<number>(0);
   const [blackTimeLeftMs, setBlackTimeLeftMs] = useState<number>(0);
+  const [whiteTimeBase, setWhiteTimeBase] = useState<number>(0);
+  const [blackTimeBase, setBlackTimeBase] = useState<number>(0);
+  const [lastMoveAt, setLastMoveAt] = useState<number | null>(null);
+  const [timeUpdateReceivedAt, setTimeUpdateReceivedAt] = useState<number>(Date.now());
   const [boardPosition, setBoardPosition] = useState<string>('start');
   const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
   const [legalMoves, setLegalMoves] = useState<string[]>([]);
@@ -55,6 +60,7 @@ export const GameView: React.FC = () => {
   const [currentMoveIndex, setCurrentMoveIndex] = useState<number>(-1);
   const [isViewingHistory, setIsViewingHistory] = useState(false);
   const lastDrawOfferRef = useRef<string | null>(null);
+  const isViewingHistoryRef = useRef(false);
   const [toast, setToast] = useState<{ message: string; type?: 'info' | 'error' } | null>(null);
   const toastTimeoutRef = useRef<number | null>(null);
   const [boardWidth, setBoardWidth] = useState<number>(() => {
@@ -72,31 +78,52 @@ export const GameView: React.FC = () => {
     };
   }, []);
 
-  // Запустить таймер, если партия активна
+  // Отслеживать состояние просмотра истории в ref
   useEffect(() => {
-    if (!game || !chessInstance || !wsConnected || game.status !== 'active') {
+    isViewingHistoryRef.current = isViewingHistory;
+  }, [isViewingHistory]);
+
+  // Запустить таймер, если партия активна (со второго хода белых)
+  useEffect(() => {
+    if (!game || !chessInstance || !wsConnected || game.status !== 'active' || lastMoveAt === null) {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
       return;
     }
-    const turn = chessInstance.turn();
+    
+    // Таймер запускается только после двух полуходов (1 ход белых + 1 ход черных)
+    const moveCount = chessInstance.history().length;
+    if (moveCount < 2) {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      return;
+    }
+    
     timerRef.current = setInterval(() => {
       if (game.status !== 'active') return;
+      
+      const turn = chessInstance.turn();
+      // Считаем время от момента получения последнего обновления от сервера
+      const elapsedMs = Date.now() - timeUpdateReceivedAt;
+      
       if (turn === 'w') {
-        setWhiteTimeLeftMs(prev => Math.max(prev - 1000, 0));
+        setWhiteTimeLeftMs(Math.max(whiteTimeBase - elapsedMs, 0));
       } else {
-        setBlackTimeLeftMs(prev => Math.max(prev - 1000, 0));
+        setBlackTimeLeftMs(Math.max(blackTimeBase - elapsedMs, 0));
       }
-    }, 1000);
+    }, 100); // Update more frequently for smoother countdown
+    
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
     };
-  }, [game, chessInstance, wsConnected]);
+  }, [game, chessInstance, wsConnected, lastMoveAt, whiteTimeBase, blackTimeBase, timeUpdateReceivedAt]);
 
   useEffect(() => {
     loadGame();
@@ -170,9 +197,13 @@ export const GameView: React.FC = () => {
           // Reload move history when position changes (new move made)
           loadMoveHistory();
           
-          // Return to current position when new move is made
-          setIsViewingHistory(false);
-          setBoardPosition(update.fenCurrent);
+          // Return to current position when new move is made, but only if not viewing history
+          setIsViewingHistory((isViewing) => {
+            if (!isViewing) {
+              setBoardPosition(update.fenCurrent);
+            }
+            return isViewing; // Preserve viewing history state
+          });
         } catch (error) {
           console.error('❌ Failed to load FEN:', update.fenCurrent, error);
         }
@@ -218,9 +249,21 @@ export const GameView: React.FC = () => {
       };
       if (update.whiteTimeLeftMs !== undefined) {
         setWhiteTimeLeftMs(update.whiteTimeLeftMs);
+        setWhiteTimeBase(update.whiteTimeLeftMs);
       }
       if (update.blackTimeLeftMs !== undefined) {
         setBlackTimeLeftMs(update.blackTimeLeftMs);
+        setBlackTimeBase(update.blackTimeLeftMs);
+      }
+      // Фиксируем момент получения обновления времени
+      if (update.whiteTimeLeftMs !== undefined || update.blackTimeLeftMs !== undefined) {
+        setTimeUpdateReceivedAt(Date.now());
+      }
+      if (update.lastMoveAt) {
+        setLastMoveAt(new Date(update.lastMoveAt).getTime());
+      } else if (update.whiteTimeLeftMs !== undefined || update.blackTimeLeftMs !== undefined) {
+        // Если получили обновление времени, но нет lastMoveAt, обновляем текущее время
+        setLastMoveAt(Date.now());
       }
       if (update.drawOfferedById !== undefined) {
         const nextOfferId = update.drawOfferedById || null;
@@ -251,6 +294,20 @@ export const GameView: React.FC = () => {
     }
   };
 
+  const getGameMode = (timeControl?: string): string => {
+    if (!timeControl) return 'Custom';
+    const match = timeControl.match(/^(\d+)\+(\d+)$/);
+    if (!match) return 'Custom';
+    const minutes = parseInt(match[1]);
+    const increment = parseInt(match[2]);
+    const totalTime = minutes * 60 + increment * 40;
+    
+    if (totalTime < 180) return 'Bullet';
+    if (totalTime < 480) return 'Blitz';
+    if (totalTime < 1500) return 'Rapid';
+    return 'Classical';
+  };
+
   const loadGame = async () => {
     if (!gameId) return;
     try {
@@ -266,6 +323,7 @@ export const GameView: React.FC = () => {
         status: gameResponse.status,
         fen: gameResponse.fenCurrent,
         timeControl: gameResponse.timeControl,
+        gameMode: getGameMode(gameResponse.timeControl),
         rated: gameResponse.rated,
         whiteTimeLeftMs: gameResponse.whiteTimeLeftMs,
         blackTimeLeftMs: gameResponse.blackTimeLeftMs,
@@ -277,6 +335,14 @@ export const GameView: React.FC = () => {
       setGame(gameData);
       setWhiteTimeLeftMs(gameData.whiteTimeLeftMs || 0);
       setBlackTimeLeftMs(gameData.blackTimeLeftMs || 0);
+      setWhiteTimeBase(gameData.whiteTimeLeftMs || 0);
+      setBlackTimeBase(gameData.blackTimeLeftMs || 0);
+      setTimeUpdateReceivedAt(Date.now()); // Запомнить момент получения времени
+      if (gameData.lastMoveAt) {
+        setLastMoveAt(new Date(gameData.lastMoveAt).getTime());
+      } else {
+        setLastMoveAt(Date.now()); // Если нет lastMoveAt, считаем что ход только что произошёл
+      }
       
       // Initialize chess instance with game FEN
       const chess = new Chess(gameData.fen);
@@ -319,7 +385,11 @@ export const GameView: React.FC = () => {
       const movePositions = moves.map((m: any) => m.fen || '');
       setMoveHistory(moveNotations);
       setMoveFens(movePositions);
-      setCurrentMoveIndex(moveNotations.length - 1);
+      
+      // Только обновляем currentMoveIndex если пользователь НЕ просматривает историю
+      if (!isViewingHistoryRef.current) {
+        setCurrentMoveIndex(moveNotations.length - 1);
+      }
     } catch (err) {
       console.error('Error loading move history:', err);
     }
@@ -686,7 +756,7 @@ export const GameView: React.FC = () => {
         </div>
       )}
       <div className="game-header">
-        <h1>{t('gameInfo')}</h1>
+        <h1>{game.gameMode} ({game.timeControl})</h1>
         <div className="game-status">
           <span className={`status-badge ${game.status === 'finished' ? 'finished' : 'active'}`}>
             {getStatusLabel(game.status).toUpperCase()}
@@ -775,6 +845,51 @@ export const GameView: React.FC = () => {
         </div>
 
         <div className="info-section">
+          <div className="move-history">
+            <h3>{t('moveHistory')}</h3>
+            <div className="history-controls">
+              <button onClick={goToStart} disabled={currentMoveIndex < 0}>⏮ {t('toStart')}</button>
+              <button onClick={goToPreviousMove} disabled={currentMoveIndex < 0}>◀ {t('previous')}</button>
+              <button onClick={goToNextMove} disabled={currentMoveIndex >= moveHistory.length - 1}>{t('next')} ▶</button>
+              <button onClick={goToLatest} disabled={!isViewingHistory}>⏭ {t('toLatest')}</button>
+            </div>
+            <div className="moves-list">
+              {moveHistory.length === 0 ? (
+                <p className="no-moves">{t('noMoves')}</p>
+              ) : (
+                <div className="moves-grid">
+                  {Array.from({ length: Math.ceil(moveHistory.length / 2) }).map((_, pairIndex) => {
+                    const whiteIndex = pairIndex * 2;
+                    const blackIndex = pairIndex * 2 + 1;
+                    const whiteMove = moveHistory[whiteIndex];
+                    const blackMove = blackIndex < moveHistory.length ? moveHistory[blackIndex] : null;
+                    
+                    return (
+                      <div key={pairIndex} className="move-row">
+                        <button
+                          className={`move-button ${whiteIndex === currentMoveIndex ? 'current' : ''}`}
+                          onClick={() => goToMove(whiteIndex)}
+                        >
+                          {whiteMove}
+                        </button>
+                        {blackMove ? (
+                          <button
+                            className={`move-button ${blackIndex === currentMoveIndex ? 'current' : ''}`}
+                            onClick={() => goToMove(blackIndex)}
+                          >
+                            {blackMove}
+                          </button>
+                        ) : (
+                          <div></div>
+                        )}
+                      </div>
+                    );  
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+          
           <div className="game-info">
             <h3>{t('gameInfo')}</h3>
             <p><strong>{t('id')}:</strong> {game.id}</p>
@@ -823,52 +938,8 @@ export const GameView: React.FC = () => {
             </>
           )}
 
-          <div className="move-history">
-            <h3>{t('moveHistory')}</h3>
-            <div className="history-controls">
-              <button onClick={goToStart} disabled={currentMoveIndex < 0}>⏮ {t('toStart')}</button>
-              <button onClick={goToPreviousMove} disabled={currentMoveIndex < 0}>◀ {t('previous')}</button>
-              <button onClick={goToNextMove} disabled={currentMoveIndex >= moveHistory.length - 1}>{t('next')} ▶</button>
-              <button onClick={goToLatest} disabled={!isViewingHistory}>⏭ {t('toLatest')}</button>
-            </div>
-            <div className="moves-list">
-              {moveHistory.length === 0 ? (
-                <p className="no-moves">{t('noMoves')}</p>
-              ) : (
-                <div className="moves-grid">
-                  {Array.from({ length: Math.ceil(moveHistory.length / 2) }).map((_, pairIndex) => {
-                    const whiteIndex = pairIndex * 2;
-                    const blackIndex = pairIndex * 2 + 1;
-                    const whiteMove = moveHistory[whiteIndex];
-                    const blackMove = blackIndex < moveHistory.length ? moveHistory[blackIndex] : null;
-                    
-                    return (
-                      <div key={pairIndex} className="move-row">
-                        <button
-                          className={`move-button ${whiteIndex === currentMoveIndex ? 'current' : ''}`}
-                          onClick={() => goToMove(whiteIndex)}
-                        >
-                          {whiteMove}
-                        </button>
-                        {blackMove ? (
-                          <button
-                            className={`move-button ${blackIndex === currentMoveIndex ? 'current' : ''}`}
-                            onClick={() => goToMove(blackIndex)}
-                          >
-                            {blackMove}
-                          </button>
-                        ) : (
-                          <div></div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+        
+        </div>      </div>
     </div>
   );
 };
