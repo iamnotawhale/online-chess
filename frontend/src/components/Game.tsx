@@ -65,7 +65,8 @@ export const GameView: React.FC = () => {
   const toastTimeoutRef = useRef<number | null>(null);
   const [boardWidth, setBoardWidth] = useState<number>(() => {
     if (typeof window === 'undefined') return 600;
-    return Math.min(700, Math.max(320, window.innerWidth - 32));
+    const isMobile = window.innerWidth <= 768;
+    return isMobile ? Math.max(320, window.innerWidth) : 800;
   });
 
   // Очистить таймер при размонтировании
@@ -150,7 +151,8 @@ export const GameView: React.FC = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      setBoardWidth(Math.min(700, Math.max(320, window.innerWidth - 32)));
+      const isMobile = window.innerWidth <= 768;
+      setBoardWidth(isMobile ? Math.max(320, window.innerWidth) : 800);
     };
 
     handleResize();
@@ -848,10 +850,34 @@ export const GameView: React.FC = () => {
           <div className="move-history">
             <h3>{t('moveHistory')}</h3>
             <div className="history-controls">
-              <button onClick={goToStart} disabled={currentMoveIndex < 0}>⏮ {t('toStart')}</button>
-              <button onClick={goToPreviousMove} disabled={currentMoveIndex < 0}>◀ {t('previous')}</button>
-              <button onClick={goToNextMove} disabled={currentMoveIndex >= moveHistory.length - 1}>{t('next')} ▶</button>
-              <button onClick={goToLatest} disabled={!isViewingHistory}>⏭ {t('toLatest')}</button>
+              <button 
+                onClick={goToStart} 
+                disabled={currentMoveIndex < 0}
+                title={t('toStart')}
+              >
+                ⏮
+              </button>
+              <button 
+                onClick={goToPreviousMove} 
+                disabled={currentMoveIndex < 0}
+                title={t('previous')}
+              >
+                ◀
+              </button>
+              <button 
+                onClick={goToNextMove} 
+                disabled={currentMoveIndex >= moveHistory.length - 1}
+                title={t('next')}
+              >
+                ▶
+              </button>
+              <button 
+                onClick={goToLatest} 
+                disabled={!isViewingHistory}
+                title={t('toLatest')}
+              >
+                ⏭
+              </button>
             </div>
             <div className="moves-list">
               {moveHistory.length === 0 ? (

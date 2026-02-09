@@ -1,6 +1,7 @@
 .game-container {
-  max-width: 1600px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: none;
+  margin: 0;
   padding: 16px;
 }
 
@@ -35,16 +36,16 @@
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 820px) {
   .game-container {
-    padding: 12px;
+    padding: 0;
   }
 }
 
 .game-header {
   background: var(--surface);
   color: var(--text);
-  padding: 16px 0;
+  padding: 10px 16px;
   margin-bottom: 8px;
   border-bottom: 1px solid var(--border);
   display: flex;
@@ -52,6 +53,9 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
+  max-width: 1208px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .game-header h1 {
@@ -60,9 +64,27 @@
   font-weight: 600;
 }
 
+@media (max-width: 1400px) {
+  .game-header {
+    max-width: 1158px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .game-header {
+    max-width: 800px;
+  }
+}
+
+@media (max-width: 768px) {
+  .game-header {
+    max-width: none;
+  }
+}
+
 @media (max-width: 600px) {
   .game-header {
-    padding: 12px 0;
+    padding: 10px 16px;
     margin-bottom: 12px;
   }
   .game-header h1 {
@@ -120,49 +142,52 @@
 
 .game-content {
   display: grid;
-  grid-template-columns: 1fr 400px;
-  gap: 32px;
+  grid-template-columns: max-content 400px;
+  gap: 8px;
+  justify-content: center;
 }
 
 @media (max-width: 1400px) {
   .game-content {
-    grid-template-columns: 1fr 350px;
-    gap: 24px;
+    grid-template-columns: max-content 350px;
+    gap: 8px;
   }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
   .game-content {
     grid-template-columns: 1fr;
+    max-width: 800px;
+    margin: 0 auto;
   }
 }
 
 .board-section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0;
   align-items: center;
+  max-width: 800px;
 }
 
 .player-info {
   background: var(--surface);
   padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
   font-weight: 500;
   color: var(--text);
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  max-width: 700px;
+  max-width: 800px;
   font-size: 14px;
 }
 
 @media (max-width: 600px) {
   .player-info {
-    padding: 8px 10px;
+    padding: 8px 12px;
     font-size: 12px;
+    max-width: none;
   }
 }
 
@@ -199,8 +224,8 @@
 
 .chess-board-wrapper {
   position: relative;
-  max-width: 700px;
   width: 100%;
+  max-width: 800px;
   margin: 0 auto;
   touch-action: none;
   user-select: none;
@@ -209,9 +234,10 @@
   -ms-user-select: none;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .chess-board-wrapper {
     max-width: 100%;
+    margin: 0;
   }
 }
 
@@ -321,7 +347,7 @@
 
 @media (max-width: 600px) {
   .game-info {
-    padding: 10px;
+    padding: 16px;
   }
   .game-info h3 {
     font-size: 12px;
@@ -463,15 +489,19 @@
 }
 
 .history-controls button {
-  padding: 8px;
+  padding: 8px 12px;
   background: var(--surface-2);
   color: var(--text);
   border: 1px solid var(--border-2);
   border-radius: 4px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 18px;
   font-weight: 500;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
 }
 
 .history-controls button:hover:not(:disabled) {
@@ -551,6 +581,6 @@
   }
 
   .history-controls {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
 }
