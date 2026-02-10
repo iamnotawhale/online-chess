@@ -5,6 +5,7 @@ import { Login } from './components/Login';
 import { Register } from './components/Register';
 import { Dashboard } from './components/Dashboard';
 import { GameView } from './components/Game';
+import { GameAnalysis } from './components/GameAnalysis';
 import { InviteAccept } from './components/InviteAccept';
 import { Profile } from './components/Profile';
 import { useTranslation } from './i18n/LanguageContext';
@@ -249,6 +250,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <GameView />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/analysis/:gameId"
+            element={
+              <ProtectedRoute>
+                <GameAnalysis />
               </ProtectedRoute>
             }
           />

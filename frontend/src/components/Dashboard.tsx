@@ -528,6 +528,7 @@ export const Dashboard: React.FC = () => {
                               <span className="game-date">{formatDateTime(game.finishedAt || game.createdAt)}</span>
                             )}
                             <a href={`/game/${game.id}`} className="game-action-link">{t('view')}</a>
+                            <a href={`/analysis/${game.id}`} className="game-action-link" title="Анализ партии">📊</a>
                           </div>
                         </div>
                       );

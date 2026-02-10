@@ -1,0 +1,248 @@
+.game-analysis-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.game-analysis-header {
+  background: var(--surface);
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+  border-radius: 4px;
+}
+
+.game-analysis-header h1 {
+  margin: 0 0 12px 0;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.game-info {
+  display: flex;
+  gap: 16px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.error-message {
+  background: var(--danger-bg);
+  color: var(--danger-text);
+  padding: 12px 16px;
+  border-radius: 4px;
+  border: 1px solid var(--danger-border);
+  margin-bottom: 20px;
+}
+
+/* Analysis Start */
+.analysis-start {
+  background: var(--surface);
+  padding: 40px 20px;
+  text-align: center;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+.analysis-start p {
+  color: var(--muted);
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.analyze-btn {
+  padding: 12px 32px;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.2s;
+  min-height: 48px;
+  min-width: 200px;
+}
+
+.analyze-btn:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+.analyze-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Analysis Results */
+.analysis-results {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Accuracy Summary */
+.accuracy-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.player-accuracy {
+  background: var(--surface);
+  padding: 20px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+.player-accuracy h3 {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.accuracy-bar {
+  width: 100%;
+  height: 24px;
+  background: var(--surface-2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
+}
+
+.accuracy-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4ade80 0%, #22c55e 100%);
+  transition: width 0.3s ease;
+}
+
+.accuracy-value {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 8px 0;
+}
+
+.stats {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.stats span {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* Moves Analysis */
+.moves-analysis {
+  background: var(--surface);
+  padding: 20px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+.moves-analysis h3 {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.moves-table {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.table-header {
+  display: grid;
+  grid-template-columns: 120px 1fr 100px 120px;
+  background: var(--surface-2);
+  padding: 12px 16px;
+  font-weight: 600;
+  color: var(--text);
+  font-size: 13px;
+  border-bottom: 2px solid var(--border);
+  gap: 12px;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 120px 1fr 100px 120px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+  gap: 12px;
+  align-items: center;
+}
+
+.table-row:hover {
+  background: var(--surface-3);
+}
+
+.table-row.blunder {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.table-row.blunder:hover {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.table-row.mistake {
+  background: rgba(249, 115, 22, 0.1);
+}
+
+.table-row.mistake:hover {
+  background: rgba(249, 115, 22, 0.15);
+}
+
+.col-move {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.col-eval {
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  color: var(--muted);
+}
+
+.col-type {
+  text-align: center;
+  font-size: 16px;
+}
+
+.col-best {
+  text-align: center;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .game-analysis-container {
+    padding: 12px;
+  }
+
+  .accuracy-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .table-header,
+  .table-row {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .col-best {
+    display: none;
+  }
+}
