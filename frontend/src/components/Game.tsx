@@ -791,7 +791,7 @@ export const GameView: React.FC = () => {
               <div className="game-over-overlay">
                 <div className="game-over-content">
                   <h2>{t('gameFinished')}</h2>
-                  <p>{getResultLabel(game.result)}</p>
+                  <p>{game.result === '1/2-1/2' ? '1/2-1/2' : getResultLabel(game.result)}</p>
                   {game.resultReason && <p>{getResultReasonLabel(game.resultReason)}</p>}
                 </div>
               </div>

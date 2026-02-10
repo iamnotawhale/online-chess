@@ -261,6 +261,15 @@ class ApiService {
     return this.client.delete(`/lobby/${gameId}`).then(res => res.data);
   }
 
+  analyzeGame(gameId: string, moves: string[], startFen?: string, depth?: number): Promise<any> {
+    return this.client.post(`/games/${gameId}/analyze`, {
+      gameId,
+      moves,
+      startFen: startFen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+      depth: depth || 20
+    }).then(res => res.data);
+  }
+
   isAuthenticated(): boolean {
     return !!this.token;
   }
