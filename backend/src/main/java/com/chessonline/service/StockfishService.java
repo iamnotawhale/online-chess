@@ -57,9 +57,12 @@ public class StockfishService {
 
         try {
             // Start Stockfish process
+            logger.info("Starting Stockfish process with command: {}", STOCKFISH_COMMAND);
             ProcessBuilder pb = new ProcessBuilder(STOCKFISH_COMMAND);
             pb.redirectErrorStream(true);
             stockfish = pb.start();
+            
+            logger.info("Stockfish process started successfully");
 
             reader = new BufferedReader(new InputStreamReader(stockfish.getInputStream()));
             writer = new BufferedWriter(new OutputStreamWriter(stockfish.getOutputStream()));
