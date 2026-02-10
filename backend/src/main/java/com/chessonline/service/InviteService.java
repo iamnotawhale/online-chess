@@ -10,7 +10,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -18,10 +17,6 @@ import java.util.UUID;
 
 @Service
 public class InviteService {
-
-    private static final String CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Exclude confusing chars
-    private static final int CODE_LENGTH = 8;
-    private static final SecureRandom random = new SecureRandom();
 
     @Autowired
     private InviteRepository inviteRepository;
@@ -33,25 +28,6 @@ public class InviteService {
     private GameService gameService;
 
     /**
-     * Generate a unique invite code
-     */
-    private String generateUniqueCode() {
-        String code;
-        do {
-            code = generateCode();
-        } while (inviteRepository.findByCode(code).isPresent());
-        return code;
-    }
-
-    private String generateCode() {
-        StringBuilder code = new StringBuilder(CODE_LENGTH);
-        for (int i = 0; i < CODE_LENGTH; i++) {
-            code.append(CODE_CHARS.charAt(random.nextInt(CODE_CHARS.length())));
-        }
-        return code.toString();
-    }
-
-    /**
      * Create a new invite
      */
     @Transactional
@@ -59,9 +35,8 @@ public class InviteService {
         User creator = userRepository.findById(creatorId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        String code = generateUniqueCode();
         String normalizedColor = preferredColor != null ? preferredColor : "random";
-        Invite invite = new Invite(code, creator, gameMode, timeControl, rated, normalizedColor);
+        Invite invite = new Invite(creator, gameMode, timeControl, rated, normalizedColor);
         
         if (expirationHours != null) {
             invite.setExpiresAt(LocalDateTime.now().plusHours(expirationHours));
@@ -71,11 +46,11 @@ public class InviteService {
     }
 
     /**
-     * Get invite by code
+     * Get invite by ID
      */
     @Transactional(readOnly = true)
-    public Optional<Invite> getInviteByCode(String code) {
-        Optional<Invite> invite = inviteRepository.findByCode(code.toUpperCase());
+    public Optional<Invite> getInviteById(String id) {
+        Optional<Invite> invite = inviteRepository.findById(id.toUpperCase());
         // Force load lazy relationships
         invite.ifPresent(i -> {
             i.getCreator().getUsername();
@@ -90,8 +65,8 @@ public class InviteService {
      * Accept an invite
      */
     @Transactional
-    public Game acceptInvite(String code, UUID acceptorId) {
-        Invite invite = inviteRepository.findByCode(code.toUpperCase())
+    public Game acceptInvite(String inviteId, UUID acceptorId) {
+        Invite invite = inviteRepository.findById(inviteId.toUpperCase())
                 .orElseThrow(() -> new RuntimeException("Invite not found"));
 
         if (invite.getUsed()) {
@@ -150,8 +125,8 @@ public class InviteService {
      * Cancel an invite
      */
     @Transactional
-    public void cancelInvite(String code, UUID userId) {
-        Invite invite = inviteRepository.findByCode(code.toUpperCase())
+    public void cancelInvite(String inviteId, UUID userId) {
+        Invite invite = inviteRepository.findById(inviteId.toUpperCase())
                 .orElseThrow(() -> new RuntimeException("Invite not found"));
 
         if (!invite.getCreator().getId().equals(userId)) {

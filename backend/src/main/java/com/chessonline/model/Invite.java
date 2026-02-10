@@ -2,25 +2,25 @@ package com.chessonline.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.security.SecureRandom;
 
 @Entity
 @Table(name = "invites")
 public class Invite {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
+    private static final String CHARACTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    private static final SecureRandom RANDOM = new SecureRandom();
 
-    @Column(nullable = false, unique = true, length = 12)
-    private String code;
+    @Id
+    @Column(length = 10, nullable = false, updatable = false)
+    private String id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_id", nullable = false)
     private User creator;
 
     @Column(name = "game_mode", nullable = false, length = 20)
-    private String gameMode; // "standard", "rapid", "blitz", "bullet"
+    private String gameMode; // "standard", "rapid", "blitz", "classic", "bullet"
 
     @Column(name = "time_control", length = 20)
     private String timeControl; // e.g., "10+0", "5+3", "3+2"
@@ -49,24 +49,33 @@ public class Invite {
 
     @PrePersist
     protected void onCreate() {
+        if (id == null) {
+            id = generateShortId();
+        }
         createdAt = LocalDateTime.now();
         if (expiresAt == null) {
             expiresAt = createdAt.plusHours(24); // Default 24h expiration
         }
     }
 
+    private String generateShortId() {
+        StringBuilder sb = new StringBuilder(10);
+        for (int i = 0; i < 10; i++) {
+            sb.append(CHARACTERS.charAt(RANDOM.nextInt(CHARACTERS.length())));
+        }
+        return sb.toString();
+    }
+
     // Constructors
     public Invite() {}
 
-    public Invite(String code, User creator, String gameMode, String timeControl) {
-        this.code = code;
+    public Invite(User creator, String gameMode, String timeControl) {
         this.creator = creator;
         this.gameMode = gameMode;
         this.timeControl = timeControl;
     }
 
-    public Invite(String code, User creator, String gameMode, String timeControl, boolean rated, String preferredColor) {
-        this.code = code;
+    public Invite(User creator, String gameMode, String timeControl, boolean rated, String preferredColor) {
         this.creator = creator;
         this.gameMode = gameMode;
         this.timeControl = timeControl;
@@ -75,20 +84,12 @@ public class Invite {
     }
 
     // Getters and Setters
-    public UUID getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(String id) {
         this.id = id;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
     }
 
     public User getCreator() {

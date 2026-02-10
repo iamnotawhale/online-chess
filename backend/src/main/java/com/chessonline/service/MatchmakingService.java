@@ -29,7 +29,7 @@ public class MatchmakingService {
 
     private final Map<String, Deque<UUID>> queues = new ConcurrentHashMap<>();
     private final Map<UUID, String> userQueueKeys = new ConcurrentHashMap<>();
-    private final Map<UUID, UUID> matchedGames = new ConcurrentHashMap<>();
+    private final Map<UUID, String> matchedGames = new ConcurrentHashMap<>();
     private final Object queueLock = new Object();
 
     @Autowired
@@ -133,7 +133,7 @@ public class MatchmakingService {
     }
 
     public MatchmakingStatus status(UUID userId) {
-        UUID matchedGameId = matchedGames.remove(userId);
+        String matchedGameId = matchedGames.remove(userId);
         if (matchedGameId != null) {
             return new MatchmakingStatus(false, true, matchedGameId, null, null, null);
         }
@@ -169,18 +169,18 @@ public class MatchmakingService {
 
     public static class MatchmakingResult {
         private final boolean matched;
-        private final UUID gameId;
+        private final String gameId;
         private final String gameMode;
         private final String timeControl;
 
-        private MatchmakingResult(boolean matched, UUID gameId, String gameMode, String timeControl) {
+        private MatchmakingResult(boolean matched, String gameId, String gameMode, String timeControl) {
             this.matched = matched;
             this.gameId = gameId;
             this.gameMode = gameMode;
             this.timeControl = timeControl;
         }
 
-        public static MatchmakingResult matched(UUID gameId, String gameMode, String timeControl) {
+        public static MatchmakingResult matched(String gameId, String gameMode, String timeControl) {
             return new MatchmakingResult(true, gameId, gameMode, timeControl);
         }
 
@@ -192,7 +192,7 @@ public class MatchmakingService {
             return matched;
         }
 
-        public UUID getGameId() {
+        public String getGameId() {
             return gameId;
         }
 
@@ -208,12 +208,12 @@ public class MatchmakingService {
     public static class MatchmakingStatus {
         private final boolean queued;
         private final boolean matched;
-        private final UUID gameId;
+        private final String gameId;
         private final String gameMode;
         private final String timeControl;
         private final String preferredColor;
 
-        public MatchmakingStatus(boolean queued, boolean matched, UUID gameId, String gameMode, String timeControl, String preferredColor) {
+        public MatchmakingStatus(boolean queued, boolean matched, String gameId, String gameMode, String timeControl, String preferredColor) {
             this.queued = queued;
             this.matched = matched;
             this.gameId = gameId;
@@ -230,7 +230,7 @@ public class MatchmakingService {
             return matched;
         }
 
-        public UUID getGameId() {
+        public String getGameId() {
             return gameId;
         }
 

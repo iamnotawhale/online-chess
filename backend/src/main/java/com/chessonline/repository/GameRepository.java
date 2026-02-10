@@ -11,7 +11,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface GameRepository extends JpaRepository<Game, UUID> {
+public interface GameRepository extends JpaRepository<Game, String> {
     
     List<Game> findByPlayerWhiteIdOrPlayerBlackIdOrderByCreatedAtDesc(UUID whiteId, UUID blackId);
     
@@ -20,7 +20,7 @@ public interface GameRepository extends JpaRepository<Game, UUID> {
 
     List<Game> findByStatus(String status);
     
-    Optional<Game> findByIdAndPlayerWhiteIdOrPlayerBlackId(UUID gameId, UUID playerId, UUID playerId2);
+    Optional<Game> findByIdAndPlayerWhiteIdOrPlayerBlackId(String gameId, UUID playerId, UUID playerId2);
 
     @Query("SELECT g FROM Game g WHERE g.status = :status AND (g.playerWhite.id = :userId OR g.playerBlack.id = :userId) ORDER BY g.finishedAt DESC")
     List<Game> findFinishedGamesByUserId(@Param("status") String status, @Param("userId") UUID userId);

@@ -56,12 +56,12 @@ public class InviteController {
     }
 
     /**
-     * Get invite by code
+     * Get invite by ID
      */
-    @GetMapping("/{code}")
-    public ResponseEntity<?> getInvite(@PathVariable String code) {
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getInvite(@PathVariable String id) {
         try {
-            Invite invite = inviteService.getInviteByCode(code)
+            Invite invite = inviteService.getInviteById(id)
                     .orElseThrow(() -> new RuntimeException("Invite not found"));
 
             InviteResponse response = mapToResponse(invite);
@@ -75,13 +75,13 @@ public class InviteController {
     /**
      * Accept an invite
      */
-    @PostMapping("/{code}/accept")
+    @PostMapping("/{id}/accept")
     public ResponseEntity<?> acceptInvite(
-            @PathVariable String code,
+            @PathVariable String id,
             Authentication authentication) {
         try {
             UUID userId = UUID.fromString(authentication.getName());
-            Game game = inviteService.acceptInvite(code, userId);
+            Game game = inviteService.acceptInvite(id, userId);
             GameResponse response = mapToGameResponse(game);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -93,13 +93,13 @@ public class InviteController {
     /**
      * Cancel an invite
      */
-    @DeleteMapping("/{code}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<?> cancelInvite(
-            @PathVariable String code,
+            @PathVariable String id,
             Authentication authentication) {
         try {
             UUID userId = UUID.fromString(authentication.getName());
-            inviteService.cancelInvite(code, userId);
+            inviteService.cancelInvite(id, userId);
             return ResponseEntity.ok(Map.of("message", "Invite cancelled successfully"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -153,8 +153,7 @@ public class InviteController {
     private InviteResponse mapToResponse(Invite invite) {
         InviteResponse response = new InviteResponse();
         response.setId(invite.getId());
-        response.setCode(invite.getCode());
-        response.setInviteUrl(frontendUrl + "/invite/" + invite.getCode());
+        response.setInviteUrl(frontendUrl + "/invite/" + invite.getId());
         response.setGameMode(invite.getGameMode());
         response.setTimeControl(invite.getTimeControl());
         response.setRated(invite.isRated());

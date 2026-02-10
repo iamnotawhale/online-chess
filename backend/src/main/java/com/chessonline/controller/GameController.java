@@ -60,7 +60,7 @@ public class GameController {
      */
     @GetMapping("/{gameId}")
     public ResponseEntity<?> getGame(
-            @PathVariable UUID gameId,
+            @PathVariable String gameId,
             @RequestParam(required = false) UUID userId,
             Authentication authentication) {
         try {
@@ -114,7 +114,7 @@ public class GameController {
      */
     @PostMapping("/{gameId}/moves")
     public ResponseEntity<?> makeMove(
-            @PathVariable UUID gameId,
+            @PathVariable String gameId,
             @Valid @RequestBody MakeMoveRequest request,
             Authentication authentication) {
         try {
@@ -134,7 +134,7 @@ public class GameController {
      */
     @PostMapping("/{gameId}/resign")
     public ResponseEntity<?> resign(
-            @PathVariable UUID gameId,
+            @PathVariable String gameId,
             Authentication authentication) {
         try {
             UUID userId = UUID.fromString(authentication.getName());
@@ -154,7 +154,7 @@ public class GameController {
      */
     @PostMapping("/{gameId}/abandon")
     public ResponseEntity<?> abandon(
-            @PathVariable UUID gameId,
+            @PathVariable String gameId,
             Authentication authentication) {
         try {
             UUID userId = UUID.fromString(authentication.getName());
@@ -173,7 +173,7 @@ public class GameController {
      * Get moves for a game
      */
     @GetMapping("/{gameId}/moves")
-    public ResponseEntity<?> getMoves(@PathVariable UUID gameId) {
+    public ResponseEntity<?> getMoves(@PathVariable String gameId) {
         try {
             List<Move> moves = gameService.getGameMoves(gameId);
             List<MoveResponse> responses = moves.stream()
@@ -190,7 +190,7 @@ public class GameController {
      * Get PGN for a game
      */
     @GetMapping("/{gameId}/pgn")
-    public ResponseEntity<?> getPGN(@PathVariable UUID gameId) {
+    public ResponseEntity<?> getPGN(@PathVariable String gameId) {
         try {
             String pgn = gameService.generatePGN(gameId);
             return ResponseEntity.ok(Map.of("pgn", pgn));
@@ -234,7 +234,7 @@ public class GameController {
     }
 
     @PostMapping("/{gameId}/offer-draw")
-    public ResponseEntity<?> offerDraw(@PathVariable UUID gameId, Authentication authentication) {
+    public ResponseEntity<?> offerDraw(@PathVariable String gameId, Authentication authentication) {
         try {
             UUID userId = UUID.fromString(authentication.getName());
             gameService.offerDraw(gameId, userId);
@@ -247,7 +247,7 @@ public class GameController {
 
     @PostMapping("/{gameId}/respond-draw")
     public ResponseEntity<?> respondToDraw(
-            @PathVariable UUID gameId,
+            @PathVariable String gameId,
             @RequestParam boolean accept,
             Authentication authentication) {
         try {

@@ -51,7 +51,7 @@ public class LobbyController {
             Authentication authentication) {
         try {
             UUID opponentId = UUID.fromString(authentication.getName());
-            UUID createdGameId = lobbyService.joinLobbyGame(gameId, opponentId);
+            String createdGameId = lobbyService.joinLobbyGame(gameId, opponentId);
             return ResponseEntity.ok(Map.of("gameId", createdGameId, "message", "Присоединились к игре"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

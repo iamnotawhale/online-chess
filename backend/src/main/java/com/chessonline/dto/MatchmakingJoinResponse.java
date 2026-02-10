@@ -1,11 +1,9 @@
 package com.chessonline.dto;
 
-import java.util.UUID;
-
 public class MatchmakingJoinResponse {
     private boolean queued;
     private boolean matched;
-    private UUID gameId;
+    private String gameId;
     private String gameMode;
     private String timeControl;
     private String message;
@@ -26,11 +24,11 @@ public class MatchmakingJoinResponse {
         this.matched = matched;
     }
 
-    public UUID getGameId() {
+    public String getGameId() {
         return gameId;
     }
 
-    public void setGameId(UUID gameId) {
+    public void setGameId(String gameId) {
         this.gameId = gameId;
     }
 

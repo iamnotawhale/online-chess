@@ -10,7 +10,7 @@ import java.util.UUID;
 @Repository
 public interface MoveRepository extends JpaRepository<Move, UUID> {
     
-    List<Move> findByGameIdOrderByMoveNumber(UUID gameId);
+    List<Move> findByGameIdOrderByMoveNumber(String gameId);
     
-    Move findTopByGameIdOrderByMoveNumberDesc(UUID gameId);
+    Move findTopByGameIdOrderByMoveNumberDesc(String gameId);
 }

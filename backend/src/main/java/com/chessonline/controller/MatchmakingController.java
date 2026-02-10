@@ -62,7 +62,7 @@ public class MatchmakingController {
         MatchmakingStatusResponse response = new MatchmakingStatusResponse();
         response.setQueued(status.isQueued());
         response.setMatched(status.isMatched());
-        response.setGameId(status.getGameId() != null ? status.getGameId().toString() : null);
+        response.setGameId(status.getGameId());
         response.setGameMode(status.getGameMode());
         response.setTimeControl(status.getTimeControl());
 

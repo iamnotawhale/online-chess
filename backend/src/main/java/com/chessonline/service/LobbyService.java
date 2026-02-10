@@ -61,7 +61,7 @@ public class LobbyService {
         return toLobbyGameResponse(lobbyGame);
     }
 
-    public UUID joinLobbyGame(UUID gameId, UUID opponentId) {
+    public String joinLobbyGame(UUID gameId, UUID opponentId) {
         LobbyGame lobbyGame = lobbyGameRepository.findById(gameId)
                 .orElseThrow(() -> new RuntimeException("Lobby game not found"));
 

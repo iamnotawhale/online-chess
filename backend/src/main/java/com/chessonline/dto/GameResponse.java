@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class GameResponse {
-    private UUID id;
+    private String id;
     private UUID whitePlayerId;
     private String whiteUsername;
     private UUID blackPlayerId;
@@ -26,11 +26,11 @@ public class GameResponse {
 
     public GameResponse() {}
 
-    public UUID getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(String id) {
         this.id = id;
     }
 

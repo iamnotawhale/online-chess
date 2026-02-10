@@ -169,7 +169,7 @@ public class RatingService {
      * Get rating changes for a specific game
      */
     @Transactional(readOnly = true)
-    public List<RatingHistory> getGameRatingChanges(UUID gameId) {
+    public List<RatingHistory> getGameRatingChanges(String gameId) {
         return ratingHistoryRepository.findByGameIdOrderByCreatedAtDesc(gameId);
     }
 

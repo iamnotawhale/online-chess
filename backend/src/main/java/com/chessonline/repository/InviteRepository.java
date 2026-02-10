@@ -11,9 +11,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface InviteRepository extends JpaRepository<Invite, UUID> {
-    
-    Optional<Invite> findByCode(String code);
+public interface InviteRepository extends JpaRepository<Invite, String> {
     
     List<Invite> findByCreatorAndUsedFalseAndExpiresAtAfter(User creator, LocalDateTime now);
     

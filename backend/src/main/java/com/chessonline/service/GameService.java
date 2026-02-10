@@ -95,7 +95,7 @@ public class GameService {
      * Get game by ID (ensures user is participant)
      */
     @Transactional(readOnly = true)
-    public Optional<Game> getGame(UUID gameId, UUID userId) {
+    public Optional<Game> getGame(String gameId, UUID userId) {
         Optional<Game> game = gameRepository.findById(gameId);
         
         if (game.isPresent() && game.get().isPlayerInGame(userId)) {
@@ -109,7 +109,7 @@ public class GameService {
      * Get game without user check (for public viewing)
      */
     @Transactional(readOnly = true)
-    public Optional<Game> getGamePublic(UUID gameId) {
+    public Optional<Game> getGamePublic(String gameId) {
         return gameRepository.findById(gameId);
     }
 
@@ -117,7 +117,7 @@ public class GameService {
      * Make a move in the game using chesslib for validation
      */
     @Transactional
-    public Move makeMove(UUID gameId, UUID userId, String moveStr) {
+    public Move makeMove(String gameId, UUID userId, String moveStr) {
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new RuntimeException("Game not found"));
 
@@ -292,7 +292,7 @@ public class GameService {
     
     // Inner class for WebSocket messages
     public static class GameUpdateMessage {
-        private UUID gameId;
+        private String gameId;
         private String status;
         private String fenCurrent;
         private String result;
@@ -302,8 +302,8 @@ public class GameService {
         private LocalDateTime lastMoveAt;
         private UUID drawOfferedById;
         
-        public UUID getGameId() { return gameId; }
-        public void setGameId(UUID gameId) { this.gameId = gameId; }
+        public String getGameId() { return gameId; }
+        public void setGameId(String gameId) { this.gameId = gameId; }
         public String getStatus() { return status; }
         public void setStatus(String status) { this.status = status; }
         public String getFenCurrent() { return fenCurrent; }
@@ -453,7 +453,7 @@ public class GameService {
      * Resign from game
      */
     @Transactional
-    public Game resign(UUID gameId, UUID userId) {
+    public Game resign(String gameId, UUID userId) {
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new RuntimeException("Game not found"));
 
@@ -493,7 +493,7 @@ public class GameService {
      * Offer draw
      */
     @Transactional
-    public void offerDraw(UUID gameId, UUID userId) {
+    public void offerDraw(String gameId, UUID userId) {
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new RuntimeException("Game not found"));
 
@@ -519,7 +519,7 @@ public class GameService {
      * Respond to draw offer
      */
     @Transactional
-    public void respondToDraw(UUID gameId, UUID userId, boolean accept) {
+    public void respondToDraw(String gameId, UUID userId, boolean accept) {
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new RuntimeException("Game not found"));
 
@@ -571,7 +571,7 @@ public class GameService {
      * Abandon game (if inactive for too long)
      */
     @Transactional
-    public Game abandon(UUID gameId, UUID userId) {
+    public Game abandon(String gameId, UUID userId) {
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new RuntimeException("Game not found"));
 
@@ -594,7 +594,7 @@ public class GameService {
      * Get move history for a game
      */
     @Transactional(readOnly = true)
-    public List<Move> getGameMoves(UUID gameId) {
+    public List<Move> getGameMoves(String gameId) {
         return moveRepository.findByGameIdOrderByMoveNumber(gameId);
     }
 
@@ -626,7 +626,7 @@ public class GameService {
      * Generate PGN for a game
      */
     @Transactional(readOnly = true)
-    public String generatePGN(UUID gameId) {
+    public String generatePGN(String gameId) {
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new RuntimeException("Game not found"));
 

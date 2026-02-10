@@ -1,12 +1,10 @@
 package com.chessonline.dto;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 public class InviteResponse {
 
-    private UUID id;
-    private String code;
+    private String id;
     private String inviteUrl;
     private String gameMode;
     private String timeControl;
@@ -21,20 +19,12 @@ public class InviteResponse {
 
     public InviteResponse() {}
 
-    public UUID getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(String id) {
         this.id = id;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
     }
 
     public String getInviteUrl() {

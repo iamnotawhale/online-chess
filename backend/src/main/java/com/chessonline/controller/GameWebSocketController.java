@@ -30,7 +30,7 @@ public class GameWebSocketController {
      */
     @MessageMapping("/game/{gameId}/move")
     public void makeMove(
-            @DestinationVariable UUID gameId,
+            @DestinationVariable String gameId,
             @Payload MakeMoveRequest request,
             Principal principal) {
         try {
@@ -60,7 +60,7 @@ public class GameWebSocketController {
     /**
      * Подписка на игру (клиент автоматически подписывается на /topic/game/{gameId}/updates)
      */
-    public void notifyGameUpdate(UUID gameId, Game game) {
+    public void notifyGameUpdate(String gameId, Game game) {
         GameResponse response = mapGameToResponse(game);
         messagingTemplate.convertAndSend("/topic/game/" + gameId + "/updates", response);
     }

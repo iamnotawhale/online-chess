@@ -88,7 +88,7 @@ public class RatingController {
      * Get rating changes for a specific game
      */
     @GetMapping("/games/{gameId}")
-    public ResponseEntity<?> getGameRatingChanges(@PathVariable UUID gameId) {
+    public ResponseEntity<?> getGameRatingChanges(@PathVariable String gameId) {
         try {
             List<RatingHistory> histories = ratingService.getGameRatingChanges(gameId);
             List<RatingHistoryResponse> responses = histories.stream()

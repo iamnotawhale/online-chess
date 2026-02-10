@@ -21,6 +21,10 @@ git fetch origin
 git checkout main
 git reset --hard origin/main
 
+# Apply database migrations
+echo "💾 Applying database migrations..."
+./db/apply-migrations.sh
+
 # Stop existing containers
 echo "⏹️  Stopping existing containers..."
 docker-compose -f docker-compose.prod.yml down

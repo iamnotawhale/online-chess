@@ -6,7 +6,7 @@ import java.util.UUID;
 public class RatingHistoryResponse {
     private UUID id;
     private UUID userId;
-    private UUID gameId;
+    private String gameId;
     private int ratingBefore;
     private int ratingAfter;
     private int ratingChange;
@@ -30,11 +30,11 @@ public class RatingHistoryResponse {
         this.userId = userId;
     }
 
-    public UUID getGameId() {
+    public String getGameId() {
         return gameId;
     }
 
-    public void setGameId(UUID gameId) {
+    public void setGameId(String gameId) {
         this.gameId = gameId;
     }
 

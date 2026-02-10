@@ -3,14 +3,18 @@ package com.chessonline.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.security.SecureRandom;
 
 @Entity
 @Table(name = "games")
 public class Game {
 
+    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    private static final SecureRandom RANDOM = new SecureRandom();
+
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
+    @Column(length = 10, nullable = false, updatable = false)
+    private String id;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "player_white_id", nullable = false)
@@ -63,8 +67,19 @@ public class Game {
 
     @PrePersist
     protected void onCreate() {
+        if (id == null) {
+            id = generateShortId();
+        }
         createdAt = LocalDateTime.now();
         status = "active";
+    }
+
+    private String generateShortId() {
+        StringBuilder sb = new StringBuilder(10);
+        for (int i = 0; i < 10; i++) {
+            sb.append(CHARACTERS.charAt(RANDOM.nextInt(CHARACTERS.length())));
+        }
+        return sb.toString();
     }
 
     // Constructors
@@ -80,11 +95,11 @@ public class Game {
     }
 
     // Getters and Setters
-    public UUID getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(String id) {
         this.id = id;
     }
 
