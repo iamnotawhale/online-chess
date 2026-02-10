@@ -12,14 +12,22 @@ fi
 # Load environment variables
 source .env
 
-# Replace domain in nginx.conf
-sed -i "s/YOUR_DOMAIN/$DOMAIN/g" nginx.conf
-
 # Pull latest code
 echo "📥 Pulling latest code..."
 git fetch origin
 git checkout main
 git reset --hard origin/main
+
+# Re-execute this script if it was updated
+SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+if [ "$DEPLOY_REEXEC" != "1" ]; then
+    echo "🔄 Script updated, re-executing..."
+    export DEPLOY_REEXEC=1
+    exec "$SCRIPT_PATH" "$@"
+fi
+
+# Replace domain in nginx.conf
+sed -i "s/YOUR_DOMAIN/$DOMAIN/g" nginx.conf
 
 # Stop existing containers
 echo "⏹️  Stopping existing containers..."
