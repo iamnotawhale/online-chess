@@ -17,16 +17,12 @@ export const GameAnalysis: React.FC = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
-  const [currentPosition, setCurrentPosition] = useState('');
   const [currentMove, setCurrentMove] = useState('');
   const [selectedMoveIndex, setSelectedMoveIndex] = useState<number | null>(null);
   const [boardPosition, setBoardPosition] = useState('');
   const [highlightSquares, setHighlightSquares] = useState<{[key: string]: any}>({});
-  const [arrows, setArrows] = useState<Array<[string, string, string]>>([]);
+  const [arrows, setArrows] = useState<any[]>([]);
   const [analysisBoardWidth, setAnalysisBoardWidth] = useState(800);
-  const [loadingBoardWidth, setLoadingBoardWidth] = useState(400);
-
-  const getStartFen = () => game?.startFen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
   // Load game and its moves
   useEffect(() => {
@@ -62,11 +58,7 @@ export const GameAnalysis: React.FC = () => {
       const maxBoardWidth = isMobile 
         ? window.innerWidth  // полная ширина
         : Math.min(650, Math.max(280, window.innerWidth - 40));
-      const maxLoadingWidth = isMobile
-        ? window.innerWidth / 2
-        : Math.min(325, Math.max(140, (window.innerWidth - 40) / 2));
       setAnalysisBoardWidth(maxBoardWidth);
-      setLoadingBoardWidth(maxLoadingWidth);
     };
 
     updateBoardWidths();
@@ -110,7 +102,6 @@ export const GameAnalysis: React.FC = () => {
       if (game?.startFen) {
         chess.load(game.startFen);
       }
-      setCurrentPosition(chess.fen());
       
       // Simulate progress with move-by-move visualization
       let moveIndex = 0;
@@ -118,7 +109,7 @@ export const GameAnalysis: React.FC = () => {
         if (moveIndex < sanMoves.length) {
           try {
             chess.move(sanMoves[moveIndex]);
-            setCurrentPosition(chess.fen());
+            // Update position visualization
             const moveNum = Math.floor(moveIndex / 2) + 1;
             const color = moveIndex % 2 === 0 ? '.' : '...';
             setCurrentMove(`${moveNum}${color} ${sanMoves[moveIndex]}`);
