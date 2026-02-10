@@ -21,17 +21,34 @@ git fetch origin
 git checkout main
 git reset --hard origin/main
 
-# Apply database migrations
-echo "💾 Applying database migrations..."
-./db/apply-migrations.sh
-
 # Stop existing containers
 echo "⏹️  Stopping existing containers..."
 docker-compose -f docker-compose.prod.yml down
 
-# Build and start containers
-echo "🔨 Building and starting containers..."
-docker-compose -f docker-compose.prod.yml up -d --build
+# Remove dangling containers with wrong names
+echo "🧹 Cleaning up old containers..."
+docker rm -f $(docker ps -aq --filter "name=chess_") 2>/dev/null || true
+
+# Start postgres first
+echo "🗄️  Starting PostgreSQL..."
+docker-compose -f docker-compose.prod.yml up -d postgres
+
+# Wait for postgres to be ready
+echo "⏳ Waiting for PostgreSQL to be ready..."
+sleep 10
+until docker exec chess_postgres_prod pg_isready -U chess -d chessonline > /dev/null 2>&1; do
+  echo "Waiting for PostgreSQL..."
+  sleep 2
+done
+echo "✅ PostgreSQL is ready"
+
+# Apply database migrations
+echo "💾 Applying database migrations..."
+./db/apply-migrations.sh
+
+# Build and start remaining containers
+echo "🔨 Building and starting backend and frontend..."
+docker-compose -f docker-compose.prod.yml up -d --build backend frontend
 
 # Wait for services to start
 echo "⏳ Waiting for services to start..."
