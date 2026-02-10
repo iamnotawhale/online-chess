@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 @Service
 public class StockfishService {
     private static final Logger logger = LoggerFactory.getLogger(StockfishService.class);
-    private static final String STOCKFISH_COMMAND = "stockfish";
+    private static final String STOCKFISH_COMMAND = "/usr/games/stockfish";
     private static final int DEFAULT_DEPTH = 20;
     private static final long TIMEOUT_SECONDS = 30;
     
