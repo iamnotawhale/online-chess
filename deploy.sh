@@ -55,8 +55,8 @@ echo "💾 Applying database migrations..."
 ./db/apply-migrations.sh
 
 # Build and start remaining containers
-echo "🔨 Building and starting backend and frontend..."
-docker-compose -f docker-compose.prod.yml up -d --build backend frontend
+echo "🔨 Building and starting backend, frontend and nginx..."
+docker-compose -f docker-compose.prod.yml up -d --build backend frontend nginx
 
 # Wait for services to start
 echo "⏳ Waiting for services to start..."
