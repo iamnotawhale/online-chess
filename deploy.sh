@@ -17,7 +17,9 @@ sed -i "s/YOUR_DOMAIN/$DOMAIN/g" nginx.conf
 
 # Pull latest code
 echo "📥 Pulling latest code..."
-git pull
+git fetch origin
+git checkout main
+git reset --hard origin/main
 
 # Stop existing containers
 echo "⏹️  Stopping existing containers..."

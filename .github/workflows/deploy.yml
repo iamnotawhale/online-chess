@@ -30,6 +30,5 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no $USER@$HOST '
             cd /opt/online-chess &&
-            git pull &&
             ./deploy.sh
           '
