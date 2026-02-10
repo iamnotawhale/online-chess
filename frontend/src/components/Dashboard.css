@@ -756,3 +756,35 @@
   border: 1px solid var(--danger-border);
   font-size: 14px;
 }
+
+/* Mobile adjustments for game history cards */
+@media (max-width: 767px) {
+  .finished-game-card .game-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .time-control {
+    flex-shrink: 0;
+  }
+
+  .result-reason {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .game-date {
+    flex-basis: 100%;
+    margin-left: 0;
+    order: 10;
+  }
+
+  .game-action-link {
+    padding: 4px 8px;
+    font-size: 12px;
+    margin-left: 4px;
+  }
+}
