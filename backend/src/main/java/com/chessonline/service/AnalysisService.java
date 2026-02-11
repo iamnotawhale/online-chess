@@ -24,6 +24,12 @@ public class AnalysisService {
     private static final int BLUNDER_THRESHOLD = 200;
     private static final int MISTAKE_THRESHOLD = 50;
     private static final int INACCURACY_THRESHOLD = 20;
+    
+    // Analysis parameters
+    private static final int DEFAULT_DEPTH = 15; // Reduced from 20 for faster analysis
+    private static final int MIN_DEPTH = 5;
+    private static final int MAX_DEPTH = 25;
+    private static final int MAX_GAME_LENGTH_FOR_ANALYSIS = 100; // Skip very long games
 
     public AnalysisService(StockfishService stockfishService) {
         this.stockfishService = stockfishService;
@@ -35,10 +41,19 @@ public class AnalysisService {
      * @return Complete game analysis with move evaluations and accuracy metrics
      */
     public AnalysisResponse analyzeGame(AnalysisRequest request) throws IOException, InterruptedException, MoveGeneratorException {
-        logger.info("Starting analysis for game: {}", request.getGameId());
+        long startTime = System.currentTimeMillis();
+        logger.info("Starting analysis for game: {} with {} moves", request.getGameId(), request.getMoves().size());
         
-        int depth = request.getDepth() != null ? request.getDepth() : 20;
+        // Validate and limit analysis parameters
+        int depth = validateDepth(request.getDepth());
         List<String> moves = request.getMoves();
+        
+        // Validate game length
+        if (moves.size() > MAX_GAME_LENGTH_FOR_ANALYSIS) {
+            logger.warn("Game {} has {} moves, limiting to {} for analysis", 
+                       request.getGameId(), moves.size(), MAX_GAME_LENGTH_FOR_ANALYSIS);
+            moves = moves.subList(0, MAX_GAME_LENGTH_FOR_ANALYSIS);
+        }
         
         Board board = new Board();
         if (request.getStartFen() != null && !request.getStartFen().isEmpty()) {
@@ -53,6 +68,7 @@ public class AnalysisService {
         int moveNumber = 1;
 
         for (String sanMove : moves) {
+            long moveStartTime = System.currentTimeMillis();
             boolean isWhiteMove = board.getSideToMove().name().equals("WHITE");
             
             // Get evaluation before the move
@@ -108,7 +124,9 @@ public class AnalysisService {
                 moveNumber++;
             }
 
-            logger.debug("Analyzed move {}: {} (delta: {}cp)", moveNumber, sanMove, evaluationDelta);
+            long moveAnalysisTime = System.currentTimeMillis() - moveStartTime;
+            logger.debug("Analyzed move {}: {} (delta: {}cp, time: {}ms)", 
+                        moveNumber, sanMove, evaluationDelta, moveAnalysisTime);
         }
 
         // Calculate accuracies
@@ -130,12 +148,32 @@ public class AnalysisService {
         response.setBlackBlunders(blackBlunders);
         response.setMoves(moveAnalyses);
 
-        logger.info("Analysis completed for game: {} (White: {}%, Black: {}%)", 
+        long totalTime = System.currentTimeMillis() - startTime;
+        logger.info("Analysis completed for game: {} (White: {}%, Black: {}%, time: {}ms)", 
                     request.getGameId(), 
                     Math.round(whiteAccuracy), 
-                    Math.round(blackAccuracy));
+                    Math.round(blackAccuracy),
+                    totalTime);
 
         return response;
+    }
+    
+    /**
+     * Validate and constrain analysis depth
+     */
+    private int validateDepth(Integer requestedDepth) {
+        if (requestedDepth == null) {
+            return DEFAULT_DEPTH;
+        }
+        
+        int depth = Math.max(MIN_DEPTH, Math.min(requestedDepth, MAX_DEPTH));
+        
+        if (depth != requestedDepth) {
+            logger.warn("Depth {} adjusted to {} (valid range: {}-{})", 
+                       requestedDepth, depth, MIN_DEPTH, MAX_DEPTH);
+        }
+        
+        return depth;
     }
 
     /**
