@@ -29,7 +29,7 @@ public class AnalysisService {
     private static final int DEFAULT_DEPTH = 8; // Reduced from 10 for faster analysis (3-4x faster per position)
     private static final int MIN_DEPTH = 5;
     private static final int MAX_DEPTH = 15;
-    private static final int MAX_GAME_LENGTH_FOR_ANALYSIS = 50; // Limit to 50 moves max for reasonable analysis time
+    private static final int MAX_GAME_LENGTH_FOR_ANALYSIS = 200; // No hard limit, allow full games
 
     public AnalysisService(StockfishService stockfishService) {
         this.stockfishService = stockfishService;

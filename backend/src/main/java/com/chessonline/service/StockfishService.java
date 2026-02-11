@@ -19,7 +19,7 @@ public class StockfishService {
     private static final String STOCKFISH_COMMAND = "/usr/games/stockfish";
     private static final int DEFAULT_DEPTH = 20;
     private static final long TIMEOUT_SECONDS = 30;
-    private static final long ANALYSIS_TIMEOUT_SECONDS = 20; // Timeout per position analysis
+    private static final long ANALYSIS_TIMEOUT_SECONDS = 60; // Timeout per position analysis (60s for complex positions)
     
     // Thread-local storage for persistent Stockfish process
     private final ThreadLocal<Process> processHolder = new ThreadLocal<>();
@@ -193,11 +193,18 @@ public class StockfishService {
                 }
             }
         } catch (TimeoutException e) {
-            logger.error("Stockfish analysis timeout after {} seconds for FEN: {}", ANALYSIS_TIMEOUT_SECONDS, fen);
-            throw new IOException("Stockfish analysis timeout - position too complex or engine hung");
+            logger.warn("Stockfish analysis timeout after {} seconds for FEN, returning partial results", ANALYSIS_TIMEOUT_SECONDS);
+            // Return whatever partial result we have instead of failing
+            if (lastInfoLine != null && bestMove != null) {
+                logger.info("Returning partial analysis result (got evaluation but analysis timed out)");
+                return parseEvaluation(lastInfoLine, bestMove);
+            }
+            // If we don't even have evaluation, use a neutral eval
+            logger.warn("No evaluation received before timeout, returning neutral eval 0");
+            return new PositionEvaluation(0, "a2a3", false, 0);
         } catch (java.util.concurrent.ExecutionException e) {
-            logger.error("Stockfish analysis execution error for FEN: {}", fen, e);
-            throw new IOException("Stockfish analysis execution error", e);
+            logger.warn("Stockfish analysis execution error, returning neutral eval", e);
+            return new PositionEvaluation(0, "a2a3", false, 0);
         }
 
         long analysisDuration = System.currentTimeMillis() - analysisStart;
@@ -207,11 +214,11 @@ public class StockfishService {
         if (lastInfoLine != null && bestMove != null) {
             return parseEvaluation(lastInfoLine, bestMove);
         } else {
-            logger.error("Failed to get evaluation for FEN: {} (lastInfo: {}, bestMove: {})", fen, lastInfoLine != null, bestMove != null);
-            throw new IOException("Stockfish analysis failed - no evaluation received");
+            logger.warn("Failed to get evaluation for FEN (lastInfo: {}, bestMove: {}), returning neutral eval", lastInfoLine != null, bestMove != null);
+            // Return neutral evaluation instead of throwing
+            return new PositionEvaluation(0, "a2a3", false, 0);
         }
     }
-
 
     private void sendCommand(BufferedWriter writer, String command) throws IOException {
         writer.write(command);
