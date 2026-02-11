@@ -376,12 +376,12 @@ export const GameAnalysis: React.FC = () => {
 
           {/* Accuracy Summary */}
           <div className="accuracy-summary">
-            <h3>{t('analysisTitle')} - Аккуратность</h3>
+            <h3>{t('analysisTitle')} - {t('accuracyLabel')}</h3>
             <div className="accuracy-cards">
               <div className="accuracy-card">
                 <div className="accuracy-player-header">
                   <span>♔</span>
-                  <span>White</span>
+                  <span>{t('analysisWhite')}</span>
                 </div>
                 <div className="accuracy-player-name">{game.whitePlayerName || game.whitePlayerId}</div>
                 <div className="accuracy-percent">{Math.round(analysis.whiteAccuracy)}%</div>
@@ -394,7 +394,7 @@ export const GameAnalysis: React.FC = () => {
               <div className="accuracy-card">
                 <div className="accuracy-player-header">
                   <span>♚</span>
-                  <span>Black</span>
+                  <span>{t('analysisBlack')}</span>
                 </div>
                 <div className="accuracy-player-name">{game.blackPlayerName || game.blackPlayerId}</div>
                 <div className="accuracy-percent">{Math.round(analysis.blackAccuracy)}%</div>

@@ -36,6 +36,9 @@ interface User {
 export const GameView: React.FC = () => {
     // Таймер для плавного уменьшения времени
     const timerRef = useRef<number | null>(null);
+    // Для диалога promotion
+    const [promotionDialogOpen, setPromotionDialogOpen] = useState(false);
+    const [promotionData, setPromotionData] = useState<{ from: string; to: string } | null>(null);
 
   const { t } = useTranslation();
   const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
@@ -420,7 +423,20 @@ export const GameView: React.FC = () => {
         return false;
       }
 
-      // Optimistically update UI (make move locally)
+      // Check if this is a promotion move
+      const piece = chessInstance.get(sourceSquare as any);
+      const isPawnMove = piece?.type === 'p';
+      const isLastRank = (userIsWhite && targetSquare[1] === '8') || 
+                         (!userIsWhite && targetSquare[1] === '1');
+      
+      if (isPawnMove && isLastRank) {
+        // Show promotion dialog
+        setPromotionData({ from: sourceSquare, to: targetSquare });
+        setPromotionDialogOpen(true);
+        return true; // Keep piece in hand while waiting for promotion choice
+      }
+
+      // Regular move - make it immediately
       const result = chessInstance.move(move);
       if (!result) {
         return false;
@@ -495,6 +511,47 @@ export const GameView: React.FC = () => {
 
   const handlePieceDragEnd = () => {
     setLegalMoves([]);
+  };
+
+  const handlePromotionChoice = (piece: string) => {
+    if (!promotionData || !game || !chessInstance || !gameId) return;
+
+    const { from, to } = promotionData;
+    
+    try {
+      // Make the move with promotion
+      const result = chessInstance.move({
+        from,
+        to,
+        promotion: piece,
+      } as any);
+
+      if (!result) {
+        console.error('Move failed after choosing promotion');
+        setPromotionDialogOpen(false);
+        setPromotionData(null);
+        return;
+      }
+
+      // Update board position
+      setBoardPosition(chessInstance.fen());
+      setSelectedSquare(null);
+      setLegalMoves([]);
+
+      // Send move to server with promotion
+      const moveNotation = `${from}${to}${piece}`;
+      wsService.sendMove(gameId, moveNotation);
+      
+      console.log('Promotion move sent:', moveNotation);
+
+      // Close dialog
+      setPromotionDialogOpen(false);
+      setPromotionData(null);
+    } catch (error) {
+      console.error('Error during promotion:', error);
+      setPromotionDialogOpen(false);
+      setPromotionData(null);
+    }
   };
 
   const getSquareStyles = () => {
@@ -965,7 +1022,31 @@ export const GameView: React.FC = () => {
           )}
 
         
-        </div>      </div>
+        </div>
+        
+        {/* Promotion Dialog */}
+        {promotionDialogOpen && promotionData && (
+          <div className="promotion-overlay">
+            <div className="promotion-dialog">
+              <h3>{t('promotionTitle')}</h3>
+              <div className="promotion-options">
+                <button className="promotion-btn" onClick={() => handlePromotionChoice('q')}>
+                  ♕ {t('promotionQueen')}
+                </button>
+                <button className="promotion-btn" onClick={() => handlePromotionChoice('r')}>
+                  ♖ {t('promotionRook')}
+                </button>
+                <button className="promotion-btn" onClick={() => handlePromotionChoice('b')}>
+                  ♗ {t('promotionBishop')}
+                </button>
+                <button className="promotion-btn" onClick={() => handlePromotionChoice('n')}>
+                  ♘ {t('promotionKnight')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
