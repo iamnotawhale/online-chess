@@ -83,12 +83,12 @@ public class StockfishService {
             writerHolder.set(writer);
             executorHolder.set(executor);
             logger.info("Stockfish engine started and initialized successfully");
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             reader.close();
             writer.close();
             executor.shutdownNow();
             stockfish.destroyForcibly();
-            throw e;
+            throw new IOException("Failed to start Stockfish engine", e);
         }
     }
 
@@ -195,6 +195,9 @@ public class StockfishService {
         } catch (TimeoutException e) {
             logger.error("Stockfish analysis timeout after {} seconds for FEN: {}", ANALYSIS_TIMEOUT_SECONDS, fen);
             throw new IOException("Stockfish analysis timeout - position too complex or engine hung");
+        } catch (java.util.concurrent.ExecutionException e) {
+            logger.error("Stockfish analysis execution error for FEN: {}", fen, e);
+            throw new IOException("Stockfish analysis execution error", e);
         }
 
         long analysisDuration = System.currentTimeMillis() - analysisStart;
@@ -209,102 +212,6 @@ public class StockfishService {
         }
     }
 
-    /**
-     * Legacy method for single position analysis (deprecated - use persistent engine instead)
-     * Analyze a chess position using Stockfish
-     * @param fen Position in FEN notation
-     * @param depth Analysis depth (default 20)
-     * @return Position evaluation with best move
-     */
-    @Deprecated // Use startEngine() + analyzePositionWithEngine() + stopEngine() instead
-    public PositionEvaluation analyzePosition(String fen, int depth) throws IOException, InterruptedException {
-        if (depth <= 0) {
-            depth = DEFAULT_DEPTH;
-        }
-
-        Process stockfish = null;
-        BufferedReader reader = null;
-        BufferedWriter writer = null;
-
-        try {
-            // Start Stockfish process
-            logger.info("Starting Stockfish process with command: {}", STOCKFISH_COMMAND);
-            ProcessBuilder pb = new ProcessBuilder(STOCKFISH_COMMAND);
-            pb.redirectErrorStream(true);
-            stockfish = pb.start();
-            
-            logger.info("Stockfish process started successfully");
-
-            reader = new BufferedReader(new InputStreamReader(stockfish.getInputStream()));
-            writer = new BufferedWriter(new OutputStreamWriter(stockfish.getOutputStream()));
-
-            // Initialize UCI protocol
-            sendCommand(writer, "uci");
-            waitForResponse(reader, "uciok");
-
-            sendCommand(writer, "isready");
-            waitForResponse(reader, "readyok");
-
-            // Set position and analyze
-            sendCommand(writer, "position fen " + fen);
-            sendCommand(writer, "go depth " + depth);
-
-            // Parse analysis results
-            String lastInfoLine = null;
-            String bestMove = null;
-            String line;
-
-            while ((line = reader.readLine()) != null) {
-                if (line.startsWith("info") && line.contains("score")) {
-                    lastInfoLine = line;
-                }
-                if (line.startsWith("bestmove")) {
-                    Matcher matcher = BESTMOVE_PATTERN.matcher(line);
-                    if (matcher.find()) {
-                        bestMove = matcher.group(1);
-                    }
-                    break;
-                }
-            }
-
-            // Parse evaluation from last info line
-            if (lastInfoLine != null && bestMove != null) {
-                return parseEvaluation(lastInfoLine, bestMove);
-            } else {
-                logger.error("Failed to get evaluation for FEN: {}", fen);
-                throw new IOException("Stockfish analysis failed - no evaluation received");
-            }
-
-        } finally {
-            // Clean up resources
-            if (writer != null) {
-                try {
-                    sendCommand(writer, "quit");
-                    writer.close();
-                } catch (IOException e) {
-                    logger.warn("Error closing writer", e);
-                }
-            }
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    logger.warn("Error closing reader", e);
-                }
-            }
-            if (stockfish != null) {
-                try {
-                    stockfish.waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS);
-                    if (stockfish.isAlive()) {
-                        stockfish.destroyForcibly();
-                    }
-                } catch (InterruptedException e) {
-                    stockfish.destroyForcibly();
-                    Thread.currentThread().interrupt();
-                }
-            }
-        }
-    }
 
     private void sendCommand(BufferedWriter writer, String command) throws IOException {
         writer.write(command);
@@ -330,6 +237,8 @@ public class StockfishService {
             }
         } catch (TimeoutException e) {
             throw new IOException("Timeout waiting for response: " + expectedResponse, e);
+        } catch (java.util.concurrent.ExecutionException e) {
+            throw new IOException("Error waiting for response: " + expectedResponse, e);
         }
     }
 
