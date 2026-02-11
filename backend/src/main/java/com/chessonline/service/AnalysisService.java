@@ -206,40 +206,50 @@ public class AnalysisService {
     }
 
     /**
-     * Parse SAN move string to Move object using current board position
-     * Chesslib doesn't have a direct SAN parser, so we match against legal moves
+     * Parse move string to Move object using current board position
+     * Supports both SAN (e.g., "Nf3", "exd5") and UCI/coordinate notation (e.g., "e2e4", "g7g5")
      */
-    private Move parseMove(Board board, String san) {
+    private Move parseMove(Board board, String sanMove) {
         try {
-            // Try to match SAN notation with legal moves
-            // This is a simplified approach - assumes SAN is correctly formatted
             List<Move> legalMoves = board.legalMoves();
             
-            // Remove check/checkmate symbols for comparison
-            String cleanSan = san.replace("+", "").replace("#", "");
+            // Try direct UCI/coordinate match first (e.g., "e2e4")
+            if (sanMove.length() == 4 && Character.isLetter(sanMove.charAt(0))) {
+                String uciMove = sanMove.toLowerCase();
+                for (Move move : legalMoves) {
+                    if (move.toString().equals(uciMove)) {
+                        return move;
+                    }
+                }
+            }
+            
+            // Try SAN notation matching
+            String cleanSan = sanMove.replaceAll("[+#!?]", ""); // Remove annotations
             
             for (Move move : legalMoves) {
-                // Convert move to basic notation for comparison
-                String moveStr = move.toString(); // UCI format, e.g., "e2e4"
+                String moveStr = move.toString(); // UCI format
                 
-                // Try to match by converting UCI to simplified format
-                if (matchesMove(cleanSan, moveStr, board)) {
+                // Try various matching strategies
+                if (matchesSAN(cleanSan, moveStr, board) || 
+                    matchesCoordinate(cleanSan, moveStr)) {
                     return move;
                 }
             }
             
-            logger.warn("Move not found in legal moves: {}", san);
+            logger.warn("No matching move found for: '{}' (board has {} legal moves)", 
+                       sanMove, legalMoves.size());
             return null;
+            
         } catch (Exception e) {
-            logger.error("Error parsing move: {}", san, e);
+            logger.error("Error parsing move '{}': {}", sanMove, e.getMessage());
             return null;
         }
     }
     
     /**
-     * Helper method to match SAN notation with UCI move string
+     * Match SAN notation with UCI move string
      */
-    private boolean matchesMove(String san, String uci, Board board) {
+    private boolean matchesSAN(String san, String uci, Board board) {
         // Handle castling
         if (san.equals("O-O") || san.equals("0-0")) {
             return uci.equals("e1g1") || uci.equals("e8g8");
@@ -248,10 +258,9 @@ public class AnalysisService {
             return uci.equals("e1c1") || uci.equals("e8c8");
         }
         
-        // Extract destination square from SAN (last 2 characters, or 3 if promotion)
+        // Extract destination square from SAN (last 2 chars before promotion)
         String dest;
         if (san.length() >= 2) {
-            // Handle promotion (e.g., "e8=Q")
             if (san.contains("=")) {
                 int eqIndex = san.indexOf("=");
                 dest = san.substring(eqIndex - 2, eqIndex);
@@ -259,12 +268,28 @@ public class AnalysisService {
                 dest = san.substring(san.length() - 2);
             }
             
-            // Check if UCI move ends with this destination
+            // Check if UCI move ends with destination
             if (uci.length() >= 4 && uci.substring(2, 4).equals(dest)) {
                 return true;
             }
         }
         
+        return false;
+    }
+    
+    /**
+     * Match coordinate notation (e.g., "e2e4" or "g7g5")
+     */
+    private boolean matchesCoordinate(String move, String uci) {
+        // If move is 4 chars and looks like coordinates (letter-digit-letter-digit)
+        if (move.length() == 4 && 
+            Character.isLetter(move.charAt(0)) && 
+            Character.isDigit(move.charAt(1)) &&
+            Character.isLetter(move.charAt(2)) && 
+            Character.isDigit(move.charAt(3))) {
+            
+            return move.equalsIgnoreCase(uci);
+        }
         return false;
     }
 }
