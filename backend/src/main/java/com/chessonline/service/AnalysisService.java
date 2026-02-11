@@ -26,10 +26,10 @@ public class AnalysisService {
     private static final int INACCURACY_THRESHOLD = 20;
     
     // Analysis parameters
-    private static final int DEFAULT_DEPTH = 10; // Reduced from 15 for much faster analysis (2-3x faster)
+    private static final int DEFAULT_DEPTH = 8; // Reduced from 10 for faster analysis (3-4x faster per position)
     private static final int MIN_DEPTH = 5;
-    private static final int MAX_DEPTH = 20;
-    private static final int MAX_GAME_LENGTH_FOR_ANALYSIS = 100; // Skip very long games
+    private static final int MAX_DEPTH = 15;
+    private static final int MAX_GAME_LENGTH_FOR_ANALYSIS = 50; // Limit to 50 moves max for reasonable analysis time
 
     public AnalysisService(StockfishService stockfishService) {
         this.stockfishService = stockfishService;
