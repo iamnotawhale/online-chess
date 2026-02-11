@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
@@ -23,6 +23,7 @@ export const GameAnalysis: React.FC = () => {
   const [highlightSquares, setHighlightSquares] = useState<{[key: string]: any}>({});
   const [arrows, setArrows] = useState<any[]>([]);
   const [analysisBoardWidth, setAnalysisBoardWidth] = useState(800);
+  const moveRowRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   // Load game and its moves
   useEffect(() => {
@@ -68,16 +69,29 @@ export const GameAnalysis: React.FC = () => {
 
   // Scroll selected move into view within moves table
   useEffect(() => {
-    if (selectedMoveIndex !== null) {
-      const selectedRow = document.querySelector('.table-row.selected') as HTMLElement;
+    if (selectedMoveIndex !== null && moveRowRefs.current[selectedMoveIndex]) {
+      const selectedRow = moveRowRefs.current[selectedMoveIndex];
       const movesTable = document.querySelector('.moves-table') as HTMLElement;
+      
       if (selectedRow && movesTable) {
-        const tableHeader = movesTable.querySelector('.table-header') as HTMLElement;
-        const headerHeight = tableHeader ? tableHeader.offsetHeight : 0;
+        // Use getBoundingClientRect for accurate positioning
+        const rowRect = selectedRow.getBoundingClientRect();
+        const tableRect = movesTable.getBoundingClientRect();
+        const headerElement = movesTable.querySelector('.table-header') as HTMLElement;
+        const headerHeight = headerElement?.offsetHeight || 0;
         
-        // Position selected row at the top, accounting for header height
-        const scrollPosition = selectedRow.offsetTop - headerHeight;
-        movesTable.scrollTop = scrollPosition;
+        // Calculate position of row within scrollable container
+        // rowRect.top - tableRect.top gives position relative to table viewport
+        // Add current scrollTop to get absolute position within container
+        const elementTopRelativeToContainer = rowRect.top - tableRect.top + movesTable.scrollTop;
+        
+        // Set scroll position to show the element below the header
+        const desiredScroll = Math.max(0, elementTopRelativeToContainer - headerHeight - 5);
+        
+        movesTable.scrollTo({
+          top: desiredScroll,
+          behavior: 'smooth'
+        });
       }
     }
   }, [selectedMoveIndex]);
@@ -232,6 +246,12 @@ export const GameAnalysis: React.FC = () => {
     setHighlightSquares({});
     setArrows([]);
     setBoardPosition(startChess.fen());
+    
+    // Scroll moves table to top
+    const movesTable = document.querySelector('.moves-table') as HTMLElement;
+    if (movesTable) {
+      movesTable.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const goToPrev = () => {
@@ -359,7 +379,8 @@ export const GameAnalysis: React.FC = () => {
               </div>
               {analysis.moves.map((m, idx) => (
                 <div 
-                  key={idx} 
+                  key={idx}
+                  ref={(el) => { moveRowRefs.current[idx] = el; }}
                   className={`table-row ${m.isBlunder ? 'blunder' : m.isMistake ? 'mistake' : ''} ${selectedMoveIndex === idx ? 'selected' : ''}`}
                   onClick={() => handleMoveClick(idx)}
                 >

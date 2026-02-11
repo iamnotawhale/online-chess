@@ -530,7 +530,7 @@ export const Dashboard: React.FC = () => {
                           </div>
                           <div className="game-actions">
                             <a href={`/game/${game.id}`} className="game-action-link">{t('view')}</a>
-                            <a href={`/analysis/${game.id}`} className="game-action-link">Анализ</a>
+                            <a href={`/analysis/${game.id}`} className="game-action-link">{t('analysisButtonLabel')}</a>
                           </div>
                         </div>
                       );
