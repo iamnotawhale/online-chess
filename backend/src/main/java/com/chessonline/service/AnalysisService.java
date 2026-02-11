@@ -26,9 +26,9 @@ public class AnalysisService {
     private static final int INACCURACY_THRESHOLD = 20;
     
     // Analysis parameters
-    private static final int DEFAULT_DEPTH = 15; // Reduced from 20 for faster analysis
+    private static final int DEFAULT_DEPTH = 10; // Reduced from 15 for much faster analysis (2-3x faster)
     private static final int MIN_DEPTH = 5;
-    private static final int MAX_DEPTH = 25;
+    private static final int MAX_DEPTH = 20;
     private static final int MAX_GAME_LENGTH_FOR_ANALYSIS = 100; // Skip very long games
 
     public AnalysisService(StockfishService stockfishService) {
@@ -54,108 +54,113 @@ public class AnalysisService {
                        request.getGameId(), moves.size(), MAX_GAME_LENGTH_FOR_ANALYSIS);
             moves = moves.subList(0, MAX_GAME_LENGTH_FOR_ANALYSIS);
         }
+
+        // Start persistent Stockfish engine
+        stockfishService.startEngine();
         
-        Board board = new Board();
-        if (request.getStartFen() != null && !request.getStartFen().isEmpty()) {
-            board.loadFromFen(request.getStartFen());
-        }
+        try {
+            Board board = new Board();
+            if (request.getStartFen() != null && !request.getStartFen().isEmpty()) {
+                board.loadFromFen(request.getStartFen());
+            }
 
-        List<MoveAnalysis> moveAnalyses = new ArrayList<>();
-        int whiteMistakes = 0, whiteBlunders = 0, whiteInaccuracies = 0;
-        int blackMistakes = 0, blackBlunders = 0, blackInaccuracies = 0;
+            List<MoveAnalysis> moveAnalyses = new ArrayList<>();
+            int whiteMistakes = 0, whiteBlunders = 0, whiteInaccuracies = 0;
+            int blackMistakes = 0, blackBlunders = 0, blackInaccuracies = 0;
 
-        StockfishService.PositionEvaluation prevEval = null;
-        int moveNumber = 1;
+            StockfishService.PositionEvaluation prevEval = null;
+            int moveNumber = 1;
 
-        for (String sanMove : moves) {
-            long moveStartTime = System.currentTimeMillis();
-            boolean isWhiteMove = board.getSideToMove().name().equals("WHITE");
+            for (String sanMove : moves) {
+                long moveStartTime = System.currentTimeMillis();
+                boolean isWhiteMove = board.getSideToMove().name().equals("WHITE");
+                
+                // Get evaluation before the move
+                String fenBeforeMove = board.getFen();
+                if (prevEval == null) {
+                    // First move - analyze starting position
+                    prevEval = stockfishService.analyzePositionWithEngine(fenBeforeMove, depth);
+                }
+
+                // Make the move
+                Move move = parseMove(board, sanMove);
+                if (move == null) {
+                    logger.error("Could not parse move: {}", sanMove);
+                    continue;
+                }
+                board.doMove(move);
+
+                // Get evaluation after the move
+                String fenAfterMove = board.getFen();
+                StockfishService.PositionEvaluation afterEval = stockfishService.analyzePositionWithEngine(fenAfterMove, depth);
+
+                // Calculate evaluation loss/gain (from perspective of player who made the move)
+                int evaluationDelta = calculateEvaluationDelta(prevEval.getEvaluation(), 
+                                                               afterEval.getEvaluation(), 
+                                                               isWhiteMove);
+
+                // Create move analysis
+                MoveAnalysis analysis = new MoveAnalysis(
+                    moveNumber,
+                    isWhiteMove,
+                    sanMove,
+                    afterEval.getEvaluation(),
+                    prevEval.getBestMove()
+                );
+                analysis.setBestEvaluation(prevEval.getEvaluation());
+
+                // Classify the move
+                if (evaluationDelta >= BLUNDER_THRESHOLD) {
+                    analysis.setBlunder(true);
+                    if (isWhiteMove) whiteBlunders++; else blackBlunders++;
+                } else if (evaluationDelta >= MISTAKE_THRESHOLD) {
+                    analysis.setMistake(true);
+                    if (isWhiteMove) whiteMistakes++; else blackMistakes++;
+                } else if (evaluationDelta >= INACCURACY_THRESHOLD) {
+                    analysis.setInaccuracy(true);
+                    if (isWhiteMove) whiteInaccuracies++; else blackInaccuracies++;
+                }
+
+                moveAnalyses.add(analysis);
+                prevEval = afterEval;
+                
+                if (!isWhiteMove) {
+                    moveNumber++;
+                }
+
+                long moveAnalysisTime = System.currentTimeMillis() - moveStartTime;
+                logger.debug("Analyzed move {}: {} (delta: {}cp, time: {}ms)", 
+                            moveNumber, sanMove, evaluationDelta, moveAnalysisTime);
+            }
+
+            // Calculate accuracies
+            int whiteMovesCount = (int) moveAnalyses.stream().filter(MoveAnalysis::isWhiteMove).count();
+            int blackMovesCount = (int) moveAnalyses.stream().filter(m -> !m.isWhiteMove()).count();
+
+            double whiteAccuracy = calculateAccuracy(whiteMovesCount, whiteInaccuracies, whiteMistakes, whiteBlunders);
+            double blackAccuracy = calculateAccuracy(blackMovesCount, blackInaccuracies, blackMistakes, blackBlunders);
+
+            // Build response
+            AnalysisResponse response = new AnalysisResponse();
+            response.setGameId(request.getGameId());
+            response.setTotalMoves(moves.size());
+            response.setWhiteAccuracy(whiteAccuracy);
+            response.setBlackAccuracy(blackAccuracy);
+            response.setWhiteMistakes(whiteMistakes);
+            response.setBlackMistakes(blackMistakes);
+            response.setWhiteBlunders(whiteBlunders);
+            response.setBlackBlunders(blackBlunders);
+            response.setMoves(moveAnalyses);
+
+            long totalTime = System.currentTimeMillis() - startTime;
+            logger.info("Analysis completed for game: {} (White: {}%, Black: {}%, time: {}ms)", 
+                       request.getGameId(), (int) whiteAccuracy, (int) blackAccuracy, totalTime);
             
-            // Get evaluation before the move
-            String fenBeforeMove = board.getFen();
-            if (prevEval == null) {
-                // First move - analyze starting position
-                prevEval = stockfishService.analyzePosition(fenBeforeMove, depth);
-            }
-
-            // Make the move
-            Move move = parseMove(board, sanMove);
-            if (move == null) {
-                logger.error("Could not parse move: {}", sanMove);
-                continue;
-            }
-            board.doMove(move);
-
-            // Get evaluation after the move
-            String fenAfterMove = board.getFen();
-            StockfishService.PositionEvaluation afterEval = stockfishService.analyzePosition(fenAfterMove, depth);
-
-            // Calculate evaluation loss/gain (from perspective of player who made the move)
-            int evaluationDelta = calculateEvaluationDelta(prevEval.getEvaluation(), 
-                                                           afterEval.getEvaluation(), 
-                                                           isWhiteMove);
-
-            // Create move analysis
-            MoveAnalysis analysis = new MoveAnalysis(
-                moveNumber,
-                isWhiteMove,
-                sanMove,
-                afterEval.getEvaluation(),
-                prevEval.getBestMove()
-            );
-            analysis.setBestEvaluation(prevEval.getEvaluation());
-
-            // Classify the move
-            if (evaluationDelta >= BLUNDER_THRESHOLD) {
-                analysis.setBlunder(true);
-                if (isWhiteMove) whiteBlunders++; else blackBlunders++;
-            } else if (evaluationDelta >= MISTAKE_THRESHOLD) {
-                analysis.setMistake(true);
-                if (isWhiteMove) whiteMistakes++; else blackMistakes++;
-            } else if (evaluationDelta >= INACCURACY_THRESHOLD) {
-                analysis.setInaccuracy(true);
-                if (isWhiteMove) whiteInaccuracies++; else blackInaccuracies++;
-            }
-
-            moveAnalyses.add(analysis);
-            prevEval = afterEval;
-            
-            if (!isWhiteMove) {
-                moveNumber++;
-            }
-
-            long moveAnalysisTime = System.currentTimeMillis() - moveStartTime;
-            logger.debug("Analyzed move {}: {} (delta: {}cp, time: {}ms)", 
-                        moveNumber, sanMove, evaluationDelta, moveAnalysisTime);
+            return response;
+        } finally {
+            // Always stop the engine
+            stockfishService.stopEngine();
         }
-
-        // Calculate accuracies
-        int whiteMovesCount = (int) moveAnalyses.stream().filter(MoveAnalysis::isWhiteMove).count();
-        int blackMovesCount = (int) moveAnalyses.stream().filter(m -> !m.isWhiteMove()).count();
-
-        double whiteAccuracy = calculateAccuracy(whiteMovesCount, whiteInaccuracies, whiteMistakes, whiteBlunders);
-        double blackAccuracy = calculateAccuracy(blackMovesCount, blackInaccuracies, blackMistakes, blackBlunders);
-
-        // Build response
-        AnalysisResponse response = new AnalysisResponse();
-        response.setGameId(request.getGameId());
-        response.setTotalMoves(moves.size());
-        response.setWhiteAccuracy(whiteAccuracy);
-        response.setBlackAccuracy(blackAccuracy);
-        response.setWhiteMistakes(whiteMistakes);
-        response.setBlackMistakes(blackMistakes);
-        response.setWhiteBlunders(whiteBlunders);
-        response.setBlackBlunders(blackBlunders);
-        response.setMoves(moveAnalyses);
-
-        long totalTime = System.currentTimeMillis() - startTime;
-        logger.info("Analysis completed for game: {} (White: {}%, Black: {}%, time: {}ms)", 
-                    request.getGameId(), 
-                    Math.round(whiteAccuracy), 
-                    Math.round(blackAccuracy),
-                    totalTime);
-
-        return response;
     }
     
     /**

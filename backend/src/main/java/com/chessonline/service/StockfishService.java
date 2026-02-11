@@ -16,6 +16,11 @@ public class StockfishService {
     private static final int DEFAULT_DEPTH = 20;
     private static final long TIMEOUT_SECONDS = 30;
     
+    // Thread-local storage for persistent Stockfish process
+    private final ThreadLocal<Process> processHolder = new ThreadLocal<>();
+    private final ThreadLocal<BufferedReader> readerHolder = new ThreadLocal<>();
+    private final ThreadLocal<BufferedWriter> writerHolder = new ThreadLocal<>();
+    
     // Patterns for parsing Stockfish output
     private static final Pattern SCORE_CP_PATTERN = Pattern.compile("score cp (-?\\d+)");
     private static final Pattern SCORE_MATE_PATTERN = Pattern.compile("score mate (-?\\d+)");
@@ -41,11 +46,144 @@ public class StockfishService {
     }
 
     /**
+     * Start a persistent Stockfish engine for multiple analyses
+     * Must call stopEngine() when done
+     */
+    public synchronized void startEngine() throws IOException {
+        if (processHolder.get() != null) {
+            logger.debug("Stockfish engine already running");
+            return;
+        }
+
+        logger.info("Starting persistent Stockfish engine");
+        ProcessBuilder pb = new ProcessBuilder(STOCKFISH_COMMAND);
+        pb.redirectErrorStream(true);
+        Process stockfish = pb.start();
+        
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stockfish.getInputStream()));
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stockfish.getOutputStream()));
+
+        try {
+            // Initialize UCI protocol
+            sendCommand(writer, "uci");
+            waitForResponse(reader, "uciok");
+
+            sendCommand(writer, "isready");
+            waitForResponse(reader, "readyok");
+            
+            processHolder.set(stockfish);
+            readerHolder.set(reader);
+            writerHolder.set(writer);
+            logger.info("Stockfish engine started and initialized successfully");
+        } catch (IOException e) {
+            reader.close();
+            writer.close();
+            stockfish.destroyForcibly();
+            throw e;
+        }
+    }
+
+    /**
+     * Stop the persistent Stockfish engine
+     */
+    public synchronized void stopEngine() {
+        Process stockfish = processHolder.get();
+        BufferedWriter writer = writerHolder.get();
+        BufferedReader reader = readerHolder.get();
+
+        if (stockfish == null) {
+            return;
+        }
+
+        try {
+            if (writer != null) {
+                try {
+                    sendCommand(writer, "quit");
+                    writer.close();
+                } catch (IOException e) {
+                    logger.warn("Error closing writer", e);
+                }
+            }
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    logger.warn("Error closing reader", e);
+                }
+            }
+            if (stockfish != null) {
+                try {
+                    stockfish.waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+                    if (stockfish.isAlive()) {
+                        stockfish.destroyForcibly();
+                    }
+                } catch (InterruptedException e) {
+                    stockfish.destroyForcibly();
+                    Thread.currentThread().interrupt();
+                }
+            }
+            logger.info("Stockfish engine stopped");
+        } finally {
+            processHolder.remove();
+            readerHolder.remove();
+            writerHolder.remove();
+        }
+    }
+
+    /**
+     * Analyze a position using persistent engine (must call startEngine first)
+     */
+    public synchronized PositionEvaluation analyzePositionWithEngine(String fen, int depth) throws IOException, InterruptedException {
+        BufferedReader reader = readerHolder.get();
+        BufferedWriter writer = writerHolder.get();
+
+        if (reader == null || writer == null) {
+            throw new IllegalStateException("Engine not started. Call startEngine() first");
+        }
+
+        if (depth <= 0) {
+            depth = DEFAULT_DEPTH;
+        }
+
+        // Set position and analyze
+        sendCommand(writer, "position fen " + fen);
+        sendCommand(writer, "go depth " + depth);
+
+        // Parse analysis results
+        String lastInfoLine = null;
+        String bestMove = null;
+        String line;
+
+        while ((line = reader.readLine()) != null) {
+            if (line.startsWith("info") && line.contains("score")) {
+                lastInfoLine = line;
+            }
+            if (line.startsWith("bestmove")) {
+                Matcher matcher = BESTMOVE_PATTERN.matcher(line);
+                if (matcher.find()) {
+                    bestMove = matcher.group(1);
+                }
+                break;
+            }
+        }
+
+        // Parse evaluation from last info line
+        if (lastInfoLine != null && bestMove != null) {
+            return parseEvaluation(lastInfoLine, bestMove);
+        } else {
+            logger.error("Failed to get evaluation for FEN: {}", fen);
+            throw new IOException("Stockfish analysis failed - no evaluation received");
+        }
+    }
+
+    /**
+     * Legacy method for single position analysis (deprecated - use persistent engine instead)
      * Analyze a chess position using Stockfish
      * @param fen Position in FEN notation
      * @param depth Analysis depth (default 20)
      * @return Position evaluation with best move
      */
+    @Deprecated // Use startEngine() + analyzePositionWithEngine() + stopEngine() instead
     public PositionEvaluation analyzePosition(String fen, int depth) throws IOException, InterruptedException {
         if (depth <= 0) {
             depth = DEFAULT_DEPTH;
