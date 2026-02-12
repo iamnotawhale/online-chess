@@ -28,6 +28,10 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       APP_FRONTEND_URL: ${FRONTEND_URL}
+      PUZZLE_CSV_PATH: /app/puzzles/lichess_db_puzzle.csv.zst
+      PUZZLE_MAX_LOAD: ${PUZZLE_MAX_LOAD:-100000}
+    volumes:
+      - ./puzzles:/app/puzzles:ro
     depends_on:
       - postgres
     networks:

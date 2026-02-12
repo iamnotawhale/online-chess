@@ -6,7 +6,7 @@ RUN mvn clean package -DskipTests
 
 FROM eclipse-temurin:21-jre
 RUN apt-get update && \
-    apt-get install -y stockfish && \
+    apt-get install -y stockfish zstd && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 WORKDIR /app
