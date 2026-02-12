@@ -3,6 +3,7 @@ import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
 import { apiService } from '../api';
 import { useTranslation } from '../i18n/LanguageContext';
+import { getBoardTheme, getBoardColors, BoardTheme } from '../utils/boardTheme';
 import './PuzzleTraining.css';
 import { PuzzleData, applyUciMove } from './puzzleUtils';
 import { usePuzzleGame } from './usePuzzleGame';
@@ -19,6 +20,17 @@ export const PuzzleTraining: React.FC = () => {
   const [ratingFilter, setRatingFilter] = useState({ min: 1000, max: 2000 });
   const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
   const [legalMoves, setLegalMoves] = useState<string[]>([]);
+  const [boardTheme, setBoardThemeState] = useState<BoardTheme>(getBoardTheme());
+
+  // Listen for board theme changes
+  useEffect(() => {
+    const handleThemeChange = () => {
+      setBoardThemeState(getBoardTheme());
+    };
+    window.addEventListener('boardThemeChanged', handleThemeChange);
+    return () => window.removeEventListener('boardThemeChanged', handleThemeChange);
+  }, []);
+
   const {
     game,
     position,
@@ -307,6 +319,8 @@ export const PuzzleTraining: React.FC = () => {
             onSquareClick={handleSquareClick}
             boardWidth={boardWidth}
             boardOrientation={playerColor}
+            customDarkSquareStyle={{ backgroundColor: getBoardColors(boardTheme).dark }}
+            customLightSquareStyle={{ backgroundColor: getBoardColors(boardTheme).light }}
             customBoardStyle={{
               borderRadius: '4px',
               boxShadow: '0 2px 10px rgba(0, 0, 0, 0.3)'

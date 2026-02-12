@@ -5,6 +5,7 @@ import { Chessboard } from 'react-chessboard';
 import { apiService } from '../api';
 import { wsService, GameUpdate } from '../websocket';
 import { useTranslation } from '../i18n/LanguageContext';
+import { getBoardTheme, getBoardColors, BoardTheme } from '../utils/boardTheme';
 import './Game.css';
 
 interface GameData {
@@ -71,6 +72,16 @@ export const GameView: React.FC = () => {
     const isMobile = window.innerWidth <= 768;
     return isMobile ? Math.max(320, window.innerWidth) : 800;
   });
+  const [boardTheme, setBoardThemeState] = useState<BoardTheme>(getBoardTheme());
+
+  // Listen for board theme changes
+  useEffect(() => {
+    const handleThemeChange = () => {
+      setBoardThemeState(getBoardTheme());
+    };
+    window.addEventListener('boardThemeChanged', handleThemeChange);
+    return () => window.removeEventListener('boardThemeChanged', handleThemeChange);
+  }, []);
 
   // Очистить таймер при размонтировании
   useEffect(() => {
@@ -862,8 +873,8 @@ export const GameView: React.FC = () => {
               customSquareStyles={getSquareStyles()}
               boardOrientation={userIsWhite ? 'white' : 'black'}
               boardWidth={boardWidth}
-              customDarkSquareStyle={{ backgroundColor: '#739552' }}
-              customLightSquareStyle={{ backgroundColor: '#eeeed2' }}
+              customDarkSquareStyle={{ backgroundColor: getBoardColors(boardTheme).dark }}
+              customLightSquareStyle={{ backgroundColor: getBoardColors(boardTheme).light }}
               customDropSquareStyle={{
                 boxShadow: 'inset 0 0 1px 4px rgb(255, 255, 0)',
               }}

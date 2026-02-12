@@ -225,6 +225,11 @@ export const translations = {
     newPassword: 'New Password (optional)',
     avatarUrl: 'Avatar URL (optional)',
     chooseAvatar: 'Choose avatar',
+    boardTheme: 'Board Theme',
+    green: 'Green',
+    brown: 'Brown',
+    blue: 'Blue',
+    purple: 'Purple',
     save: 'Save',
 
     // Puzzles
@@ -477,6 +482,11 @@ export const translations = {
     newPassword: 'Новый пароль (необязательно)',
     avatarUrl: 'URL аватара (необязательно)',
     chooseAvatar: 'Выберите аватар',
+    boardTheme: 'Тема доски',
+    green: 'Зелёная',
+    brown: 'Коричневая',
+    blue: 'Синяя',
+    purple: 'Фиолетовая',
     save: 'Сохранить',
 
     // Пазлы

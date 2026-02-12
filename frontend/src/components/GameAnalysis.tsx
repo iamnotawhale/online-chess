@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
+import { getBoardTheme, getBoardColors, BoardTheme } from '../utils/boardTheme';
 import './GameAnalysis.css';
 import { apiService } from '../api';
 import { useTranslation } from '../i18n/LanguageContext';
@@ -24,6 +25,16 @@ export const GameAnalysis: React.FC = () => {
   const [arrows, setArrows] = useState<any[]>([]);
   const [analysisBoardWidth, setAnalysisBoardWidth] = useState(800);
   const moveRowRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [boardTheme, setBoardThemeState] = useState<BoardTheme>(getBoardTheme());
+
+  // Listen for board theme changes
+  useEffect(() => {
+    const handleThemeChange = () => {
+      setBoardThemeState(getBoardTheme());
+    };
+    window.addEventListener('boardThemeChanged', handleThemeChange);
+    return () => window.removeEventListener('boardThemeChanged', handleThemeChange);
+  }, []);
 
   // Load game and its moves
   useEffect(() => {
@@ -325,8 +336,8 @@ export const GameAnalysis: React.FC = () => {
                 position={boardPosition}
                 arePiecesDraggable={false}
                 boardWidth={analysisBoardWidth}
-                customDarkSquareStyle={{ backgroundColor: '#739552' }}
-                customLightSquareStyle={{ backgroundColor: '#eeeed2' }}
+                customDarkSquareStyle={{ backgroundColor: getBoardColors(boardTheme).dark }}
+                customLightSquareStyle={{ backgroundColor: getBoardColors(boardTheme).light }}
                 customSquareStyles={highlightSquares}
                 customArrows={arrows}
               />

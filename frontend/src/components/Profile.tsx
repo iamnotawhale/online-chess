@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { apiService } from '../api';
 import { useTranslation } from '../i18n/LanguageContext';
 import { RatingChart } from './RatingChart';
+import { getBoardTheme, setBoardTheme, BoardTheme } from '../utils/boardTheme';
 import './Profile.css';
 
 interface UserProfile {
@@ -176,6 +177,7 @@ export const Profile: React.FC = () => {
   const [error, setError] = useState('');
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [boardTheme, setBoardThemeState] = useState<BoardTheme>(getBoardTheme());
   const [editData, setEditData] = useState({
     username: '',
     password: '',
@@ -257,6 +259,11 @@ export const Profile: React.FC = () => {
       setError(err.response?.data?.message || 'Failed to update profile');
       console.error(err);
     }
+  };
+
+  const handleBoardThemeChange = (theme: BoardTheme) => {
+    setBoardTheme(theme);
+    setBoardThemeState(theme);
   };
 
   if (loading) {
@@ -383,6 +390,53 @@ export const Profile: React.FC = () => {
                     ))}
                   </div>
                 </div>
+
+                <div className="board-theme-section">
+                  <label className="section-label">{t('boardTheme')}</label>
+                  <div className="board-theme-selector">
+                    <div 
+                      className={`theme-option ${boardTheme === 'green' ? 'selected' : ''}`}
+                      onClick={() => handleBoardThemeChange('green')}
+                    >
+                      <div className="theme-preview">
+                        <div className="square light" style={{ backgroundColor: '#eeeed2' }}></div>
+                        <div className="square dark" style={{ backgroundColor: '#739552' }}></div>
+                      </div>
+                      <span>{t('green')}</span>
+                    </div>
+                    <div 
+                      className={`theme-option ${boardTheme === 'brown' ? 'selected' : ''}`}
+                      onClick={() => handleBoardThemeChange('brown')}
+                    >
+                      <div className="theme-preview">
+                        <div className="square light" style={{ backgroundColor: '#f0d9b5' }}></div>
+                        <div className="square dark" style={{ backgroundColor: '#b58863' }}></div>
+                      </div>
+                      <span>{t('brown')}</span>
+                    </div>
+                    <div 
+                      className={`theme-option ${boardTheme === 'blue' ? 'selected' : ''}`}
+                      onClick={() => handleBoardThemeChange('blue')}
+                    >
+                      <div className="theme-preview">
+                        <div className="square light" style={{ backgroundColor: '#dee3e6' }}></div>
+                        <div className="square dark" style={{ backgroundColor: '#8ca2ad' }}></div>
+                      </div>
+                      <span>{t('blue')}</span>
+                    </div>
+                    <div 
+                      className={`theme-option ${boardTheme === 'purple' ? 'selected' : ''}`}
+                      onClick={() => handleBoardThemeChange('purple')}
+                    >
+                      <div className="theme-preview">
+                        <div className="square light" style={{ backgroundColor: '#e8e1f5' }}></div>
+                        <div className="square dark" style={{ backgroundColor: '#9b7bb5' }}></div>
+                      </div>
+                      <span>{t('purple')}</span>
+                    </div>
+                  </div>
+                </div>
+
                 <textarea
                   placeholder={t('bio') || 'Bio'}
                   value={editData.bio}
