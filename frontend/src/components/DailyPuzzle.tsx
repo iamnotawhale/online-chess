@@ -39,37 +39,49 @@ export const DailyPuzzle: React.FC = () => {
       const data = await apiService.getDailyPuzzle();
       setPuzzle(data);
       
+      // If already solved, show message and disable the board
+      if (data.alreadySolved) {
+        setStatus('complete');
+        setMessageKey('puzzleAlreadySolved');
+      }
+      
       const chess = new Chess(data.fen);
       
       setGame(chess);
       setPosition(chess.fen());
       setUserMoves([]);
-      setStatus('playing');
-      setMessageKey('');
+      if (!data.alreadySolved) {
+        setStatus('playing');
+      }
+      if (!data.alreadySolved) {
+        setMessageKey('');
+      }
       
-      // Auto-play opponent's first move after a delay
-      setTimeout(() => {
-        if (data.solution && data.solution.length > 0) {
-          const firstOpponentMove = data.solution[0];
-          const opponentFrom = firstOpponentMove.substring(0, 2);
-          const opponentTo = firstOpponentMove.substring(2, 4);
-          
-          try {
-            const gameCopy = new Chess(chess.fen());
-            gameCopy.move({ from: opponentFrom, to: opponentTo, promotion: 'q' });
+      // Auto-play opponent's first move after a delay (only if not already solved)
+      if (!data.alreadySolved) {
+        setTimeout(() => {
+          if (data.solution && data.solution.length > 0) {
+            const firstOpponentMove = data.solution[0];
+            const opponentFrom = firstOpponentMove.substring(0, 2);
+            const opponentTo = firstOpponentMove.substring(2, 4);
             
-            // Player color is determined by who moves AFTER the opponent's first move
-            const playerIsWhite = gameCopy.turn() === 'w';
-            setPlayerColor(playerIsWhite ? 'white' : 'black');
-            
-            setGame(gameCopy);
-            setPosition(gameCopy.fen());
-            setUserMoves([firstOpponentMove]);
-          } catch (error) {
-            console.error('Failed to play opponent\'s first move:', error);
+            try {
+              const gameCopy = new Chess(chess.fen());
+              gameCopy.move({ from: opponentFrom, to: opponentTo, promotion: 'q' });
+              
+              // Player color is determined by who moves AFTER the opponent's first move
+              const playerIsWhite = gameCopy.turn() === 'w';
+              setPlayerColor(playerIsWhite ? 'white' : 'black');
+              
+              setGame(gameCopy);
+              setPosition(gameCopy.fen());
+              setUserMoves([firstOpponentMove]);
+            } catch (error) {
+              console.error('Failed to play opponent\'s first move:', error);
+            }
           }
-        }
-      }, 600);
+        }, 600);
+      }
       
       setLoading(false);
     } catch (error) {
@@ -90,7 +102,7 @@ export const DailyPuzzle: React.FC = () => {
   }, [status]);
 
   const handleMove = (sourceSquare: string, targetSquare: string): boolean => {
-    if (status === 'complete' || !puzzle || isOpponentMoving) return false;
+    if (status === 'complete' || !puzzle || isOpponentMoving || puzzle.alreadySolved) return false;
 
     const gameCopy = new Chess(game.fen());
     
@@ -129,6 +141,8 @@ export const DailyPuzzle: React.FC = () => {
         setMessageKey('puzzleComplete');
         setGame(gameCopy);
         setPosition(gameCopy.fen());
+        // Mark puzzle as solved
+        setPuzzle(prev => prev ? { ...prev, alreadySolved: true } : null);
         return true;
       } else if (response.correct) {
         setStatus('correct');
@@ -166,7 +180,7 @@ export const DailyPuzzle: React.FC = () => {
   };
 
   const handleReset = () => {
-    if (puzzle) {
+    if (puzzle && !puzzle.alreadySolved) {
       const chess = new Chess(puzzle.fen);
       setGame(chess);
       setPosition(chess.fen());
@@ -214,7 +228,7 @@ export const DailyPuzzle: React.FC = () => {
   return (
     <div className="daily-puzzle-container">
       <div className="puzzle-header">
-        <h3>🧩 {t('dailyPuzzle')}</h3>
+        <h3>{t('dailyPuzzle')}</h3>
         <span className="puzzle-rating">⭐ {puzzle.rating}</span>
       </div>
       
@@ -253,7 +267,7 @@ export const DailyPuzzle: React.FC = () => {
       </div>
 
       <div className="puzzle-actions">
-        <button onClick={handleReset} className="puzzle-btn-reset">
+        <button onClick={handleReset} className="puzzle-btn-reset" disabled={puzzle.alreadySolved}>
           {t('puzzleReset')}
         </button>
         <a href="/puzzles" className="puzzle-btn-train">
