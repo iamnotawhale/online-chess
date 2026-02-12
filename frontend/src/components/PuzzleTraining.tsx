@@ -17,6 +17,8 @@ export const PuzzleTraining: React.FC = () => {
   const [hintUsed, setHintUsed] = useState(false);
   const [streak, setStreak] = useState(0);
   const [ratingFilter, setRatingFilter] = useState({ min: 1000, max: 2000 });
+  const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
+  const [legalMoves, setLegalMoves] = useState<string[]>([]);
   const {
     game,
     position,
@@ -200,6 +202,78 @@ export const PuzzleTraining: React.FC = () => {
     loadRandomPuzzle(true);
   };
 
+  // Calculate highlight styles for last move
+  const getLastMoveStyles = () => {
+    const styles: { [key: string]: React.CSSProperties } = {};
+    if (userMoves.length > 0) {
+      const lastMove = userMoves[userMoves.length - 1];
+      const fromSquare = lastMove.slice(0, 2);
+      const toSquare = lastMove.slice(2, 4);
+      styles[fromSquare] = {
+        backgroundColor: 'rgba(52, 152, 219, 0.18)',
+      };
+      styles[toSquare] = {
+        backgroundColor: 'rgba(52, 152, 219, 0.28)',
+      };
+    }
+    return styles;
+  };
+
+  // Calculate square styles for selected square and legal moves
+  const getSquareStyles = () => {
+    const styles: { [square: string]: React.CSSProperties } = { ...getLastMoveStyles() };
+
+    // Highlight selected square
+    if (selectedSquare) {
+      styles[selectedSquare] = {
+        backgroundColor: 'rgba(255, 255, 0, 0.4)',
+      };
+    }
+
+    // Highlight legal move squares
+    legalMoves.forEach(square => {
+      styles[square] = {
+        background: 'radial-gradient(circle, rgba(0,0,0,.1) 25%, transparent 25%)',
+        borderRadius: '50%',
+      };
+      if (game?.get(square as any)) {
+        styles[square] = {
+          background: 'radial-gradient(circle, rgba(0,0,0,.1) 85%, transparent 85%)',
+          borderRadius: '50%',
+        };
+      }
+    });
+
+    return styles;
+  };
+
+  // Handle square click to select pieces and make moves
+  const handleSquareClick = (square: string) => {
+    if (!game || status === 'complete') return;
+
+    // If a square is already selected
+    if (selectedSquare) {
+      // Try to make a move to the clicked square
+      if (legalMoves.includes(square)) {
+        handleMove(selectedSquare, square);
+      }
+      // Deselect
+      setSelectedSquare(null);
+      setLegalMoves([]);
+    } else {
+      // Select this square and show legal moves
+      const piece = game.get(square as any);
+      if (piece) {
+        const moves = game.moves({ square: square as any, verbose: true });
+        const destinations = moves.map(m => m.to);
+        if (destinations.length > 0) {
+          setSelectedSquare(square);
+          setLegalMoves(destinations);
+        }
+      }
+    }
+  };
+
   if (loading && !puzzle) {
     return (
       <div className="puzzle-training-container">
@@ -230,12 +304,14 @@ export const PuzzleTraining: React.FC = () => {
           <Chessboard
             position={position}
             onPieceDrop={handleMove}
+            onSquareClick={handleSquareClick}
             boardWidth={boardWidth}
             boardOrientation={playerColor}
             customBoardStyle={{
               borderRadius: '4px',
               boxShadow: '0 2px 10px rgba(0, 0, 0, 0.3)'
             }}
+            customSquareStyles={getSquareStyles()}
           />
 
           {messageKey && (
