@@ -16,6 +16,7 @@ export const DailyPuzzle: React.FC = () => {
   const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
   const [legalMoves, setLegalMoves] = useState<string[]>([]);
   const {
+    game,
     position,
     status,
     messageKey,
