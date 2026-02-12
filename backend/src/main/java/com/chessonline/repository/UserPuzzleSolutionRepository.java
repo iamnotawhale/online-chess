@@ -19,6 +19,6 @@ public interface UserPuzzleSolutionRepository extends JpaRepository<UserPuzzleSo
     @Query("SELECT COUNT(ups) FROM UserPuzzleSolution ups WHERE ups.userId = :userId AND ups.solved = true")
     long countSolvedByUserId(UUID userId);
     
-    @Query("SELECT COUNT(ups) FROM UserPuzzleSolution ups WHERE ups.userId = :userId")
+    @Query("SELECT COALESCE(SUM(ups.attempts), 0) FROM UserPuzzleSolution ups WHERE ups.userId = :userId")
     long countAttemptsByUserId(UUID userId);
 }

@@ -42,3 +42,5 @@ app:
 puzzle:
   csv:
     path: ${PUZZLE_CSV_PATH:/home/nikita/Desktop/play code/online-chess/puzzles/lichess_db_puzzle.csv.zst}
+  max:
+    load: ${PUZZLE_MAX_LOAD:0}

@@ -10,30 +10,55 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import jakarta.annotation.PostConstruct;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.UUID;
 
 @Service
 public class PuzzleService {
     
     private static final Logger log = LoggerFactory.getLogger(PuzzleService.class);
+    private static final int RATING_BUCKET_SIZE = 100; // Group puzzles by 100 rating points
     
     @Value("${puzzle.csv.path:puzzles/lichess_db_puzzle.csv.zst}")
     private String puzzleCsvPath;
     
+    @Value("${puzzle.max.load:100000}")
+    private int maxPuzzlesToLoad;
+    
     private final UserPuzzleSolutionRepository userPuzzleSolutionRepository;
     private final PuzzleRepository puzzleRepository;
     
-    private Map<String, Puzzle> puzzleCache = new HashMap<>();
+    private Map<String, Puzzle> puzzleCache = new ConcurrentHashMap<>();
     private List<Puzzle> allPuzzles = null;
+    private Map<Integer, List<Puzzle>> ratingIndex = new ConcurrentHashMap<>(); // Rating bucket -> puzzles
     private Random random = new Random();
-    private boolean initialized = false;
+    private volatile boolean initialized = false;
+    private final CountDownLatch initLatch = new CountDownLatch(1);
     
     public PuzzleService(UserPuzzleSolutionRepository userPuzzleSolutionRepository, PuzzleRepository puzzleRepository) {
         this.userPuzzleSolutionRepository = userPuzzleSolutionRepository;
         this.puzzleRepository = puzzleRepository;
+    }
+    
+    /**
+     * Initialize puzzle cache asynchronously on application startup
+     */
+    @PostConstruct
+    public void init() {
+        log.info("Starting asynchronous puzzle loading...");
+        new Thread(() -> {
+            try {
+                loadAllPuzzles();
+                log.info("Puzzle loading completed successfully");
+            } catch (Exception e) {
+                log.error("Failed to load puzzles on startup", e);
+            }
+        }).start();
     }
     
     /**
@@ -70,105 +95,137 @@ public class PuzzleService {
      * Check user's puzzle solution and save progress to database
      */
     public Map<String, Object> checkSolution(String userId, String puzzleId, List<String> userMoves, Integer timeSpent) {
-        Puzzle puzzle = puzzleCache.get(puzzleId);
-        if (puzzle == null) {
-            puzzle = getPuzzleById(puzzleId);
-        }
-        if (puzzle == null) {
-            throw new RuntimeException("Puzzle not found: " + puzzleId);
-        }
-        List<String> correctMoves = Arrays.asList(puzzle.getMoves().split(" "));
-        
-        log.info("Checking solution for puzzle {}: user moves {} vs correct moves {}", puzzleId, userMoves, correctMoves);
-        
-        // Check if solution is correct (compare first N moves where N = userMoves.size())
-        boolean correct = userMoves.size() <= correctMoves.size() && 
-                         correctMoves.subList(0, Math.min(userMoves.size(), correctMoves.size())).equals(userMoves);
-        
-        boolean isComplete = correct && userMoves.size() == correctMoves.size();
-        
-        log.info("Solution check result: correct={}, complete={}", correct, isComplete);
-        
-        // Save or update user's puzzle progress
-        log.info("checkSolution for userId='{}', puzzleId='{}', isComplete={}", userId, puzzleId, isComplete);
-        if (userId != null && !userId.equals("00000000-0000-0000-0000-000000000000")) {
-            log.info("Saving puzzle progress for user");
-            try {
-                UUID userUUID = UUID.fromString(userId);
-                log.info("Parsed UUID: {}", userUUID);
-                Optional<UserPuzzleSolution> existingSolution = userPuzzleSolutionRepository.findByUserIdAndPuzzleId(userUUID, puzzleId);
-                
-                UserPuzzleSolution solution;
-                if (existingSolution.isPresent()) {
-                    log.info("Found existing solution");
-                    solution = existingSolution.get();
-                    solution.setAttempts(solution.getAttempts() + 1);
-                    if (isComplete && !solution.isSolved()) {
-                        solution.setSolved(true);
-                        solution.setSolvedAt(LocalDateTime.now());
-                        if (timeSpent != null) {
-                            solution.setTimeSpentSeconds(timeSpent);
-                        }
-                    }
-                } else {
-                    log.info("Creating new solution with solved={}", isComplete);
-                    solution = new UserPuzzleSolution();
-                    solution.setUserId(userUUID);
-                    solution.setPuzzleId(puzzleId);
-                    solution.setAttempts(1);
-                    solution.setSolved(isComplete);
-                    if (isComplete) {
-                        solution.setSolvedAt(LocalDateTime.now());
-                        if (timeSpent != null) {
-                            solution.setTimeSpentSeconds(timeSpent);
-                        }
-                    }
-                }
-                
-                log.info("About to save solution with solved={}", solution.isSolved());
-                
-                // Ensure puzzle exists in database (required for foreign key constraint)
-                try {
-                    if (!puzzleRepository.existsById(puzzleId)) {
-                        log.info("Puzzle {} not in database, saving it now", puzzleId);
-                        puzzleRepository.save(puzzle);
-                    }
-                } catch (Exception e) {
-                    log.warn("Failed to ensure puzzle in database: {}", e.getMessage());
-                }
-                
-                userPuzzleSolutionRepository.save(solution);
-                log.info("Saved puzzle progress for user {} on puzzle {}: attempts={}, solved={}", userId, puzzleId, solution.getAttempts(), solution.isSolved());
-            } catch (IllegalArgumentException e) {
-                log.error("Invalid user ID format: {}", userId, e);
-            } catch (Exception e) {
-                log.error("Failed to save puzzle progress: {}", e.getMessage(), e);
+        try {
+            Puzzle puzzle = puzzleCache.get(puzzleId);
+            if (puzzle == null) {
+                puzzle = getPuzzleById(puzzleId);
             }
-        } else {
-            log.info("Skipping save: userId is null or anonymous");
+            if (puzzle == null) {
+                log.error("Puzzle not found: {}", puzzleId);
+                throw new RuntimeException("Puzzle not found: " + puzzleId);
+            }
+            
+            if (puzzle.getMoves() == null || puzzle.getMoves().isEmpty()) {
+                log.error("Puzzle {} has no moves", puzzleId);
+                throw new RuntimeException("Puzzle has no solution moves");
+            }
+            
+            List<String> correctMoves = Arrays.asList(puzzle.getMoves().split(" "));
+            
+            log.info("Checking solution for puzzle {}: user moves {} vs correct moves {}", puzzleId, userMoves, correctMoves);
+            
+            // Check if solution is correct (compare first N moves where N = userMoves.size())
+            boolean correct = userMoves.size() <= correctMoves.size() && 
+                             correctMoves.subList(0, Math.min(userMoves.size(), correctMoves.size())).equals(userMoves);
+            
+            boolean isComplete = correct && userMoves.size() == correctMoves.size();
+            
+            log.info("Solution check result: correct={}, complete={}", correct, isComplete);
+            
+            // Save or update user's puzzle progress
+            log.info("checkSolution for userId='{}', puzzleId='{}', isComplete={}", userId, puzzleId, isComplete);
+            if (userId != null && !userId.equals("00000000-0000-0000-0000-000000000000")) {
+                log.info("Saving puzzle progress for user");
+                try {
+                    UUID userUUID = UUID.fromString(userId);
+                    log.info("Parsed UUID: {}", userUUID);
+                    Optional<UserPuzzleSolution> existingSolution = userPuzzleSolutionRepository.findByUserIdAndPuzzleId(userUUID, puzzleId);
+                    
+                    UserPuzzleSolution solution;
+                    if (existingSolution.isPresent()) {
+                        log.info("Found existing solution");
+                        solution = existingSolution.get();
+                        solution.setAttempts(solution.getAttempts() + 1);
+                        if (isComplete && !solution.isSolved()) {
+                            solution.setSolved(true);
+                            solution.setSolvedAt(LocalDateTime.now());
+                            if (timeSpent != null) {
+                                solution.setTimeSpentSeconds(timeSpent);
+                            }
+                        }
+                    } else {
+                        log.info("Creating new solution with solved={}", isComplete);
+                        solution = new UserPuzzleSolution();
+                        solution.setUserId(userUUID);
+                        solution.setPuzzleId(puzzleId);
+                        solution.setAttempts(1);
+                        solution.setSolved(isComplete);
+                        if (isComplete) {
+                            solution.setSolvedAt(LocalDateTime.now());
+                            if (timeSpent != null) {
+                                solution.setTimeSpentSeconds(timeSpent);
+                            }
+                        }
+                    }
+                    
+                    log.info("About to save solution with solved={}", solution.isSolved());
+                    
+                    // Ensure puzzle exists in database (required for foreign key constraint)
+                    try {
+                        if (!puzzleRepository.existsById(puzzleId)) {
+                            log.info("Puzzle {} not in database, saving it now", puzzleId);
+                            puzzleRepository.save(puzzle);
+                        }
+                    } catch (Exception e) {
+                        log.warn("Failed to ensure puzzle in database: {}", e.getMessage());
+                    }
+                    
+                    userPuzzleSolutionRepository.save(solution);
+                    log.info("Saved puzzle progress for user {} on puzzle {}: attempts={}, solved={}", userId, puzzleId, solution.getAttempts(), solution.isSolved());
+                } catch (IllegalArgumentException e) {
+                    log.error("Invalid user ID format: {}", userId, e);
+                    throw e;
+                } catch (Exception e) {
+                    log.error("Failed to save puzzle progress: {}", e.getMessage(), e);
+                    throw e;
+                }
+            } else {
+                log.info("Skipping save: userId is null or anonymous");
+            }
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("correct", correct);
+            result.put("complete", isComplete);
+            result.put("nextMove", userMoves.size() < correctMoves.size() ? correctMoves.get(userMoves.size()) : null);
+            result.put("solution", correctMoves);
+            result.put("attempts", 0);
+            
+            return result;
+        } catch (Exception e) {
+            log.error("Error in checkSolution: {}", e.getMessage(), e);
+            throw e;
         }
-        
-        Map<String, Object> result = new HashMap<>();
-        result.put("correct", correct);
-        result.put("complete", isComplete);
-        result.put("nextMove", userMoves.size() < correctMoves.size() ? correctMoves.get(userMoves.size()) : null);
-        result.put("solution", correctMoves);
-        result.put("attempts", 0);
-        
-        return result;
     }
     
     // Helper methods
     
     private Puzzle getPuzzleById(String puzzleId) {
         try {
-            List<Puzzle> allPuzzles = loadAllPuzzles();
-            for (Puzzle p : allPuzzles) {
+            // Wait for initialization if in progress
+            if (!initialized) {
+                log.info("Waiting for puzzle loading to complete...");
+                try {
+                    initLatch.await();
+                } catch (InterruptedException e) {
+                    log.error("Interrupted while waiting for puzzle loading", e);
+                    Thread.currentThread().interrupt();
+                    return null;
+                }
+            }
+            
+            List<Puzzle> puzzles = allPuzzles;
+            if (puzzles == null) {
+                log.error("Puzzles list is null after initialization");
+                return null;
+            }
+            
+            for (Puzzle p : puzzles) {
                 if (p.getId().equals(puzzleId)) {
                     puzzleCache.put(puzzleId, p);
                     return p;
                 }
             }
+            log.warn("Puzzle not found: {}", puzzleId);
         } catch (Exception e) {
             log.error("Failed to find puzzle {}", puzzleId, e);
         }
@@ -177,8 +234,23 @@ public class PuzzleService {
     
     private Puzzle getRandomPuzzleByIndex(int index) {
         try {
-            List<Puzzle> puzzles = loadAllPuzzles();
-            if (puzzles.isEmpty()) return null;
+            // Wait for initialization if in progress
+            if (!initialized) {
+                log.info("Waiting for puzzle loading to complete...");
+                try {
+                    initLatch.await();
+                } catch (InterruptedException e) {
+                    log.error("Interrupted while waiting for puzzle loading", e);
+                    Thread.currentThread().interrupt();
+                    return null;
+                }
+            }
+            
+            List<Puzzle> puzzles = allPuzzles;
+            if (puzzles == null || puzzles.isEmpty()) {
+                log.error("Puzzles list is null or empty");
+                return null;
+            }
             Puzzle puzzle = puzzles.get(Math.abs(index) % puzzles.size());
             puzzleCache.put(puzzle.getId(), puzzle);
             return puzzle;
@@ -190,15 +262,40 @@ public class PuzzleService {
     
     private Puzzle getRandomPuzzleByRating(int minRating, int maxRating) {
         try {
-            List<Puzzle> puzzles = loadAllPuzzles();
-            List<Puzzle> filtered = new ArrayList<>();
-            for (Puzzle p : puzzles) {
-                if (p.getRating() >= minRating && p.getRating() <= maxRating) {
-                    filtered.add(p);
+            // Wait for initialization if in progress
+            if (!initialized) {
+                log.info("Waiting for puzzle loading to complete...");
+                try {
+                    initLatch.await();
+                } catch (InterruptedException e) {
+                    log.error("Interrupted while waiting for puzzle loading", e);
+                    Thread.currentThread().interrupt();
+                    return null;
                 }
             }
-            if (filtered.isEmpty()) return null;
-            Puzzle puzzle = filtered.get(random.nextInt(filtered.size()));
+            
+            // Use rating index for faster lookup
+            int minBucket = (minRating / RATING_BUCKET_SIZE) * RATING_BUCKET_SIZE;
+            int maxBucket = (maxRating / RATING_BUCKET_SIZE) * RATING_BUCKET_SIZE;
+            
+            List<Puzzle> candidates = new ArrayList<>();
+            for (int bucket = minBucket; bucket <= maxBucket; bucket += RATING_BUCKET_SIZE) {
+                List<Puzzle> bucketPuzzles = ratingIndex.get(bucket);
+                if (bucketPuzzles != null) {
+                    for (Puzzle p : bucketPuzzles) {
+                        if (p.getRating() >= minRating && p.getRating() <= maxRating) {
+                            candidates.add(p);
+                        }
+                    }
+                }
+            }
+            
+            if (candidates.isEmpty()) {
+                log.warn("No puzzles found for rating range {}-{}", minRating, maxRating);
+                return null;
+            }
+            
+            Puzzle puzzle = candidates.get(random.nextInt(candidates.size()));
             puzzleCache.put(puzzle.getId(), puzzle);
             return puzzle;
         } catch (Exception e) {
@@ -207,51 +304,71 @@ public class PuzzleService {
         return null;
     }
     
-    private List<Puzzle> loadAllPuzzles() throws Exception {
+    private synchronized List<Puzzle> loadAllPuzzles() throws Exception {
         if (initialized && allPuzzles != null) {
             log.info("Returning cached puzzles: {} total", allPuzzles.size());
             return allPuzzles;
         }
         
-        log.info("Loading puzzles from CSV file: {}", puzzleCsvPath);
-        List<Puzzle> puzzles = new ArrayList<>();
+        log.info("Loading puzzles from CSV file: {} (max: {})", puzzleCsvPath, maxPuzzlesToLoad);
+        List<Puzzle> puzzles = new ArrayList<>(maxPuzzlesToLoad);
+        Map<Integer, List<Puzzle>> tempIndex = new HashMap<>();
+        
         ProcessBuilder pb = new ProcessBuilder("zstdcat", puzzleCsvPath);
         Process process = pb.start();
         
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()), 65536)) {
             String line;
             int lineNum = 0;
-            while ((line = reader.readLine()) != null) {
+            int loadedCount = 0;
+            
+            while ((line = reader.readLine()) != null && (maxPuzzlesToLoad == 0 || loadedCount < maxPuzzlesToLoad)) {
                 lineNum++;
                 if (lineNum == 1 || line.trim().isEmpty()) continue; // skip header
+                
                 String[] parts = line.split(",", 10);
                 if (parts.length < 4) continue;
+                
                 try {
                     Puzzle p = new Puzzle();
                     p.setId(parts[0].trim());
                     p.setFen(parts[1].trim());
                     p.setMoves(parts[2].trim());
-                    p.setRating(Integer.parseInt(parts[3].trim()));
+                    int rating = Integer.parseInt(parts[3].trim());
+                    p.setRating(rating);
+                    
                     // Parse themes if available (index 7)
                     if (parts.length > 7 && !parts[7].trim().isEmpty()) {
                         p.setThemes(parts[7].trim());
                     }
                     p.setFetchedAt(LocalDateTime.now());
                     puzzles.add(p);
-                    if (lineNum % 10000 == 0) {
-                        log.info("  Loaded {} puzzles...", lineNum);
+                    
+                    // Add to rating index
+                    int bucket = (rating / RATING_BUCKET_SIZE) * RATING_BUCKET_SIZE;
+                    tempIndex.computeIfAbsent(bucket, k -> new ArrayList<>()).add(p);
+                    
+                    loadedCount++;
+                    
+                    if (loadedCount % 10000 == 0) {
+                        log.info("  Loaded {} puzzles...", loadedCount);
                     }
                 } catch (Exception e) {
-                    log.warn("Failed to parse puzzle line {}: {}", lineNum, line, e);
+                    log.warn("Failed to parse puzzle line {}: {}", lineNum, e.getMessage());
                 }
             }
         } finally {
-            process.waitFor();
+            process.destroy();
         }
         
         log.info("Successfully loaded {} puzzles from CSV", puzzles.size());
+        log.info("Created rating index with {} buckets", tempIndex.size());
+        
         allPuzzles = puzzles;
+        ratingIndex = new ConcurrentHashMap<>(tempIndex);
         initialized = true;
+        initLatch.countDown();
+        
         return puzzles;
     }
     
@@ -264,9 +381,12 @@ public class PuzzleService {
         response.setThemes(puzzle.getThemes() != null ? Arrays.asList(puzzle.getThemes().split(" ")) : Collections.emptyList());
         response.setDailyDate(puzzle.getDailyDate());
         
-        // Check if user has already solved this puzzle
+        // Check if user has already solved this puzzle and get user statistics
         boolean alreadySolved = false;
-        if (userId != null && !userId.isEmpty()) {
+        long totalSolved = 0L;
+        long totalAttempts = 0L;
+        
+        if (userId != null && !userId.isEmpty() && !userId.equals("00000000-0000-0000-0000-000000000000")) {
             try {
                 UUID userUUID = UUID.fromString(userId);
                 log.debug("Checking if user {} has solved puzzle {}", userUUID, puzzle.getId());
@@ -277,6 +397,11 @@ public class PuzzleService {
                 } else {
                     log.debug("No existing puzzle solution found for user {} on puzzle {}", userUUID, puzzle.getId());
                 }
+                
+                // Get user's total puzzle statistics
+                totalSolved = userPuzzleSolutionRepository.countSolvedByUserId(userUUID);
+                totalAttempts = userPuzzleSolutionRepository.countAttemptsByUserId(userUUID);
+                log.debug("User {} puzzle stats: solved={}, attempts={}", userUUID, totalSolved, totalAttempts);
             } catch (IllegalArgumentException e) {
                 log.warn("Invalid user ID format: {}", userId);
             }
@@ -284,8 +409,8 @@ public class PuzzleService {
         
         response.setAlreadySolved(alreadySolved);
         response.setPreviousAttempts(null);
-        response.setTotalSolved(0L);
-        response.setTotalAttempts(0L);
+        response.setTotalSolved(totalSolved);
+        response.setTotalAttempts(totalAttempts);
         return response;
     }
 

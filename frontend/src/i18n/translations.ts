@@ -242,13 +242,15 @@ export const translations = {
     puzzleAttempted: 'Attempted',
     puzzleAccuracy: 'Accuracy',
     puzzleAlreadySolved: 'Already solved',
-    puzzleShowSolution: 'Show Solution',
+    puzzleShowSolution: 'Hint',
     puzzleSkip: 'Skip',
     puzzleNext: 'Next Puzzle',
     puzzleYourStats: 'Your Stats',
     puzzleDifficulty: 'Difficulty',
     puzzleMinRating: 'Min Rating',
     puzzleMaxRating: 'Max Rating',
+    puzzleInfo: 'Puzzle Info',
+    actions: 'Actions',
   },
   ru: {
     // Auth
@@ -492,13 +494,15 @@ export const translations = {
     puzzleAttempted: 'Попыток',
     puzzleAccuracy: 'Точность',
     puzzleAlreadySolved: 'Уже решён',
-    puzzleShowSolution: 'Показать решение',
+    puzzleShowSolution: 'Подсказка',
     puzzleSkip: 'Пропустить',
     puzzleNext: 'Следующий пазл',
     puzzleYourStats: 'Ваша статистика',
     puzzleDifficulty: 'Сложность',
     puzzleMinRating: 'Мин. рейтинг',
     puzzleMaxRating: 'Макс. рейтинг',
+    puzzleInfo: 'Информация о пазле',
+    actions: 'Действия',
   },
 };
 

@@ -4,77 +4,172 @@ import { Chessboard } from 'react-chessboard';
 import { apiService } from '../api';
 import { useTranslation } from '../i18n/LanguageContext';
 import './PuzzleTraining.css';
-import { TranslationKey } from '../i18n/translations';
-
-interface PuzzleData {
-  id: string;
-  fen: string;
-  solution: string[];
-  rating: number;
-  themes: string[];
-  alreadySolved: boolean;
-  previousAttempts: number | null;
-  totalSolved: number;
-  totalAttempts: number;
-}
+import { PuzzleData, applyUciMove } from './puzzleUtils';
+import { usePuzzleGame } from './usePuzzleGame';
 
 export const PuzzleTraining: React.FC = () => {
   const { t } = useTranslation();
+  const puzzleStorageKey = 'puzzleTrainingActive';
+  const hintStorageKey = 'puzzleTrainingHintUsed';
+  const [boardWidth, setBoardWidth] = useState(800);
   const [puzzle, setPuzzle] = useState<PuzzleData | null>(null);
-  const [game, setGame] = useState(new Chess());
-  const [position, setPosition] = useState('');
-  const [userMoves, setUserMoves] = useState<string[]>([]);
-  const [status, setStatus] = useState<'playing' | 'correct' | 'wrong' | 'complete'>('playing');
-  const [messageKey, setMessageKey] = useState<TranslationKey | ''>('');
   const [loading, setLoading] = useState(false);
-  const [showSolution, setShowSolution] = useState(false);
+  const [hintUsed, setHintUsed] = useState(false);
   const [streak, setStreak] = useState(0);
-  const [playerColor, setPlayerColor] = useState<'white' | 'black'>('white');
   const [ratingFilter, setRatingFilter] = useState({ min: 1000, max: 2000 });
+  const {
+    game,
+    position,
+    userMoves,
+    status,
+    messageKey,
+    playerColor,
+    handleMove,
+    checkSolution,
+    setStatus,
+    setMessageKey,
+    setUserMoves
+  } = usePuzzleGame({
+    puzzle,
+    loading,
+    autoFirstMoveDelayMs: 400,
+    onComplete: () => {
+      setStreak(prev => prev + 1);
+      // Update local puzzle statistics for completed puzzle
+      if (puzzle) {
+        setPuzzle(prev => prev ? {
+          ...prev,
+          totalSolved: (prev.totalSolved || 0) + 1,
+          totalAttempts: (prev.totalAttempts || 0) + 1
+        } : null);
+      }
+      setTimeout(() => {
+        clearStoredPuzzle();
+        clearHintUsed();
+        loadRandomPuzzle(true);
+      }, 2000);
+    },
+    onCorrect: () => {
+      // Update local puzzle statistics for correct (but not complete) move
+      if (puzzle) {
+        setPuzzle(prev => prev ? {
+          ...prev,
+          totalAttempts: (prev.totalAttempts || 0) + 1
+        } : null);
+      }
+    },
+    onWrong: () => {
+      setStreak(0);
+      // Update local puzzle statistics for wrong attempt
+      if (puzzle) {
+        setPuzzle(prev => prev ? {
+          ...prev,
+          totalAttempts: (prev.totalAttempts || 0) + 1
+        } : null);
+      }
+    }
+  });
+
+  const readStoredPuzzle = (): PuzzleData | null => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const raw = window.localStorage.getItem(puzzleStorageKey);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as PuzzleData;
+      if (!parsed?.id || !parsed?.fen || !Array.isArray(parsed?.solution)) return null;
+      return parsed;
+    } catch {
+      return null;
+    }
+  };
+
+  const writeStoredPuzzle = (data: PuzzleData) => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem(puzzleStorageKey, JSON.stringify(data));
+    } catch {
+      // Ignore storage errors.
+    }
+  };
+
+  const clearStoredPuzzle = () => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.removeItem(puzzleStorageKey);
+    } catch {
+      // Ignore storage errors.
+    }
+  };
+
+  const readHintUsed = (puzzleId: string) => {
+    if (typeof window === 'undefined') return false;
+    try {
+      return window.localStorage.getItem(hintStorageKey) === puzzleId;
+    } catch {
+      return false;
+    }
+  };
+
+  const markHintUsed = (puzzleId: string) => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem(hintStorageKey, puzzleId);
+    } catch {
+      // Ignore storage errors.
+    }
+  };
+
+  const clearHintUsed = () => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.removeItem(hintStorageKey);
+    } catch {
+      // Ignore storage errors.
+    }
+  };
 
   useEffect(() => {
-    loadRandomPuzzle();
+    loadRandomPuzzle(false);
   }, []);
 
-  const loadRandomPuzzle = async () => {
+  useEffect(() => {
+    const updateBoardWidth = () => {
+      if (typeof window === 'undefined') return;
+      const isMobile = window.innerWidth <= 768;
+      const nextWidth = isMobile
+        ? Math.max(280, window.innerWidth - 24)
+        : Math.min(800, Math.max(280, window.innerWidth - 40));
+      setBoardWidth(nextWidth);
+    };
+
+    updateBoardWidth();
+    window.addEventListener('resize', updateBoardWidth);
+    return () => window.removeEventListener('resize', updateBoardWidth);
+  }, []);
+
+  const loadRandomPuzzle = async (forceNew: boolean) => {
     setLoading(true);
+    if (!forceNew) {
+      const stored = readStoredPuzzle();
+      if (stored && !stored.alreadySolved) {
+        setPuzzle(stored);
+        setStatus('playing');
+        setMessageKey('');
+        setHintUsed(readHintUsed(stored.id));
+        setLoading(false);
+        return;
+      }
+    }
+
     try {
       const data = await apiService.getRandomPuzzle(ratingFilter.min, ratingFilter.max);
       setPuzzle(data);
-      
-      const chess = new Chess(data.fen);
-      
-      setGame(chess);
-      setPosition(chess.fen());
-      setUserMoves([]);
+      writeStoredPuzzle(data);
+      clearHintUsed();
       setStatus('playing');
       setMessageKey('');
-      setShowSolution(false);
+      setHintUsed(false);
       setLoading(false);
-      
-      // Auto-play opponent's first move after a delay
-      setTimeout(() => {
-        if (data.solution && data.solution.length > 0) {
-          const firstOpponentMove = data.solution[0];
-          const opponentFrom = firstOpponentMove.substring(0, 2);
-          const opponentTo = firstOpponentMove.substring(2, 4);
-          
-          try {
-            const gameCopy = new Chess(chess.fen());
-            gameCopy.move({ from: opponentFrom, to: opponentTo, promotion: 'q' });
-            
-            // Player color is determined by who moves AFTER the opponent's first move
-            const playerIsWhite = gameCopy.turn() === 'w';
-            setPlayerColor(playerIsWhite ? 'white' : 'black');
-            
-            setGame(gameCopy);
-            setPosition(gameCopy.fen());
-            setUserMoves([firstOpponentMove]);
-          } catch (error) {
-            console.error('Failed to play opponent\'s first move:', error);
-          }
-        }
-      }, 600);
     } catch (error) {
       console.error('Failed to load puzzle:', error);
       setMessageKey('puzzleLoadError');
@@ -82,123 +177,37 @@ export const PuzzleTraining: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    if (status !== 'wrong') return undefined;
 
-    const timer = window.setTimeout(() => {
-      setMessageKey('');
-    }, 2500);
-
-    return () => window.clearTimeout(timer);
-  }, [status]);
-
-  const handleMove = (sourceSquare: string, targetSquare: string): boolean => {
-    if (status === 'complete' || showSolution || !puzzle) return false;
+  const handleHint = () => {
+    if (!puzzle || hintUsed || status === 'complete') return;
+    if (!puzzle.solution || puzzle.solution.length === 0) return;
 
     const gameCopy = new Chess(game.fen());
-    
-    try {
-      const move = gameCopy.move({
-        from: sourceSquare,
-        to: targetSquare,
-        promotion: 'q'
-      });
+    const prevFen = game.fen();
+    const expectedMove = puzzle.solution[userMoves.length];
+    if (!expectedMove) return;
 
-      if (move === null) return false;
+    if (!applyUciMove(gameCopy, expectedMove)) return;
 
-      const moveUci = `${sourceSquare}${targetSquare}`;
-      const newUserMoves = [...userMoves, moveUci];
-      setUserMoves(newUserMoves);
-
-      // Check solution asynchronously
-      checkSolution(puzzle.id, newUserMoves, gameCopy);
-      
-      return true;
-    } catch (error) {
-      console.error('Move error:', error);
-      return false;
-    }
-  };
-
-  const checkSolution = async (puzzleId: string, moves: string[], gameCopy: Chess) => {
-    try {
-      const response = await apiService.checkPuzzleSolution(puzzleId, moves, 0);
-
-      if (response.complete) {
-        setStatus('complete');
-        setMessageKey('puzzleComplete');
-        setStreak(streak + 1);
-        setGame(gameCopy);
-        setPosition(gameCopy.fen());
-        
-        // Auto-load next puzzle after 2 seconds
-        setTimeout(() => {
-          loadRandomPuzzle();
-        }, 2000);
-        
-        return true;
-      } else if (response.correct) {
-        setStatus('correct');
-        setMessageKey('puzzleCorrect');
-        setGame(gameCopy);
-        setPosition(gameCopy.fen());
-        
-        // Auto-play opponent's response move after player's correct move
-        if (response.nextMove) {
-          setTimeout(() => {
-            const opponentFrom = response.nextMove.substring(0, 2);
-            const opponentTo = response.nextMove.substring(2, 4);
-            
-            setGame(prevGame => {
-              const newGame = new Chess(prevGame.fen());
-              newGame.move({ from: opponentFrom, to: opponentTo, promotion: 'q' });
-              setPosition(newGame.fen());
-              return newGame;
-            });
-            
-            setUserMoves(prev => [...prev, response.nextMove]);
-          }, 600);
-        }
-        return true;
-      } else {
-        setStatus('wrong');
-        setMessageKey('puzzleWrong');
-        setStreak(0);
-        return false;
-      }
-    } catch (e) {
-      return false;
-    }
-  };
-
-  const handleShowSolution = () => {
-    setShowSolution(true);
-    setStatus('wrong');
-    setStreak(0);
-    setMessageKey('');
-    
-    if (puzzle) {
-      // Play through the solution
-      const chess = new Chess(puzzle.fen);
-      puzzle.solution.forEach(move => {
-        const from = move.substring(0, 2);
-        const to = move.substring(2, 4);
-        chess.move({ from, to, promotion: 'q' });
-      });
-      setGame(chess);
-      setPosition(chess.fen());
-    }
+    const newUserMoves = [...userMoves, expectedMove];
+    setHintUsed(true);
+    markHintUsed(puzzle.id);
+    setUserMoves(newUserMoves);
+    checkSolution(puzzle.id, newUserMoves, gameCopy, prevFen);
   };
 
   const handleSkip = () => {
     setStreak(0);
-    setMessageKey('');
-    loadRandomPuzzle();
+    setStatus('wrong');
+    setMessageKey('puzzleWrong');
+    clearStoredPuzzle();
+    clearHintUsed();
+    loadRandomPuzzle(true);
   };
 
   if (loading && !puzzle) {
     return (
-      <div className="puzzle-training-container">
+      <div className="section">
         <div className="puzzle-loading">{t('loading')}</div>
       </div>
     );
@@ -206,100 +215,99 @@ export const PuzzleTraining: React.FC = () => {
 
   if (!puzzle) {
     return (
-      <div className="puzzle-training-container">
+      <div className="section">
         <div className="puzzle-error">{t('puzzleNotAvailable')}</div>
       </div>
     );
   }
 
   return (
-    <div className="puzzle-training-container">
-      <div className="puzzle-training-header">
-        <h2>🧩 {t('puzzleTraining')}</h2>
-        <div className="puzzle-streak">
-          🔥 {t('puzzleStreak')}: <strong>{streak}</strong>
-        </div>
+    <div className="section">
+      <div className="puzzle-header">
+        <h3>{t('puzzleTraining')}</h3>
+        <span className="puzzle-streak-badge">
+          🔥 {streak}
+        </span>
       </div>
 
-      <div className="puzzle-training-content">
-        <div className="puzzle-left">
-          <div className="puzzle-board-container">
-            <Chessboard
-              position={position}
-              onPieceDrop={handleMove}
-              boardWidth={Math.min(500, window.innerWidth - 40)}
-              boardOrientation="white"
-              customBoardStyle={{
-                borderRadius: '8px',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)'
-              }}
-            />
-          </div>
+      <div className="puzzle-training-grid">
+        <div className="puzzle-board-section">
+          <Chessboard
+            position={position}
+            onPieceDrop={handleMove}
+            boardWidth={boardWidth}
+            boardOrientation={playerColor}
+            customBoardStyle={{
+              borderRadius: '4px',
+              boxShadow: '0 2px 10px rgba(0, 0, 0, 0.3)'
+            }}
+          />
 
           {messageKey && (
-            <div className={`puzzle-feedback ${status}`}>
+            <div className={`puzzle-message ${status}`}>
               {t(messageKey)}
             </div>
           )}
         </div>
 
-        <div className="puzzle-right">
-          <div className="puzzle-info-card">
-            <div className="puzzle-rating-badge">
-              ⭐ {puzzle.rating}
-            </div>
+        <div className="puzzle-sidebar">
+          <div className="puzzle-container puzzle-info-section">
+            <div className="puzzle-rating">⭐ {puzzle.rating}</div>
             
-            <div className="puzzle-themes-list">
-              <span className="theme-tag">
+            <div className="puzzle-themes">
+              <span className="puzzle-theme-tag">
                 {playerColor === 'white' ? 'white' : 'black'}
               </span>
               {puzzle.themes.map((theme, idx) => (
-                <span key={idx} className="theme-tag">{theme}</span>
+                <span key={idx} className="puzzle-theme-tag">{theme}</span>
               ))}
             </div>
 
             {puzzle.alreadySolved && (
-              <div className="puzzle-solved-indicator">
+              <div className="puzzle-solved-badge">
                 ✓ {t('puzzleAlreadySolved')}
               </div>
             )}
           </div>
 
-          <div className="puzzle-controls">
+          <div className="puzzle-container puzzle-actions">
             <button 
-              onClick={handleShowSolution} 
-              className="btn btn-secondary"
-              disabled={showSolution || status === 'complete'}
+              onClick={handleHint} 
+              className="btn btn-secondary btn-sm"
+              disabled={hintUsed || status === 'complete'}
             >
-              💡 {t('puzzleShowSolution')}
+              {t('puzzleShowSolution')}
             </button>
             <button 
               onClick={handleSkip} 
-              className="btn btn-secondary"
+              className="btn btn-secondary btn-sm"
             >
-              ⏭️ {t('puzzleSkip')}
+              {t('puzzleSkip')}
             </button>
             <button 
-              onClick={loadRandomPuzzle} 
-              className="btn btn-primary"
+              onClick={() => {
+                clearStoredPuzzle();
+                clearHintUsed();
+                loadRandomPuzzle(true);
+              }} 
+              className="btn btn-primary btn-sm"
               disabled={loading}
             >
-              🔄 {t('puzzleNext')}
+              {t('puzzleNext')}
             </button>
           </div>
 
-          <div className="puzzle-stats-card">
-            <h4>{t('puzzleYourStats')}</h4>
-            <div className="stats-grid">
-              <div className="stat-item">
+          <div className="puzzle-container puzzle-stats">
+            <div className="stats-row">
+              <div className="stat">
                 <span className="stat-value">{puzzle.totalSolved}</span>
                 <span className="stat-label">{t('puzzleSolved')}</span>
               </div>
-              <div className="stat-item">
+              <div className="stat">
                 <span className="stat-value">{puzzle.totalAttempts}</span>
                 <span className="stat-label">{t('puzzleAttempted')}</span>
               </div>
-              <div className="stat-item">
+              <div className="stat">
                 <span className="stat-value">
                   {puzzle.totalAttempts > 0 
                     ? Math.round((puzzle.totalSolved / puzzle.totalAttempts) * 100) 
@@ -310,11 +318,10 @@ export const PuzzleTraining: React.FC = () => {
             </div>
           </div>
 
-          <div className="puzzle-filter-card">
-            <h4>{t('puzzleDifficulty')}</h4>
-            <div className="rating-filter">
+          <div className="puzzle-container puzzle-difficulty">
+            <div className="filter-group">
               <label>
-                {t('puzzleMinRating')}: {ratingFilter.min}
+                {t('puzzleMinRating')}: <strong>{ratingFilter.min}</strong>
               </label>
               <input 
                 type="range" 
@@ -326,7 +333,7 @@ export const PuzzleTraining: React.FC = () => {
               />
               
               <label>
-                {t('puzzleMaxRating')}: {ratingFilter.max}
+                {t('puzzleMaxRating')}: <strong>{ratingFilter.max}</strong>
               </label>
               <input 
                 type="range" 
