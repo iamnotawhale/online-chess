@@ -50,13 +50,8 @@ export const PuzzleTraining: React.FC = () => {
       }, 2000);
     },
     onCorrect: () => {
-      // Update local puzzle statistics for correct (but not complete) move
-      if (puzzle) {
-        setPuzzle(prev => prev ? {
-          ...prev,
-          totalAttempts: (prev.totalAttempts || 0) + 1
-        } : null);
-      }
+      // Don't count attempts for intermediate correct moves
+      // Attempts are only counted on completion or error
     },
     onWrong: () => {
       setStreak(0);

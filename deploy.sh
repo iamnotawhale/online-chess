@@ -35,7 +35,7 @@ docker-compose -f docker-compose.prod.yml down
 
 # Remove dangling containers with wrong names
 echo "🧹 Cleaning up old containers..."
-docker rm -f $(docker ps -aq --filter "name=chess_") 2>/dev/null || true
+docker rm -f $(docker ps -a -q --filter "name=chess_") 2>/dev/null || true
 
 # Start postgres first
 echo "🗄️  Starting PostgreSQL..."
