@@ -1,3 +1,11 @@
+.puzzle-training-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
 .puzzle-header {
   display: flex;
   justify-content: space-between;
@@ -34,7 +42,7 @@
 
 .puzzle-training-grid {
   display: grid;
-  grid-template-columns: max-content 400px;
+  grid-template-columns: max-content 350px;
   gap: 16px;
   align-items: start;
   justify-content: center;
@@ -281,7 +289,6 @@
 
 @media (max-width: 1400px) {
   .puzzle-training-grid {
-    grid-template-columns: max-content 350px;
     gap: 12px;
   }
 }
@@ -296,8 +303,13 @@
 }
 
 @media (max-width: 768px) {
+  .puzzle-training-container {
+    padding: 0;
+  }
+  
   .puzzle-header {
-    margin-bottom: 16px;
+    margin: 0 12px 24px 12px;
+    padding: 12px;
   }
   
   .puzzle-training-grid {

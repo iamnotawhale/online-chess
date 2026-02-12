@@ -202,7 +202,7 @@ export const PuzzleTraining: React.FC = () => {
 
   if (loading && !puzzle) {
     return (
-      <div className="section">
+      <div className="puzzle-training-container">
         <div className="puzzle-loading">{t('loading')}</div>
       </div>
     );
@@ -210,14 +210,14 @@ export const PuzzleTraining: React.FC = () => {
 
   if (!puzzle) {
     return (
-      <div className="section">
+      <div className="puzzle-training-container">
         <div className="puzzle-error">{t('puzzleNotAvailable')}</div>
       </div>
     );
   }
 
   return (
-    <div className="section">
+    <div className="puzzle-training-container">
       <div className="puzzle-header">
         <h3>{t('puzzleTraining')}</h3>
         <span className="puzzle-streak-badge">
