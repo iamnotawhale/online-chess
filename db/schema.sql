@@ -82,6 +82,32 @@ CREATE TABLE rating_history (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Puzzles (from Lichess API)
+CREATE TABLE puzzles (
+  id VARCHAR(10) PRIMARY KEY,
+  fen TEXT NOT NULL,
+  moves TEXT NOT NULL, -- Space-separated UCI moves
+  rating INTEGER NOT NULL,
+  rating_deviation INTEGER,
+  themes TEXT, -- Comma-separated theme tags
+  fetched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  daily_date TIMESTAMP -- NULL for random puzzles, timestamp for daily puzzles
+);
+
+-- User Puzzle Solutions (progress tracking)
+CREATE TABLE user_puzzle_solutions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  puzzle_id VARCHAR(10) NOT NULL REFERENCES puzzles(id) ON DELETE CASCADE,
+  solved BOOLEAN DEFAULT FALSE,
+  attempts INTEGER DEFAULT 0,
+  solved_at TIMESTAMP,
+  time_spent_seconds INTEGER,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(user_id, puzzle_id)
+);
+
 -- Indexes for performance
 CREATE INDEX idx_users_username ON users(username);
 CREATE INDEX idx_users_email ON users(email);
@@ -100,6 +126,13 @@ CREATE INDEX idx_moves_game_move ON moves(game_id, move_number);
 CREATE INDEX idx_rating_history_user_id ON rating_history(user_id);
 CREATE INDEX idx_rating_history_created_at ON rating_history(created_at DESC);
 
+CREATE INDEX idx_puzzles_rating ON puzzles(rating);
+CREATE INDEX idx_puzzles_daily_date ON puzzles(daily_date);
+
+CREATE INDEX idx_user_puzzle_solutions_user_id ON user_puzzle_solutions(user_id);
+CREATE INDEX idx_user_puzzle_solutions_puzzle_id ON user_puzzle_solutions(puzzle_id);
+CREATE INDEX idx_user_puzzle_solutions_solved ON user_puzzle_solutions(solved);
+
 -- Trigger для автообновления updated_at
 CREATE OR REPLACE FUNCTION update_updated_at()
 RETURNS TRIGGER AS $$
@@ -116,5 +149,10 @@ EXECUTE FUNCTION update_updated_at();
 
 CREATE TRIGGER user_stats_updated_at
 BEFORE UPDATE ON user_stats
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at();
+
+CREATE TRIGGER user_puzzle_solutions_updated_at
+BEFORE UPDATE ON user_puzzle_solutions
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at();

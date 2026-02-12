@@ -8,6 +8,7 @@ import { GameView } from './components/Game';
 import { GameAnalysis } from './components/GameAnalysis';
 import { InviteAccept } from './components/InviteAccept';
 import { Profile } from './components/Profile';
+import { PuzzleTraining } from './components/PuzzleTraining';
 import { useTranslation } from './i18n/LanguageContext';
 import './App.css';
 
@@ -267,6 +268,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/puzzles"
+            element={
+              <ProtectedRoute>
+                <PuzzleTraining />
               </ProtectedRoute>
             }
           />

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { apiService } from '../api';
 import { Lobby } from './Lobby';
+import { DailyPuzzle } from './DailyPuzzle';
 import { useTranslation } from '../i18n/LanguageContext';
 import { wsService } from '../websocket';
 import { InviteByLinkModal } from './InviteByLinkModal.tsx';
@@ -303,6 +304,9 @@ export const Dashboard: React.FC = () => {
       </div>
 
       <div className="dashboard-content">
+        {/* Daily Puzzle Widget */}
+        <DailyPuzzle />
+        
         <div className="section">
           <h2>{t('matchmaking')}</h2>
           <div className="matchmaking-presets">

@@ -270,6 +270,31 @@ class ApiService {
     }).then(res => res.data);
   }
 
+  // Puzzle endpoints
+  getDailyPuzzle(): Promise<any> {
+    return this.client.get('/puzzles/daily').then(res => res.data);
+  }
+
+  getRandomPuzzle(minRating?: number, maxRating?: number): Promise<any> {
+    const params = new URLSearchParams();
+    if (minRating !== undefined) params.append('minRating', minRating.toString());
+    if (maxRating !== undefined) params.append('maxRating', maxRating.toString());
+    const query = params.toString() ? `?${params.toString()}` : '';
+    return this.client.get(`/puzzles/random${query}`).then(res => res.data);
+  }
+
+  checkPuzzleSolution(puzzleId: string, moves: string[], timeSpentSeconds: number): Promise<any> {
+    return this.client.post('/puzzles/check', {
+      puzzleId,
+      moves,
+      timeSpentSeconds
+    }).then(res => res.data);
+  }
+
+  getPuzzleStats(): Promise<any> {
+    return this.client.get('/puzzles/stats').then(res => res.data);
+  }
+
   isAuthenticated(): boolean {
     return !!this.token;
   }
