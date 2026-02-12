@@ -85,17 +85,6 @@ public class PuzzleService {
         return result;
     }
     
-    /**
-     * Get user's puzzle statistics
-     */
-    public Map<String, Object> getUserStats(String userId) {
-        Map<String, Object> stats = new HashMap<>();
-        stats.put("solved", 0L);
-        stats.put("attempted", 0L);
-        stats.put("accuracy", 0.0);
-        return stats;
-    }
-    
     // Helper methods
     
     private Puzzle getPuzzleById(String puzzleId) {

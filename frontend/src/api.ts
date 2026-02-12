@@ -167,10 +167,6 @@ class ApiService {
     return this.client.patch('/users/me', data).then(res => res.data);
   }
 
-  getAllUsers(): Promise<User[]> {
-    return this.client.get('/users').then(res => res.data);
-  }
-
   joinMatchmaking(data: MatchmakingJoinRequest): Promise<MatchmakingJoinResponse> {
     return this.client.post('/matchmaking/join', data).then(res => res.data);
   }
@@ -289,10 +285,6 @@ class ApiService {
       moves,
       timeSpentSeconds
     }).then(res => res.data);
-  }
-
-  getPuzzleStats(): Promise<any> {
-    return this.client.get('/puzzles/stats').then(res => res.data);
   }
 
   isAuthenticated(): boolean {

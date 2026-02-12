@@ -106,11 +106,6 @@ export const DailyPuzzle: React.FC = () => {
 
       const moveUci = `${sourceSquare}${targetSquare}`;
       const newUserMoves = [...userMoves, moveUci];
-      console.log('=== USER MOVE ===');
-      console.log('Current userMoves:', userMoves);
-      console.log('New move:', moveUci);
-      console.log('Sending to backend:', newUserMoves);
-      console.log('Current position:', game.fen());
       setUserMoves(newUserMoves);
 
       // Check solution asynchronously
@@ -118,25 +113,16 @@ export const DailyPuzzle: React.FC = () => {
       
       return true;
     } catch (error) {
-      console.error('Move error:', error);
+      console.error('Failed to make puzzle move:', error);
       return false;
     }
   };
 
   const checkSolution = async (puzzleId: string, moves: string[], gameCopy: Chess) => {
     try {
-      console.log('=== CHECKING SOLUTION ===');
-      console.log('Puzzle ID:', puzzleId);
-      console.log('Moves array:', moves);
       
       // Check solution
       const response = await apiService.checkPuzzleSolution(puzzleId, moves, 0);
-      
-      console.log('=== BACKEND RESPONSE ===');
-      console.log('Correct:', response.correct);
-      console.log('Complete:', response.complete);
-      console.log('Next move:', response.nextMove);
-      console.log('Full solution:', response.solution);
 
       if (response.complete) {
         setStatus('complete');
@@ -152,28 +138,19 @@ export const DailyPuzzle: React.FC = () => {
         
         // Auto-play opponent's response move after player's correct move
         if (response.nextMove) {
-          console.log('=== SCHEDULING OPPONENT MOVE ===');
-          console.log('Will play:', response.nextMove, 'in 600ms');
           setIsOpponentMoving(true);
           setTimeout(() => {
-            console.log('=== EXECUTING OPPONENT MOVE ===');
             const opponentFrom = response.nextMove.substring(0, 2);
             const opponentTo = response.nextMove.substring(2, 4);
-            console.log('From:', opponentFrom, 'To:', opponentTo);
             
             setGame(prevGame => {
               const newGame = new Chess(prevGame.fen());
-              console.log('Before opponent move:', prevGame.fen());
               newGame.move({ from: opponentFrom, to: opponentTo, promotion: 'q' });
-              console.log('After opponent move:', newGame.fen());
               setPosition(newGame.fen());
               return newGame;
             });
             
-            setUserMoves(prev => {
-              console.log('Adding opponent move to userMoves:', prev, '+', response.nextMove);
-              return [...prev, response.nextMove];
-            });
+            setUserMoves(prev => [...prev, response.nextMove]);
             setIsOpponentMoving(false);
           }, 600);
         }

@@ -70,16 +70,4 @@ public class PuzzleController {
         
         return ResponseEntity.ok(result);
     }
-    
-    /**
-     * Get user puzzle statistics
-     */
-    @GetMapping("/stats")
-    public ResponseEntity<Map<String, Object>> getUserStats(Authentication authentication) {
-        String userId = authentication != null ? authentication.getName() : ANONYMOUS_USER_ID;
-        log.info("User {} requested puzzle statistics", userId);
-        
-        Map<String, Object> stats = puzzleService.getUserStats(userId);
-        return ResponseEntity.ok(stats);
-    }
 }
