@@ -135,7 +135,10 @@ public class PuzzleService {
                     if (existingSolution.isPresent()) {
                         log.info("Found existing solution");
                         solution = existingSolution.get();
-                        solution.setAttempts(solution.getAttempts() + 1);
+                        // Only increment attempts on wrong move or puzzle completion
+                        if (!correct || isComplete) {
+                            solution.setAttempts(solution.getAttempts() + 1);
+                        }
                         if (isComplete && !solution.isSolved()) {
                             solution.setSolved(true);
                             solution.setSolvedAt(LocalDateTime.now());
@@ -148,6 +151,7 @@ public class PuzzleService {
                         solution = new UserPuzzleSolution();
                         solution.setUserId(userUUID);
                         solution.setPuzzleId(puzzleId);
+                        // First attempt always counts
                         solution.setAttempts(1);
                         solution.setSolved(isComplete);
                         if (isComplete) {

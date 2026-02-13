@@ -49,14 +49,6 @@ export const PuzzleTraining: React.FC = () => {
     autoFirstMoveDelayMs: 400,
     onComplete: () => {
       setStreak(prev => prev + 1);
-      // Update local puzzle statistics for completed puzzle
-      if (puzzle) {
-        setPuzzle(prev => prev ? {
-          ...prev,
-          totalSolved: (prev.totalSolved || 0) + 1,
-          totalAttempts: (prev.totalAttempts || 0) + 1
-        } : null);
-      }
       setTimeout(() => {
         clearStoredPuzzle();
         clearHintUsed();
@@ -69,13 +61,6 @@ export const PuzzleTraining: React.FC = () => {
     },
     onWrong: () => {
       setStreak(0);
-      // Update local puzzle statistics for wrong attempt
-      if (puzzle) {
-        setPuzzle(prev => prev ? {
-          ...prev,
-          totalAttempts: (prev.totalAttempts || 0) + 1
-        } : null);
-      }
     }
   });
 
@@ -255,6 +240,40 @@ export const PuzzleTraining: React.FC = () => {
         };
       }
     });
+
+    // Highlight king in check
+    if (game) {
+      try {
+        if (game.inCheck()) {
+          const kingColor = game.turn();
+          const board = game.board();
+          let kingSquare: string | null = null;
+
+          for (let rank = 0; rank < board.length; rank++) {
+            for (let file = 0; file < board[rank].length; file++) {
+              const piece = board[rank][file];
+              if (piece && piece.type === 'k' && piece.color === kingColor) {
+                const fileChar = String.fromCharCode('a'.charCodeAt(0) + file);
+                const rankChar = String(8 - rank);
+                kingSquare = `${fileChar}${rankChar}`;
+                break;
+              }
+            }
+            if (kingSquare) break;
+          }
+
+          if (kingSquare) {
+            const isCheckmate = game.isCheckmate();
+            styles[kingSquare] = {
+              backgroundColor: 'rgba(231, 76, 60, 0.45)',
+              animation: isCheckmate ? 'kingMatePulse 1s ease-in-out infinite' : undefined,
+            };
+          }
+        }
+      } catch (e) {
+        console.error('Failed to compute check highlight', e);
+      }
+    }
 
     return styles;
   };

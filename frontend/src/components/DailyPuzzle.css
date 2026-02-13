@@ -189,3 +189,18 @@
     font-size: 1rem;
   }
 }
+
+@keyframes kingMatePulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.5);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(231, 76, 60, 0);
+    transform: scale(1.03);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
+    transform: scale(1);
+  }
+}
