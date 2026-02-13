@@ -229,6 +229,7 @@ export const PuzzleTraining: React.FC = () => {
             orientation={playerColor}
             boardWidth={boardWidth}
             isInteractive={status !== 'complete'}
+            animationDuration={800}
           />
 
           {messageKey && (

@@ -102,6 +102,7 @@ export const DailyPuzzle: React.FC = () => {
           orientation={playerColor}
           boardWidth={boardWidth}
           isInteractive={status !== 'complete' && !puzzle.alreadySolved}
+          animationDuration={800}
         />
         {puzzle.alreadySolved && (
           <div className="puzzle-solved-overlay">

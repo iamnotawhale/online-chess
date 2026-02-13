@@ -19,6 +19,7 @@ export interface ChessBoardWrapperProps {
   arePiecesDraggable?: boolean;
   customSquareStyles?: { [square: string]: React.CSSProperties };
   customArrows?: any[];
+  animationDuration?: number;
   onPieceDragBegin?: (piece: string, square: string) => void;
   onPieceDragEnd?: () => void;
 }
@@ -37,6 +38,7 @@ export const ChessBoardWrapper: React.FC<ChessBoardWrapperProps> = ({
   arePiecesDraggable = true,
   customSquareStyles = {},
   customArrows = [],
+  animationDuration = 300,
   onPieceDragBegin,
   onPieceDragEnd,
 }) => {
@@ -109,6 +111,7 @@ export const ChessBoardWrapper: React.FC<ChessBoardWrapperProps> = ({
       boardOrientation={orientation}
       boardWidth={boardWidth}
       arePiecesDraggable={arePiecesDraggable && isInteractive}
+      animationDuration={animationDuration}
       customDarkSquareStyle={{ backgroundColor: getBoardColors(boardTheme).dark }}
       customLightSquareStyle={{ backgroundColor: getBoardColors(boardTheme).light }}
       customBoardStyle={{
