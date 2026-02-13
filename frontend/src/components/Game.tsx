@@ -1036,22 +1036,38 @@ export const GameView: React.FC = () => {
         </div>
         
         {/* Promotion Dialog */}
-        {promotionDialogOpen && promotionData && (
+        {promotionDialogOpen && promotionData && game && currentUser && (
           <div className="promotion-overlay">
             <div className="promotion-dialog">
               <h3>{t('promotionTitle')}</h3>
               <div className="promotion-options">
-                <button className="promotion-btn" onClick={() => handlePromotionChoice('q')}>
-                  ♕ {t('promotionQueen')}
+                <button 
+                  className="promotion-btn" 
+                  onClick={() => handlePromotionChoice('q')}
+                  title={t('promotionQueen')}
+                >
+                  {game.whitePlayerId === currentUser.id ? '♕' : '♛'}
                 </button>
-                <button className="promotion-btn" onClick={() => handlePromotionChoice('r')}>
-                  ♖ {t('promotionRook')}
+                <button 
+                  className="promotion-btn" 
+                  onClick={() => handlePromotionChoice('r')}
+                  title={t('promotionRook')}
+                >
+                  {game.whitePlayerId === currentUser.id ? '♖' : '♜'}
                 </button>
-                <button className="promotion-btn" onClick={() => handlePromotionChoice('b')}>
-                  ♗ {t('promotionBishop')}
+                <button 
+                  className="promotion-btn" 
+                  onClick={() => handlePromotionChoice('b')}
+                  title={t('promotionBishop')}
+                >
+                  {game.whitePlayerId === currentUser.id ? '♗' : '♝'}
                 </button>
-                <button className="promotion-btn" onClick={() => handlePromotionChoice('n')}>
-                  ♘ {t('promotionKnight')}
+                <button 
+                  className="promotion-btn" 
+                  onClick={() => handlePromotionChoice('n')}
+                  title={t('promotionKnight')}
+                >
+                  {game.whitePlayerId === currentUser.id ? '♘' : '♞'}
                 </button>
               </div>
             </div>

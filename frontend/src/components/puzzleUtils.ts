@@ -20,8 +20,9 @@ export const getFirstOpponentMove = (data: PuzzleData): string | null => {
 export const applyUciMove = (game: Chess, moveUci: string): boolean => {
   const from = moveUci.substring(0, 2);
   const to = moveUci.substring(2, 4);
+  const promotion = moveUci.length > 4 ? moveUci[4] : undefined;
   try {
-    const move = game.move({ from, to, promotion: 'q' });
+    const move = game.move({ from, to, promotion });
     return move !== null;
   } catch {
     return false;

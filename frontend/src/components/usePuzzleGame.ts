@@ -189,7 +189,12 @@ export const usePuzzleGame = ({
 
       if (move === null) return false;
 
-      const moveUci = `${sourceSquare}${targetSquare}`;
+      // Build UCI notation with promotion if applicable
+      let moveUci = `${sourceSquare}${targetSquare}`;
+      if (move.promotion) {
+        moveUci += move.promotion;
+      }
+
       const newUserMoves = [...userMoves, moveUci];
       setUserMoves(newUserMoves);
 
