@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Chess } from 'chess.js';
-import { Chessboard } from 'react-chessboard';
+import { ChessBoardWrapper, Modal } from './common';
 import { apiService } from '../api';
 import { wsService, GameUpdate } from '../websocket';
 import { useTranslation } from '../i18n/LanguageContext';
-import { getBoardTheme, getBoardColors, BoardTheme } from '../utils/boardTheme';
 import './Game.css';
 
 interface GameData {
@@ -57,8 +56,6 @@ export const GameView: React.FC = () => {
   const [lastMoveAt, setLastMoveAt] = useState<number | null>(null);
   const [timeUpdateReceivedAt, setTimeUpdateReceivedAt] = useState<number>(Date.now());
   const [boardPosition, setBoardPosition] = useState<string>('start');
-  const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
-  const [legalMoves, setLegalMoves] = useState<string[]>([]);
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
   const [moveFens, setMoveFens] = useState<string[]>([]);
   const [currentMoveIndex, setCurrentMoveIndex] = useState<number>(-1);
@@ -72,16 +69,6 @@ export const GameView: React.FC = () => {
     const isMobile = window.innerWidth <= 768;
     return isMobile ? Math.max(320, window.innerWidth) : 800;
   });
-  const [boardTheme, setBoardThemeState] = useState<BoardTheme>(getBoardTheme());
-
-  // Listen for board theme changes
-  useEffect(() => {
-    const handleThemeChange = () => {
-      setBoardThemeState(getBoardTheme());
-    };
-    window.addEventListener('boardThemeChanged', handleThemeChange);
-    return () => window.removeEventListener('boardThemeChanged', handleThemeChange);
-  }, []);
 
   // Очистить таймер при размонтировании
   useEffect(() => {
@@ -455,10 +442,6 @@ export const GameView: React.FC = () => {
       
       // Update board position state immediately
       setBoardPosition(chessInstance.fen());
-      
-      // Clear selection
-      setSelectedSquare(null);
-      setLegalMoves([]);
 
       // Send move to server (WebSocket will confirm or correct the position)
       const moveNotation = `${sourceSquare}${targetSquare}`;
@@ -471,57 +454,6 @@ export const GameView: React.FC = () => {
       console.error('Invalid move:', error);
       return false;
     }
-  };
-
-  const handleSquareClick = (square: string) => {
-    if (!game || !chessInstance || !currentUser) return;
-    if (game.status !== 'active') return;
-
-    const userIsWhite = game.whitePlayerId === currentUser.id;
-    const isUsersTurn = (userIsWhite && chessInstance.turn() === 'w') ||
-                        (!userIsWhite && chessInstance.turn() === 'b');
-
-    if (!isUsersTurn) return;
-
-    // If a square is already selected
-    if (selectedSquare) {
-      // Try to make a move to the clicked square
-      if (legalMoves.includes(square)) {
-        handleOnDrop(selectedSquare, square);
-      }
-      // Deselect
-      setSelectedSquare(null);
-      setLegalMoves([]);
-    } else {
-      // Select this square and show legal moves
-      const piece = chessInstance.get(square as any);
-      if (piece && 
-          ((piece.color === 'w' && userIsWhite) || 
-           (piece.color === 'b' && !userIsWhite))) {
-        const moves = chessInstance.moves({ square: square as any, verbose: true });
-        const destinations = moves.map(m => m.to);
-        setSelectedSquare(square);
-        setLegalMoves(destinations);
-      }
-    }
-  };
-
-  const handlePieceDragBegin = (_piece: string, square: string) => {
-    if (!chessInstance || !currentUser || !game) return;
-    
-    const userIsWhite = game.whitePlayerId === currentUser.id;
-    const isUsersTurn = (userIsWhite && chessInstance.turn() === 'w') ||
-                        (!userIsWhite && chessInstance.turn() === 'b');
-    
-    if (isUsersTurn) {
-      const moves = chessInstance.moves({ square: square as any, verbose: true });
-      const destinations = moves.map(m => m.to);
-      setLegalMoves(destinations);
-    }
-  };
-
-  const handlePieceDragEnd = () => {
-    setLegalMoves([]);
   };
 
   const handlePromotionChoice = (piece: string) => {
@@ -546,8 +478,6 @@ export const GameView: React.FC = () => {
 
       // Update board position
       setBoardPosition(chessInstance.fen());
-      setSelectedSquare(null);
-      setLegalMoves([]);
 
       // Send move to server with promotion
       const moveNotation = `${from}${to}${piece}`;
@@ -563,105 +493,6 @@ export const GameView: React.FC = () => {
       setPromotionDialogOpen(false);
       setPromotionData(null);
     }
-  };
-
-  const getSquareStyles = () => {
-    const styles: { [square: string]: React.CSSProperties } = {};
-
-    // Highlight selected square
-    if (selectedSquare) {
-      styles[selectedSquare] = {
-        backgroundColor: 'rgba(255, 255, 0, 0.4)',
-      };
-    }
-
-    // Highlight legal move squares
-    legalMoves.forEach(square => {
-      styles[square] = {
-        background: 'radial-gradient(circle, rgba(0,0,0,.1) 25%, transparent 25%)',
-        borderRadius: '50%',
-      };
-      if (chessInstance?.get(square as any)) {
-        styles[square] = {
-          background: 'radial-gradient(circle, rgba(0,0,0,.1) 85%, transparent 85%)',
-          borderRadius: '50%',
-        };
-      }
-    });
-
-    // Подсветка последнего хода
-    if (moveHistory.length > 0 && !isViewingHistory) {
-      // Получаем последний ход в SAN или UCI
-      const lastMove = moveHistory[moveHistory.length - 1];
-      // Попробуем извлечь from/to из SAN или UCI
-      let fromSquare = null;
-      let toSquare = null;
-      // UCI: e2e4, SAN: e4, Nf3, exd5, etc.
-      const uciPattern = /^[a-h][1-8][a-h][1-8][qrbn]?$/i;
-      if (uciPattern.test(lastMove)) {
-        fromSquare = lastMove.slice(0, 2);
-        toSquare = lastMove.slice(2, 4);
-      } else {
-        // chess.js move history: get last move object
-        try {
-          const tempChess = new Chess(START_FEN);
-          moveHistory.forEach(m => tempChess.move(m));
-          const history = tempChess.history({ verbose: true });
-          if (history.length > 0) {
-            fromSquare = history[history.length - 1].from;
-            toSquare = history[history.length - 1].to;
-          }
-        } catch {}
-      }
-      if (fromSquare) {
-        styles[fromSquare] = {
-          backgroundColor: 'rgba(52, 152, 219, 0.18)',
-        };
-      }
-      if (toSquare) {
-        styles[toSquare] = {
-          backgroundColor: 'rgba(52, 152, 219, 0.28)',
-        };
-      }
-    }
-
-    // Highlight king in check
-    try {
-      const fenToUse = boardPosition === 'start' ? START_FEN : boardPosition;
-      const tempChess = new Chess(fenToUse);
-      if (tempChess.inCheck()) {
-        const kingColor = tempChess.turn();
-        const board = tempChess.board();
-        let kingSquare: string | null = null;
-
-        for (let rank = 0; rank < board.length; rank++) {
-          for (let file = 0; file < board[rank].length; file++) {
-            const piece = board[rank][file];
-            if (piece && piece.type === 'k' && piece.color === kingColor) {
-              const fileChar = String.fromCharCode('a'.charCodeAt(0) + file);
-              const rankChar = String(8 - rank);
-              kingSquare = `${fileChar}${rankChar}`;
-              break;
-            }
-          }
-          if (kingSquare) break;
-        }
-
-        if (kingSquare) {
-          const isCheckmate = typeof tempChess.isCheckmate === 'function'
-            ? tempChess.isCheckmate()
-            : false;
-          styles[kingSquare] = {
-            backgroundColor: 'rgba(231, 76, 60, 0.45)',
-            animation: isCheckmate ? 'kingMatePulse 1s ease-in-out infinite' : undefined,
-          };
-        }
-      }
-    } catch (e) {
-      console.error('Failed to compute check highlight', e);
-    }
-
-    return styles;
   };
 
   const goToMove = (moveIndex: number) => {
@@ -864,21 +695,45 @@ export const GameView: React.FC = () => {
                 </div>
               </div>
             )}
-            <Chessboard
-              position={boardPosition}
-              onPieceDrop={handleOnDrop}
-              onSquareClick={handleSquareClick}
-              onPieceDragBegin={handlePieceDragBegin}
-              onPieceDragEnd={handlePieceDragEnd}
-              customSquareStyles={getSquareStyles()}
-              boardOrientation={userIsWhite ? 'white' : 'black'}
-              boardWidth={boardWidth}
-              customDarkSquareStyle={{ backgroundColor: getBoardColors(boardTheme).dark }}
-              customLightSquareStyle={{ backgroundColor: getBoardColors(boardTheme).light }}
-              customDropSquareStyle={{
-                boxShadow: 'inset 0 0 1px 4px rgb(255, 255, 0)',
-              }}
-            />
+            {/* Calculate last move from history */}
+            {(() => {
+              let lastMove: { from: string; to: string } | null = null;
+              if (moveHistory.length > 0 && !isViewingHistory) {
+                const lastMoveNotation = moveHistory[moveHistory.length - 1];
+                const uciPattern = /^[a-h][1-8][a-h][1-8][qrbn]?$/i;
+                if (uciPattern.test(lastMoveNotation)) {
+                  lastMove = {
+                    from: lastMoveNotation.slice(0, 2),
+                    to: lastMoveNotation.slice(2, 4),
+                  };
+                } else {
+                  try {
+                    const tempChess = new Chess(START_FEN);
+                    moveHistory.forEach(m => tempChess.move(m));
+                    const history = tempChess.history({ verbose: true });
+                    if (history.length > 0) {
+                      lastMove = {
+                        from: history[history.length - 1].from,
+                        to: history[history.length - 1].to,
+                      };
+                    }
+                  } catch {}
+                }
+              }
+              
+              return (
+                <ChessBoardWrapper
+                  position={boardPosition}
+                  game={chessInstance}
+                  onMove={handleOnDrop}
+                  lastMove={lastMove}
+                  orientation={userIsWhite ? 'white' : 'black'}
+                  boardWidth={boardWidth}
+                  isInteractive={game.status === 'active' && !isViewingHistory}
+                  showCheck={!isViewingHistory}
+                />
+              );
+            })()}
           </div>
 
           {userIsWhite ? (
@@ -1035,44 +890,48 @@ export const GameView: React.FC = () => {
         
         </div>
         
-        {/* Promotion Dialog */}
-        {promotionDialogOpen && promotionData && game && currentUser && (
-          <div className="promotion-overlay">
-            <div className="promotion-dialog">
-              <h3>{t('promotionTitle')}</h3>
-              <div className="promotion-options">
-                <button 
-                  className="promotion-btn" 
-                  onClick={() => handlePromotionChoice('q')}
-                  title={t('promotionQueen')}
-                >
-                  {game.whitePlayerId === currentUser.id ? '♕' : '♛'}
-                </button>
-                <button 
-                  className="promotion-btn" 
-                  onClick={() => handlePromotionChoice('r')}
-                  title={t('promotionRook')}
-                >
-                  {game.whitePlayerId === currentUser.id ? '♖' : '♜'}
-                </button>
-                <button 
-                  className="promotion-btn" 
-                  onClick={() => handlePromotionChoice('b')}
-                  title={t('promotionBishop')}
-                >
-                  {game.whitePlayerId === currentUser.id ? '♗' : '♝'}
-                </button>
-                <button 
-                  className="promotion-btn" 
-                  onClick={() => handlePromotionChoice('n')}
-                  title={t('promotionKnight')}
-                >
-                  {game.whitePlayerId === currentUser.id ? '♘' : '♞'}
-                </button>
-              </div>
+        {/* Promotion Modal */}
+        <Modal
+          isOpen={promotionDialogOpen && !!promotionData && !!game && !!currentUser}
+          onClose={() => {
+            setPromotionDialogOpen(false);
+            setPromotionData(null);
+          }}
+          title={t('promotionTitle')}
+        >
+          {game && currentUser && (
+            <div className="promotion-options">
+              <button 
+                className="promotion-btn" 
+                onClick={() => handlePromotionChoice('q')}
+                title={t('promotionQueen')}
+              >
+                {game.whitePlayerId === currentUser.id ? '♕' : '♛'}
+              </button>
+              <button 
+                className="promotion-btn" 
+                onClick={() => handlePromotionChoice('r')}
+                title={t('promotionRook')}
+              >
+                {game.whitePlayerId === currentUser.id ? '♖' : '♜'}
+              </button>
+              <button 
+                className="promotion-btn" 
+                onClick={() => handlePromotionChoice('b')}
+                title={t('promotionBishop')}
+              >
+                {game.whitePlayerId === currentUser.id ? '♗' : '♝'}
+              </button>
+              <button 
+                className="promotion-btn" 
+                onClick={() => handlePromotionChoice('n')}
+                title={t('promotionKnight')}
+              >
+                {game.whitePlayerId === currentUser.id ? '♘' : '♞'}
+              </button>
             </div>
-          </div>
-        )}
+          )}
+        </Modal>
       </div>
     </div>
   );

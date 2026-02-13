@@ -28,7 +28,7 @@ export const DailyPuzzle: React.FC = () => {
     puzzle,
     loading,
     disableMoves: puzzle?.alreadySolved ?? false,
-    autoFirstMoveDelayMs: 0,
+    autoFirstMoveDelayMs: 800,
     onComplete: () => {
       setPuzzle(prev => (prev ? { ...prev, alreadySolved: true } : null));
     }
