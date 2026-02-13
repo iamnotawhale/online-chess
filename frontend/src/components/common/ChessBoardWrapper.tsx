@@ -18,6 +18,7 @@ export interface ChessBoardWrapperProps {
   showCheck?: boolean;
   arePiecesDraggable?: boolean;
   customSquareStyles?: { [square: string]: React.CSSProperties };
+  customArrows?: any[];
   onPieceDragBegin?: (piece: string, square: string) => void;
   onPieceDragEnd?: () => void;
 }
@@ -35,6 +36,7 @@ export const ChessBoardWrapper: React.FC<ChessBoardWrapperProps> = ({
   showCheck = true,
   arePiecesDraggable = true,
   customSquareStyles = {},
+  customArrows = [],
   onPieceDragBegin,
   onPieceDragEnd,
 }) => {
@@ -102,6 +104,7 @@ export const ChessBoardWrapper: React.FC<ChessBoardWrapperProps> = ({
       onSquareClick={showLegalMoves ? squareClick.handleSquareClick : undefined}
       onPieceDragBegin={handlePieceDragBegin}
       onPieceDragEnd={handlePieceDragEnd}
+      customArrows={customArrows}
       customSquareStyles={finalStyles}
       boardOrientation={orientation}
       boardWidth={boardWidth}
