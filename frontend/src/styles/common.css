@@ -51,29 +51,17 @@
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: var(--accent-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0.9;
 }
 
 .btn-secondary {
-  background: var(--surface-2);
+  background: var(--border);
   color: var(--text);
-  border: 1px solid var(--border);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: var(--surface);
-  border-color: var(--accent);
-}
-
-.btn-danger {
-  background: var(--error-bg);
-  color: var(--error-text);
-}
-
-.btn-danger:hover:not(:disabled) {
-  background: var(--error-border);
+  background: var(--accent);
+  color: var(--accent-contrast);
 }
 
 .btn-sm {
