@@ -151,8 +151,8 @@ public class PuzzleService {
                         solution = new UserPuzzleSolution();
                         solution.setUserId(userUUID);
                         solution.setPuzzleId(puzzleId);
-                        // First attempt always counts
-                        solution.setAttempts(1);
+                        // Count attempt only if puzzle is completed or move is wrong
+                        solution.setAttempts((isComplete || !correct) ? 1 : 0);
                         solution.setSolved(isComplete);
                         if (isComplete) {
                             solution.setSolvedAt(LocalDateTime.now());
@@ -166,7 +166,7 @@ public class PuzzleService {
                     
                     // Ensure puzzle exists in database (required for foreign key constraint)
                     try {
-                        if (!puzzleRepository.existsById(puzzleId)) {
+                        if (puzzleId != null && !puzzleRepository.existsById(puzzleId)) {
                             log.info("Puzzle {} not in database, saving it now", puzzleId);
                             puzzleRepository.save(puzzle);
                         }
