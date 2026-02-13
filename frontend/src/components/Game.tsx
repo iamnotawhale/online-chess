@@ -731,7 +731,6 @@ export const GameView: React.FC = () => {
                   boardWidth={boardWidth}
                   isInteractive={game.status === 'active' && !isViewingHistory}
                   showCheck={!isViewingHistory}
-                  animationDuration={300}
                 />
               );
             })()}

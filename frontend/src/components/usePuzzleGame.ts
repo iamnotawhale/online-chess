@@ -13,7 +13,7 @@ type PuzzleStatus = 'playing' | 'correct' | 'wrong' | 'complete';
 
 type UsePuzzleGameOptions = {
   puzzle: PuzzleData | null;
-  loading: boolean;
+  loading?: boolean;
   disableMoves?: boolean;
   skipAutoFirstMove?: boolean;
   autoFirstMoveDelayMs?: number;
@@ -42,7 +42,7 @@ type UsePuzzleGameResult = {
 
 export const usePuzzleGame = ({
   puzzle,
-  loading,
+  loading = false,
   disableMoves = false,
   skipAutoFirstMove = false,
   autoFirstMoveDelayMs = 400,
@@ -71,6 +71,18 @@ export const usePuzzleGame = ({
   }, [puzzle?.id]);
 
   useEffect(() => {
+    if (!puzzle) return;
+    autoPlayedPuzzleId.current = null;
+
+    const chess = new Chess(puzzle.fen);
+    setGame(chess);
+    setPosition(chess.fen());
+    setUserMoves([]);
+    setPlayerColor(getPlayerColorFromPuzzle(puzzle));
+  }, [puzzle?.id]);
+
+  // Play opponent's first move - same as original main branch logic
+  useEffect(() => {
     if (!puzzle || loading || skipAutoFirstMove) return undefined;
     if (!puzzle.solution || puzzle.solution.length === 0) return undefined;
     if (autoPlayedPuzzleId.current === puzzle.id) return undefined;
@@ -88,7 +100,10 @@ export const usePuzzleGame = ({
       window.requestAnimationFrame(() => {
         timeoutId = window.setTimeout(() => {
           try {
-            if (!applyUciMove(baseGame, firstOpponentMove)) return;
+            if (!applyUciMove(baseGame, firstOpponentMove)) {
+              setIsOpponentMoving(false);
+              return;
+            }
 
             // Player color is determined by who moves AFTER the opponent's first move
             const playerIsWhite = baseGame.turn() === 'w';
