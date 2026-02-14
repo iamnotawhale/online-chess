@@ -32,6 +32,14 @@ export const translations = {
     color: 'Your Color',
     timeControl: 'Time Control',
     
+    // Bot difficulties
+    beginner: 'Beginner',
+    intermediate: 'Intermediate',
+    advanced: 'Advanced',
+    expert: 'Expert',
+    depth: 'Depth',
+    cancel: 'Cancel',
+    
     // Custom controls
     random: 'Random',
     white: 'White',
@@ -295,10 +303,18 @@ export const translations = {
     color: 'Ваш цвет',
     timeControl: 'Контроль времени',
     
+    // Bot difficulties
+    beginner: 'Начинающий',
+    intermediate: 'Средний',
+    advanced: 'Продвинутый',
+    expert: 'Эксперт',
+    depth: 'Глубина',
+    cancel: 'Отмена',
+    
     // Custom controls
-    random: 'Random',
-    white: 'White',
-    black: 'Black',
+    random: 'Случайный',
+    white: 'Белые',
+    black: 'Чёрные',
     minutes: 'Минуты',
     increment: 'Инкремент',
     sec: 'сек',

@@ -94,7 +94,20 @@ interface InviteResponse {
   createdAt: string;
 }
 
-const API_BASE_URL = '/api';
+// Get API base URL - use backend server for API calls
+const getApiBaseUrl = (): string => {
+  if (typeof window === 'undefined') return '/api';
+  
+  // In development, use explicit backend URL
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return 'http://localhost:8082/api';
+  }
+  
+  // In production, use same origin
+  return '/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 class ApiService {
   private client: AxiosInstance;
@@ -293,13 +306,21 @@ class ApiService {
   }
 
   createBotGame(difficulty: string, playerColor: string = 'random', timeControl: string = '5+3'): Promise<GameResponse> {
-    return this.client.post('/bot/game', null, {
-      params: {
-        difficulty,
-        playerColor,
-        timeControl
-      }
-    }).then(res => res.data);
+    const payload = { difficulty, playerColor, timeControl };
+    console.log('📤 Sending bot game request:', payload);
+    return this.client.post('/bot/game', payload)
+      .then(res => {
+        console.log('📥 Bot game response:', res.data);
+        return res.data;
+      })
+      .catch(err => {
+        console.error('❌ Bot game request failed:', {
+          status: err.response?.status,
+          data: err.response?.data,
+          message: err.message
+        });
+        throw err;
+      });
   }
 
   getBotMove(gameId: string, difficulty: string = 'INTERMEDIATE'): Promise<{ move: string; game: GameResponse }> {

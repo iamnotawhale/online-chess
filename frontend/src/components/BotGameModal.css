@@ -1,49 +1,80 @@
 .bot-game-modal-content {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 20px 0;
+  gap: 24px;
+  padding: 24px 0;
 }
 
 .bot-game-form-group {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .bot-game-form-group label {
   font-weight: 600;
   font-size: 0.95rem;
   color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.85rem;
+  opacity: 0.9;
 }
 
 .difficulty-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  gap: 12px;
 }
 
 .difficulty-button {
-  padding: 12px;
+  padding: 16px 14px;
   border: 2px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--surface);
-  color: var(--text);
+  color: var(--accent);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   font-size: 0.9rem;
   font-weight: 500;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+
+.difficulty-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, transparent 0%, rgba(var(--accent-rgb, 59, 130, 246), 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .difficulty-button:hover:not(:disabled) {
   border-color: var(--accent);
-  background: var(--hover-bg);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.difficulty-button:hover:not(:disabled)::before {
+  opacity: 1;
 }
 
 .difficulty-button.active {
   border-color: var(--accent);
   background: var(--accent);
-  color: var(--accent-contrast);
+  color: var(--surface);
+  box-shadow: 0 4px 16px rgba(var(--accent-rgb, 59, 130, 246), 0.3);
+}
+
+.difficulty-button.active .difficulty-name,
+.difficulty-button.active .difficulty-depth {
+  color: var(--surface);
+  opacity: 1;
 }
 
 .difficulty-button:disabled {
@@ -53,66 +84,95 @@
 
 .difficulty-name {
   font-weight: 600;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  font-size: 1rem;
+  position: relative;
 }
 
 .difficulty-depth {
   font-size: 0.8rem;
-  opacity: 0.8;
+  opacity: 0.7;
+  position: relative;
 }
 
 .color-buttons {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  gap: 12px;
 }
 
 .color-button {
-  padding: 12px;
+  padding: 16px 12px;
   border: 2px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--surface);
-  color: var(--text);
+  color: var(--accent);
   cursor: pointer;
-  transition: all 0.2s;
-  font-weight: 500;
+  transition: all 0.2s ease;
+  font-weight: 600;
   font-size: 0.95rem;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.color-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, transparent 0%, rgba(var(--accent-rgb, 59, 130, 246), 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .color-button:hover:not(:disabled) {
   border-color: var(--accent);
-  transform: scale(1.05);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.color-button:hover:not(:disabled)::before {
+  opacity: 1;
 }
 
 .color-button.active {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.2);
+  background: var(--accent);
+  color: var(--surface);
+  box-shadow: 0 4px 16px rgba(var(--accent-rgb, 59, 130, 246), 0.3);
 }
 
 .color-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
 }
 
 .bot-game-select {
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
+  padding: 12px 16px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
   background: var(--surface);
-  color: var(--text);
+  color: var(--accent);
   font-size: 0.95rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: border 0.2s;
+  transition: all 0.2s ease;
 }
 
 .bot-game-select:hover:not(:disabled) {
   border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .bot-game-select:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 59, 130, 246), 0.15);
 }
 
 .bot-game-select:disabled {
@@ -121,40 +181,112 @@
 }
 
 .bot-game-error {
-  padding: 12px;
-  background: var(--error-bg);
-  color: var(--error-text);
-  border: 1px solid var(--error-border);
-  border-radius: 4px;
+  padding: 14px 16px;
+  background: var(--surface);
+  color: var(--accent);
+  border: 2px solid var(--accent);
+  border-radius: 8px;
   font-size: 0.9rem;
+  font-weight: 500;
 }
 
 .bot-game-actions {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   justify-content: flex-end;
-  padding-top: 10px;
+  padding-top: 16px;
   border-top: 1px solid var(--border);
 }
 
 .bot-game-actions .btn {
   min-width: 120px;
+  padding: 12px 24px;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.bot-game-actions .btn-secondary {
+  background: var(--surface);
+  color: var(--accent);
+  border: 2px solid var(--border);
+}
+
+.bot-game-actions .btn-secondary:hover:not(:disabled) {
+  background: var(--hover-bg);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.bot-game-actions .btn-primary {
+  background: var(--accent);
+  color: var(--surface);
+  border: 2px solid var(--accent);
+  box-shadow: 0 2px 8px rgba(var(--accent-rgb, 59, 130, 246), 0.3);
+}
+
+.bot-game-actions .btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover, var(--accent));
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(var(--accent-rgb, 59, 130, 246), 0.4);
+}
+
+.bot-game-actions .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 @media (max-width: 600px) {
+  .bot-game-modal-content {
+    gap: 20px;
+    padding: 20px 0;
+  }
+
+  .bot-game-form-group label {
+    font-size: 0.8rem;
+  }
+
   .difficulty-grid {
     grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .difficulty-button {
+    padding: 14px 16px;
+    text-align: center;
+  }
+
+  .difficulty-name {
+    font-size: 0.95rem;
+  }
+
+  .difficulty-depth {
+    font-size: 0.75rem;
   }
 
   .color-buttons {
     grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .color-button {
+    padding: 14px 12px;
+    font-size: 0.9rem;
+  }
+
+  .bot-game-select {
+    padding: 12px 14px;
+    font-size: 0.9rem;
   }
 
   .bot-game-actions {
-    flex-direction: column-reverse;
+    flex-direction: column;
+    gap: 10px;
   }
 
   .bot-game-actions .btn {
     width: 100%;
+    min-width: unset;
   }
 }

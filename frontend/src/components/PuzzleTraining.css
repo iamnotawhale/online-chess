@@ -243,6 +243,7 @@
   cursor: pointer;
   border-radius: 50%;
   border: none;
+  margin-top: -6px;
 }
 
 .filter-group input[type="range"]::-moz-range-thumb {

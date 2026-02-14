@@ -45,21 +45,31 @@ export const BotGameModal: React.FC<BotGameModalProps> = ({ isOpen, onClose, onG
     setError('');
 
     try {
+      console.log('🤖 Creating bot game:', { selectedDifficulty, selectedColor, timeControl });
       const game = await apiService.createBotGame(selectedDifficulty, selectedColor, timeControl);
+      console.log('✅ Bot game created:', game);
       onGameCreated(game.id);
       onClose();
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to create game');
+      console.error('❌ Bot game creation failed:', err);
+      console.error('Error response:', err.response?.data);
+      const errorMsg = err.response?.data?.error || err.message || 'Failed to create game';
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
+  };
+
+  const getDifficultyTranslation = (name: string): string => {
+    const key = name.toLowerCase() as 'beginner' | 'intermediate' | 'advanced' | 'expert';
+    return t(key) || name;
   };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t('playVsComputer') || 'Play vs Computer'}>
       <div className="bot-game-modal-content">
         <div className="bot-game-form-group">
-          <label>{t('difficulty') || 'Difficulty'}</label>
+          <label>{t('difficulty')}</label>
           <div className="difficulty-grid">
             {difficulties.map(diff => (
               <button
@@ -68,44 +78,42 @@ export const BotGameModal: React.FC<BotGameModalProps> = ({ isOpen, onClose, onG
                 onClick={() => setSelectedDifficulty(diff.name)}
                 disabled={loading}
               >
-                <div className="difficulty-name">{diff.name}</div>
-                <div className="difficulty-depth">Depth: {diff.depth}</div>
+                <div className="difficulty-name">{getDifficultyTranslation(diff.name)}</div>
+                <div className="difficulty-depth">{t('depth')}: {diff.depth}</div>
               </button>
             ))}
           </div>
         </div>
 
         <div className="bot-game-form-group">
-          <label>{t('color') || 'Your Color'}</label>
+          <label>{t('color')}</label>
           <div className="color-buttons">
-            <button
-              className={`color-button ${selectedColor === 'white' ? 'active' : ''}`}
-              onClick={() => setSelectedColor('white')}
-              disabled={loading}
-              style={{ backgroundColor: '#f0e6d2' }}
-            >
-              {t('white') || 'White'}
-            </button>
             <button
               className={`color-button ${selectedColor === 'random' ? 'active' : ''}`}
               onClick={() => setSelectedColor('random')}
               disabled={loading}
             >
-              {t('random') || 'Random'}
+              {t('random')}
+            </button>
+            <button
+              className={`color-button ${selectedColor === 'white' ? 'active' : ''}`}
+              onClick={() => setSelectedColor('white')}
+              disabled={loading}
+            >
+              {t('white')}
             </button>
             <button
               className={`color-button ${selectedColor === 'black' ? 'active' : ''}`}
               onClick={() => setSelectedColor('black')}
               disabled={loading}
-              style={{ backgroundColor: '#3d3d3d' }}
             >
-              {t('black') || 'Black'}
+              {t('black')}
             </button>
           </div>
         </div>
 
         <div className="bot-game-form-group">
-          <label>{t('timeControl') || 'Time Control'}</label>
+          <label>{t('timeControl')}</label>
           <select
             value={timeControl}
             onChange={(e) => setTimeControl(e.target.value)}
@@ -129,14 +137,14 @@ export const BotGameModal: React.FC<BotGameModalProps> = ({ isOpen, onClose, onG
             onClick={onClose}
             disabled={loading}
           >
-            {t('cancel') || 'Cancel'}
+            {t('cancel')}
           </button>
           <button
             className="btn btn-primary"
             onClick={handleCreateGame}
             disabled={loading || difficulties.length === 0}
           >
-            {loading ? t('creating') || 'Creating...' : t('play') || 'Play'}
+            {loading ? t('creating') : t('play')}
           </button>
         </div>
       </div>

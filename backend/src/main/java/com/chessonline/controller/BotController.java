@@ -1,15 +1,20 @@
 package com.chessonline.controller;
 
+import com.chessonline.dto.CreateBotGameRequest;
 import com.chessonline.dto.GameResponse;
 import com.chessonline.model.BotDifficulty;
 import com.chessonline.model.Game;
+import com.chessonline.model.User;
 import com.chessonline.service.BotService;
 import com.chessonline.service.GameService;
+import com.chessonline.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +31,51 @@ public class BotController {
     
     @Autowired
     private BotService botService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    private static final UUID BOT_UUID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    private static final String BOT_USERNAME = "StockfishBot";
+
+    /**
+     * Ensure bot player exists in database
+     */
+    private void ensureBotUserExists() {
+        try {
+            if (!userRepository.existsById(BOT_UUID)) {
+                System.out.println("🤖 Creating bot user with ID: " + BOT_UUID);
+                Instant now = Instant.now();
+                String sql = "INSERT INTO users (id, username, email, password_hash, rating, created_at, updated_at) " +
+                             "VALUES (cast(? as uuid), ?, ?, ?, ?, ?, ?)";
+                
+                int rowsAffected = jdbcTemplate.update(sql, 
+                    BOT_UUID.toString(), 
+                    BOT_USERNAME, 
+                    "bot@chessonline.app", 
+                    "", // empty password hash for bot
+                    1600, // initial rating
+                    now, 
+                    now
+                );
+                
+                if (rowsAffected > 0) {
+                    System.out.println("✅ Bot user created successfully with " + rowsAffected + " row(s)");
+                } else {
+                    System.out.println("⚠️ Bot user creation returned 0 rows");
+                }
+            } else {
+                System.out.println("✅ Bot user already exists");
+            }
+        } catch (Exception e) {
+            System.err.println("⚠️ Error in ensureBotUserExists: " + e.getMessage());
+            e.printStackTrace();
+            // Continue anyway, maybe the user exists despite the error
+        }
+    }
 
     /**
      * Get available bot difficulty levels
@@ -45,19 +95,43 @@ public class BotController {
 
     /**
      * Create a new game against bot
-     * @param difficulty Bot difficulty level
-     * @param playerColor Player's color: 'white', 'black', or 'random'
-     * @param timeControl Time control (e.g., "5+3")
      */
     @PostMapping("/game")
     public ResponseEntity<?> createBotGame(
-            @RequestParam BotDifficulty difficulty,
-            @RequestParam(defaultValue = "random") String playerColor,
-            @RequestParam(defaultValue = "5+3") String timeControl,
+            @RequestBody CreateBotGameRequest request,
             Authentication authentication) {
         try {
-            UUID playerId = UUID.fromString(authentication.getName());
+            System.out.println("🤖 Bot game request: " + request.getDifficulty() + ", " + request.getPlayerColor() + ", " + request.getTimeControl());
+            
+            if (authentication == null) {
+                System.err.println("❌ Authentication is null!");
+                return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+            }
+            
+            System.out.println("📍 Authentication details - Name: " + authentication.getName() + ", Authorities: " + authentication.getAuthorities());
+            
+            // Ensure bot player exists
+            ensureBotUserExists();
+            
+            UUID playerId;
+            try {
+                playerId = UUID.fromString(authentication.getName());
+                System.out.println("✅ Player ID: " + playerId);
+            } catch (IllegalArgumentException e) {
+                System.err.println("❌ Invalid player ID format: " + authentication.getName());
+                return ResponseEntity.status(400).body(Map.of("error", "Invalid player ID format"));
+            }
+            
+            // Check if player exists in database
+            if (!userRepository.existsById(playerId)) {
+                System.err.println("❌ Player not found in database: " + playerId);
+                return ResponseEntity.status(400).body(Map.of("error", "Player not found in database"));
+            }
+            System.out.println("✅ Player exists in database");
+            
             UUID botId = UUID.fromString(BotService.getBotPlayerId());
+            
+            String playerColor = request.getPlayerColor();
             
             // Randomize colors if requested
             if ("random".equalsIgnoreCase(playerColor)) {
@@ -67,12 +141,20 @@ public class BotController {
             UUID whiteId = "white".equalsIgnoreCase(playerColor) ? playerId : botId;
             UUID blackId = "black".equalsIgnoreCase(playerColor) ? playerId : botId;
             
-            Game game = gameService.createGame(whiteId, blackId, timeControl, null, false);
+            System.out.println("⚪ White: " + whiteId + ", ⚫ Black: " + blackId);
+            
+            Game game = gameService.createGame(whiteId, blackId, request.getTimeControl(), null, false);
             GameResponse response = mapToResponse(game, 0);
             
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+            String errorMsg = "Bot game error: " + e.getClass().getSimpleName() + " - " + e.getMessage();
+            System.err.println("❌ " + errorMsg);
+            e.printStackTrace();
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", errorMsg);
+            errorResponse.put("type", e.getClass().getSimpleName());
+            return ResponseEntity.status(400).body(errorResponse);
         }
     }
 

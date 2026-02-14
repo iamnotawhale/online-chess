@@ -29,7 +29,8 @@ public class MatchmakingController {
                     userId,
                     request.getGameMode(),
                     request.getTimeControl(),
-                    request.getPreferredColor()
+                    request.getPreferredColor(),
+                    request.isRated()
             );
 
             MatchmakingJoinResponse response = new MatchmakingJoinResponse();

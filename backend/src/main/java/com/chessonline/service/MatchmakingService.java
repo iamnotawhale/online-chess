@@ -41,7 +41,7 @@ public class MatchmakingService {
     @Autowired
     private LobbyGameRepository lobbyGameRepository;
 
-    public MatchmakingResult join(UUID userId, String gameMode, String timeControl, String preferredColor) {
+    public MatchmakingResult join(UUID userId, String gameMode, String timeControl, String preferredColor, boolean isRated) {
         validateTimeControl(gameMode, timeControl);
 
         synchronized (queueLock) {
@@ -78,8 +78,7 @@ public class MatchmakingService {
                         blackId = whiteId.equals(userId) ? opponentId : userId;
                     }
                     
-                    boolean rated = !"custom".equals(gameMode); // Rated for all non-custom modes (bullet, blitz, rapid, classic)
-                    Game game = gameService.createGame(whiteId, blackId, timeControl, null, rated);
+                    Game game = gameService.createGame(whiteId, blackId, timeControl, null, isRated);
                     matchedGames.put(opponentId, game.getId());
                     return MatchmakingResult.matched(game.getId(), gameMode, timeControl);
                 }
@@ -88,18 +87,16 @@ public class MatchmakingService {
             queue.add(userId);
             userQueueKeys.put(userId, key);
             
-            // Add to lobby for non-custom modes (always rated)
-            if (!"custom".equals(gameMode)) {
-                try {
-                    User creator = userRepository.findById(userId)
-                            .orElseThrow(() -> new RuntimeException("User not found"));
-                    String color = preferredColor != null ? preferredColor : "random";
-                    LobbyGame lobbyGame = new LobbyGame(creator, gameMode, timeControl, color, true); // Always rated for matchmaking
-                    lobbyGameRepository.save(lobbyGame);
-                } catch (Exception e) {
-                    // Log error but don't fail matchmaking
-                    System.err.println("Error creating lobby game for matchmaking: " + e.getMessage());
-                }
+            // Add to lobby for all game modes
+            try {
+                User creator = userRepository.findById(userId)
+                        .orElseThrow(() -> new RuntimeException("User not found"));
+                String color = preferredColor != null ? preferredColor : "random";
+                LobbyGame lobbyGame = new LobbyGame(creator, gameMode, timeControl, color, isRated);
+                lobbyGameRepository.save(lobbyGame);
+            } catch (Exception e) {
+                // Log error but don't fail matchmaking
+                System.err.println("Error creating lobby game for matchmaking: " + e.getMessage());
             }
             
             return MatchmakingResult.queued(gameMode, timeControl);
