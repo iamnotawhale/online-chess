@@ -60,6 +60,9 @@ export const GameView: React.FC = () => {
   const [moveFens, setMoveFens] = useState<string[]>([]);
   const [currentMoveIndex, setCurrentMoveIndex] = useState<number>(-1);
   const [isViewingHistory, setIsViewingHistory] = useState(false);
+  const [isBotGame, setIsBotGame] = useState(false);
+  const [isGettingBotMove, setIsGettingBotMove] = useState(false);
+  const botDifficultyRef = useRef<string>('INTERMEDIATE');
   const lastDrawOfferRef = useRef<string | null>(null);
   const isViewingHistoryRef = useRef(false);
   const [toast, setToast] = useState<{ message: string; type?: 'info' | 'error' } | null>(null);
@@ -149,6 +152,44 @@ export const GameView: React.FC = () => {
       }
     };
   }, [gameId]);
+
+  // Handle bot moves
+  useEffect(() => {
+    const makeBotMove = async () => {
+      if (!isBotGame || !game || !currentUser || !gameId) return;
+      if (game.status !== 'active' || isGettingBotMove) return;
+      
+      const BOT_PLAYER_ID = '00000000-0000-0000-0000-000000000001';
+      const userIsWhite = game.whitePlayerId === currentUser.id;
+      
+      // Check if it's bot's turn
+      const isBotsTurn = (userIsWhite && game.blackPlayerId === BOT_PLAYER_ID && chessInstance?.turn() === 'b') ||
+                         (!userIsWhite && game.whitePlayerId === BOT_PLAYER_ID && chessInstance?.turn() === 'w');
+      
+      if (!isBotsTurn) return;
+      
+      setIsGettingBotMove(true);
+      try {
+        // Get bot move from API
+        const response = await apiService.getBotMove(gameId, botDifficultyRef.current);
+        const botMove = response.move;
+        
+        // Apply bot move using sendMove (will be confirmed by WebSocket)
+        wsService.sendMove(gameId, botMove);
+        
+        console.log('Bot move sent:', botMove);
+      } catch (err) {
+        console.error('Error getting bot move:', err);
+      } finally {
+        setIsGettingBotMove(false);
+      }
+    };
+
+    // Delay to give board time to render and prevent race conditions
+    const timeoutId = setTimeout(makeBotMove, 500);
+    
+    return () => clearTimeout(timeoutId);
+  }, [isBotGame, game, currentUser, gameId, chessInstance, isGettingBotMove]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -346,6 +387,11 @@ export const GameView: React.FC = () => {
       } else {
         setLastMoveAt(Date.now()); // Если нет lastMoveAt, считаем что ход только что произошёл
       }
+      
+      // Check if this is a bot game
+      const BOT_PLAYER_ID = '00000000-0000-0000-0000-000000000001';
+      const isBotGameFlag = gameData.whitePlayerId === BOT_PLAYER_ID || gameData.blackPlayerId === BOT_PLAYER_ID;
+      setIsBotGame(isBotGameFlag);
       
       // Initialize chess instance with game FEN
       const chess = new Chess(gameData.fen);

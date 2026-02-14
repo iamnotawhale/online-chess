@@ -15,6 +15,7 @@ export const translations = {
     rating: 'Rating',
     matchmaking: 'Matchmaking',
     inviteByLink: 'Invite by Link',
+    playVsComputer: 'Play vs Computer',
     myGames: 'My Games',
     activeGames: 'Active Games',
     history: 'History',
@@ -26,6 +27,10 @@ export const translations = {
     rapid: 'Rapid',
     classic: 'Classic',
     custom: 'Custom',
+    difficulty: 'Difficulty',
+    creating: 'Creating...',
+    color: 'Your Color',
+    timeControl: 'Time Control',
     
     // Custom controls
     random: 'Random',
@@ -273,6 +278,7 @@ export const translations = {
     rating: 'Рейтинг',
     matchmaking: 'Матчмейкинг',
     inviteByLink: 'Пригласить по ссылке',
+    playVsComputer: 'Игра с компьютером',
     myGames: 'Мои игры',
     activeGames: 'Активные игры',
     history: 'История',
@@ -284,6 +290,10 @@ export const translations = {
     rapid: 'Rapid',
     classic: 'Classic',
     custom: 'Custom',
+    difficulty: 'Сложность',
+    creating: 'Создание...',
+    color: 'Ваш цвет',
+    timeControl: 'Контроль времени',
     
     // Custom controls
     random: 'Random',

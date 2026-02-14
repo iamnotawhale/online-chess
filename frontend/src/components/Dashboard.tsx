@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { apiService } from '../api';
 import { Lobby } from './Lobby';
 import { DailyPuzzle } from './DailyPuzzle';
+import { BotGameModal } from './BotGameModal';
 import { useTranslation } from '../i18n/LanguageContext';
 import { wsService } from '../websocket';
 import { InviteByLinkModal } from './InviteByLinkModal.tsx';
@@ -51,6 +52,7 @@ export const Dashboard: React.FC = () => {
   const [customIncrement, setCustomIncrement] = useState(0);
   const [customColor, setCustomColor] = useState<'random' | 'white' | 'black'>('random');
   const [customIsRated, setCustomIsRated] = useState(true);
+  const [isBotGameModalOpen, setIsBotGameModalOpen] = useState(false);
 
   // Matchmaking presets
   const MATCHMAKING_PRESETS = [
@@ -251,6 +253,10 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+  const handleBotGameCreated = (gameId: string) => {
+    window.location.href = `/game/${gameId}`;
+  };
+
   const handleLeaveMatchmaking = async () => {
     setMatchmakingLoading(true);
     try {
@@ -408,6 +414,15 @@ export const Dashboard: React.FC = () => {
           >
             {t('inviteByLink')}
           </button>
+
+          <button
+            type="button"
+            className="preset-btn custom-btn bot-btn-standalone"
+            onClick={() => setIsBotGameModalOpen(true)}
+            disabled={matchmakingLoading}
+          >
+            {t('playVsComputer') || 'Play vs Computer'}
+          </button>
           
           {isQueued && (
             <div className="queued-info">
@@ -430,6 +445,11 @@ export const Dashboard: React.FC = () => {
             />
           )}
 
+          <BotGameModal 
+            isOpen={isBotGameModalOpen}
+            onClose={() => setIsBotGameModalOpen(false)}
+            onGameCreated={handleBotGameCreated}
+          />
 
         <div className="section">
           <Lobby onGameCancelled={handleGameCancelled} />

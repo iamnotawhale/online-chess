@@ -287,6 +287,29 @@ class ApiService {
     }).then(res => res.data);
   }
 
+  // Bot endpoints
+  getBotDifficulties(): Promise<any[]> {
+    return this.client.get('/bot/difficulties').then(res => res.data);
+  }
+
+  createBotGame(difficulty: string, playerColor: string = 'random', timeControl: string = '5+3'): Promise<GameResponse> {
+    return this.client.post('/bot/game', null, {
+      params: {
+        difficulty,
+        playerColor,
+        timeControl
+      }
+    }).then(res => res.data);
+  }
+
+  getBotMove(gameId: string, difficulty: string = 'INTERMEDIATE'): Promise<{ move: string; game: GameResponse }> {
+    return this.client.post(`/bot/move/${gameId}`, null, {
+      params: {
+        difficulty
+      }
+    }).then(res => res.data);
+  }
+
   isAuthenticated(): boolean {
     return !!this.token;
   }

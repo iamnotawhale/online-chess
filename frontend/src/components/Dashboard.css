@@ -382,6 +382,11 @@
   margin-top: 0;
 }
 
+.bot-btn-standalone {
+  width: 100%;
+  margin-top: 8px;
+}
+
 .preset-label {
   font-size: 13px;
   font-weight: 600;
