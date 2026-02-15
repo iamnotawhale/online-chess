@@ -6,7 +6,10 @@ ALTER TABLE user_stats ADD COLUMN IF NOT EXISTS puzzle_rating INTEGER;
 UPDATE user_stats SET puzzle_rating = 1200 WHERE puzzle_rating IS NULL;
 ALTER TABLE user_stats ALTER COLUMN puzzle_rating SET NOT NULL;
 ALTER TABLE user_stats ALTER COLUMN puzzle_rating SET DEFAULT 1200;
-
+-- Remove extra columns from user_puzzle_solutions that may have been auto-added by Hibernate
+ALTER TABLE user_puzzle_solutions DROP COLUMN IF EXISTS attempts;
+ALTER TABLE user_puzzle_solutions DROP COLUMN IF EXISTS solved_at;
+ALTER TABLE user_puzzle_solutions DROP COLUMN IF EXISTS time_spent_seconds;
 -- Add penalty_applied to user_puzzle_solutions
 ALTER TABLE user_puzzle_solutions ADD COLUMN IF NOT EXISTS penalty_applied BOOLEAN;
 UPDATE user_puzzle_solutions SET penalty_applied = FALSE WHERE penalty_applied IS NULL;
