@@ -22,6 +22,7 @@ CREATE TABLE user_stats (
   draws INTEGER DEFAULT 0,
   total_games INTEGER DEFAULT 0,
   games_played INTEGER DEFAULT 0,
+  puzzle_rating INTEGER DEFAULT 1200,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -100,11 +101,7 @@ CREATE TABLE user_puzzle_solutions (
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   puzzle_id VARCHAR(10) NOT NULL REFERENCES puzzles(id) ON DELETE CASCADE,
   solved BOOLEAN DEFAULT FALSE,
-  attempts INTEGER DEFAULT 0,
-  solved_at TIMESTAMP,
-  time_spent_seconds INTEGER,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  penalty_applied BOOLEAN DEFAULT FALSE,
   UNIQUE(user_id, puzzle_id)
 );
 
@@ -131,7 +128,6 @@ CREATE INDEX idx_puzzles_daily_date ON puzzles(daily_date);
 
 CREATE INDEX idx_user_puzzle_solutions_user_id ON user_puzzle_solutions(user_id);
 CREATE INDEX idx_user_puzzle_solutions_puzzle_id ON user_puzzle_solutions(puzzle_id);
-CREATE INDEX idx_user_puzzle_solutions_solved ON user_puzzle_solutions(solved);
 
 -- Trigger для автообновления updated_at
 CREATE OR REPLACE FUNCTION update_updated_at()
@@ -152,7 +148,3 @@ BEFORE UPDATE ON user_stats
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at();
 
-CREATE TRIGGER user_puzzle_solutions_updated_at
-BEFORE UPDATE ON user_puzzle_solutions
-FOR EACH ROW
-EXECUTE FUNCTION update_updated_at();

@@ -17,6 +17,8 @@ export const PuzzleTraining: React.FC = () => {
   const [hintUsed, setHintUsed] = useState(false);
   const [streak, setStreak] = useState(0);
   const [ratingFilter, setRatingFilter] = useState({ min: 1000, max: 2000 });
+  const [puzzleElo, setPuzzleElo] = useState<number | null>(null);
+  const [puzzleEloDelta, setPuzzleEloDelta] = useState(0);
 
   const {
     game,
@@ -48,6 +50,10 @@ export const PuzzleTraining: React.FC = () => {
     },
     onWrong: () => {
       setStreak(0);
+    },
+    onRatingChange: (rating, delta) => {
+      setPuzzleElo(rating);
+      setPuzzleEloDelta(delta);
     }
   });
 
@@ -134,6 +140,8 @@ export const PuzzleTraining: React.FC = () => {
       const stored = readStoredPuzzle();
       if (stored && !stored.alreadySolved) {
         setPuzzle(stored);
+        setPuzzleElo(typeof stored.userPuzzleRating === 'number' ? stored.userPuzzleRating : null);
+        setPuzzleEloDelta(0);
         setStatus('playing');
         setMessageKey('');
         setHintUsed(readHintUsed(stored.id));
@@ -145,6 +153,8 @@ export const PuzzleTraining: React.FC = () => {
     try {
       const data = await apiService.getRandomPuzzle(ratingFilter.min, ratingFilter.max);
       setPuzzle(data);
+      setPuzzleElo(typeof data.userPuzzleRating === 'number' ? data.userPuzzleRating : null);
+      setPuzzleEloDelta(0);
       writeStoredPuzzle(data);
       clearHintUsed();
       setStatus('playing');
@@ -288,20 +298,13 @@ export const PuzzleTraining: React.FC = () => {
           <div className="puzzle-container puzzle-stats">
             <div className="stats-row">
               <div className="stat">
-                <span className="stat-value">{puzzle.totalSolved}</span>
-                <span className="stat-label">{t('puzzleSolved')}</span>
-              </div>
-              <div className="stat">
-                <span className="stat-value">{puzzle.totalAttempts}</span>
-                <span className="stat-label">{t('puzzleAttempted')}</span>
-              </div>
-              <div className="stat">
-                <span className="stat-value">
-                  {puzzle.totalAttempts > 0 
-                    ? Math.round((puzzle.totalSolved / puzzle.totalAttempts) * 100) 
-                    : 0}%
-                </span>
-                <span className="stat-label">{t('puzzleAccuracy')}</span>
+                <span className="stat-value">{puzzleElo ?? '-'}</span>
+                <span className="stat-label">{t('puzzleElo')}</span>
+                {puzzleEloDelta !== 0 && (
+                  <span className={`puzzle-elo-change ${puzzleEloDelta > 0 ? 'positive' : 'negative'}`}>
+                    {puzzleEloDelta > 0 ? `+${puzzleEloDelta}` : puzzleEloDelta}
+                  </span>
+                )}
               </div>
             </div>
           </div>

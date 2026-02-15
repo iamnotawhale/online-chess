@@ -20,6 +20,7 @@ type UsePuzzleGameOptions = {
   onComplete?: (gameCopy: Chess) => void;
   onCorrect?: (gameCopy: Chess, nextMove?: string | null) => void;
   onWrong?: () => void;
+  onRatingChange?: (rating: number, delta: number) => void;
 };
 
 type UsePuzzleGameResult = {
@@ -48,7 +49,8 @@ export const usePuzzleGame = ({
   autoFirstMoveDelayMs = 400,
   onComplete,
   onCorrect,
-  onWrong
+  onWrong,
+  onRatingChange
 }: UsePuzzleGameOptions): UsePuzzleGameResult => {
   const [game, setGame] = useState(new Chess());
   const [position, setPosition] = useState('');
@@ -142,6 +144,10 @@ export const usePuzzleGame = ({
   const checkSolution = async (puzzleId: string, moves: string[], gameCopy: Chess, prevFen: string) => {
     try {
       const response = await apiService.checkPuzzleSolution(puzzleId, moves, 0);
+
+      if (typeof response?.puzzleRating === 'number' && typeof response?.puzzleRatingChange === 'number') {
+        onRatingChange?.(response.puzzleRating, response.puzzleRatingChange);
+      }
 
       if (response.complete) {
         setStatus('complete');

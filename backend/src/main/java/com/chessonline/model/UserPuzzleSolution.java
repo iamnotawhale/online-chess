@@ -1,7 +1,6 @@
 package com.chessonline.model;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -19,15 +18,10 @@ public class UserPuzzleSolution {
     
     @Column(nullable = false)
     private boolean solved;
+
+    @Column(name = "penalty_applied", nullable = false)
+    private boolean penaltyApplied = false;
     
-    @Column(nullable = false)
-    private int attempts;
-    
-    @Column
-    private LocalDateTime solvedAt;
-    
-    @Column
-    private Integer timeSpentSeconds;
     
     // Getters and setters
     public UUID getId() { return id; }
@@ -41,13 +35,8 @@ public class UserPuzzleSolution {
     
     public boolean isSolved() { return solved; }
     public void setSolved(boolean solved) { this.solved = solved; }
+
+    public boolean isPenaltyApplied() { return penaltyApplied; }
+    public void setPenaltyApplied(boolean penaltyApplied) { this.penaltyApplied = penaltyApplied; }
     
-    public int getAttempts() { return attempts; }
-    public void setAttempts(int attempts) { this.attempts = attempts; }
-    
-    public LocalDateTime getSolvedAt() { return solvedAt; }
-    public void setSolvedAt(LocalDateTime solvedAt) { this.solvedAt = solvedAt; }
-    
-    public Integer getTimeSpentSeconds() { return timeSpentSeconds; }
-    public void setTimeSpentSeconds(Integer timeSpentSeconds) { this.timeSpentSeconds = timeSpentSeconds; }
 }

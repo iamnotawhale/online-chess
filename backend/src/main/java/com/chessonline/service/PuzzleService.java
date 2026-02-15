@@ -2,9 +2,13 @@ package com.chessonline.service;
 
 import com.chessonline.model.Puzzle;
 import com.chessonline.model.UserPuzzleSolution;
+import com.chessonline.model.User;
+import com.chessonline.model.UserStats;
 import com.chessonline.dto.PuzzleResponse;
 import com.chessonline.repository.UserPuzzleSolutionRepository;
 import com.chessonline.repository.PuzzleRepository;
+import com.chessonline.repository.UserRepository;
+import com.chessonline.repository.UserStatsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +27,7 @@ public class PuzzleService {
     
     private static final Logger log = LoggerFactory.getLogger(PuzzleService.class);
     private static final int RATING_BUCKET_SIZE = 100; // Group puzzles by 100 rating points
+    private static final int PUZZLE_RATING_K = 32;
     
     @Value("${puzzle.csv.path:puzzles/lichess_db_puzzle.csv.zst}")
     private String puzzleCsvPath;
@@ -32,6 +37,8 @@ public class PuzzleService {
     
     private final UserPuzzleSolutionRepository userPuzzleSolutionRepository;
     private final PuzzleRepository puzzleRepository;
+    private final UserStatsRepository userStatsRepository;
+    private final UserRepository userRepository;
     
     private Map<String, Puzzle> puzzleCache = new ConcurrentHashMap<>();
     private List<Puzzle> allPuzzles = null;
@@ -40,9 +47,14 @@ public class PuzzleService {
     private volatile boolean initialized = false;
     private final CountDownLatch initLatch = new CountDownLatch(1);
     
-    public PuzzleService(UserPuzzleSolutionRepository userPuzzleSolutionRepository, PuzzleRepository puzzleRepository) {
+    public PuzzleService(UserPuzzleSolutionRepository userPuzzleSolutionRepository,
+                         PuzzleRepository puzzleRepository,
+                         UserStatsRepository userStatsRepository,
+                         UserRepository userRepository) {
         this.userPuzzleSolutionRepository = userPuzzleSolutionRepository;
         this.puzzleRepository = puzzleRepository;
+        this.userStatsRepository = userStatsRepository;
+        this.userRepository = userRepository;
     }
     
     /**
@@ -124,6 +136,9 @@ public class PuzzleService {
             
             // Save or update user's puzzle progress
             log.info("checkSolution for userId='{}', puzzleId='{}', isComplete={}", userId, puzzleId, isComplete);
+            Integer puzzleRatingAfter = null;
+            Integer puzzleRatingChange = 0;
+
             if (userId != null && !userId.equals("00000000-0000-0000-0000-000000000000")) {
                 log.info("Saving puzzle progress for user");
                 try {
@@ -132,34 +147,39 @@ public class PuzzleService {
                     Optional<UserPuzzleSolution> existingSolution = userPuzzleSolutionRepository.findByUserIdAndPuzzleId(userUUID, puzzleId);
                     
                     UserPuzzleSolution solution;
+                    boolean wasSolved = false;
+                    boolean wasPenaltyApplied = false;
                     if (existingSolution.isPresent()) {
                         log.info("Found existing solution");
                         solution = existingSolution.get();
-                        // Only increment attempts on wrong move or puzzle completion
-                        if (!correct || isComplete) {
-                            solution.setAttempts(solution.getAttempts() + 1);
-                        }
-                        if (isComplete && !solution.isSolved()) {
+                        wasSolved = solution.isSolved();
+                        wasPenaltyApplied = solution.isPenaltyApplied();
+                        if (isComplete && !wasSolved) {
                             solution.setSolved(true);
-                            solution.setSolvedAt(LocalDateTime.now());
-                            if (timeSpent != null) {
-                                solution.setTimeSpentSeconds(timeSpent);
-                            }
                         }
                     } else {
                         log.info("Creating new solution with solved={}", isComplete);
                         solution = new UserPuzzleSolution();
                         solution.setUserId(userUUID);
                         solution.setPuzzleId(puzzleId);
-                        // Count attempt only if puzzle is completed or move is wrong
-                        solution.setAttempts((isComplete || !correct) ? 1 : 0);
+                        wasSolved = false;
+                        wasPenaltyApplied = false;
                         solution.setSolved(isComplete);
-                        if (isComplete) {
-                            solution.setSolvedAt(LocalDateTime.now());
-                            if (timeSpent != null) {
-                                solution.setTimeSpentSeconds(timeSpent);
-                            }
-                        }
+                    }
+
+                    // Apply puzzle Elo changes
+                    UserStats stats = getOrCreateUserStats(userUUID);
+                    int currentPuzzleRating = stats.getPuzzleRating() != null ? stats.getPuzzleRating() : 1200;
+                    puzzleRatingAfter = currentPuzzleRating;
+                    if (!correct && !wasSolved && !wasPenaltyApplied) {
+                        puzzleRatingChange = calculatePuzzleEloChange(currentPuzzleRating, puzzle.getRating(), false);
+                        stats.setPuzzleRating(currentPuzzleRating + puzzleRatingChange);
+                        solution.setPenaltyApplied(true);
+                        puzzleRatingAfter = stats.getPuzzleRating();
+                    } else if (isComplete && !wasSolved && !wasPenaltyApplied) {
+                        puzzleRatingChange = calculatePuzzleEloChange(currentPuzzleRating, puzzle.getRating(), true);
+                        stats.setPuzzleRating(currentPuzzleRating + puzzleRatingChange);
+                        puzzleRatingAfter = stats.getPuzzleRating();
                     }
                     
                     log.info("About to save solution with solved={}", solution.isSolved());
@@ -175,7 +195,8 @@ public class PuzzleService {
                     }
                     
                     userPuzzleSolutionRepository.save(solution);
-                    log.info("Saved puzzle progress for user {} on puzzle {}: attempts={}, solved={}", userId, puzzleId, solution.getAttempts(), solution.isSolved());
+                    userStatsRepository.save(stats);
+                    log.info("Saved puzzle progress for user {} on puzzle {}: solved={}", userId, puzzleId, solution.isSolved());
                 } catch (IllegalArgumentException e) {
                     log.error("Invalid user ID format: {}", userId, e);
                     throw e;
@@ -192,7 +213,10 @@ public class PuzzleService {
             result.put("complete", isComplete);
             result.put("nextMove", userMoves.size() < correctMoves.size() ? correctMoves.get(userMoves.size()) : null);
             result.put("solution", correctMoves);
-            result.put("attempts", 0);
+            if (puzzleRatingAfter != null) {
+                result.put("puzzleRating", puzzleRatingAfter);
+                result.put("puzzleRatingChange", puzzleRatingChange);
+            }
             
             return result;
         } catch (Exception e) {
@@ -387,8 +411,7 @@ public class PuzzleService {
         
         // Check if user has already solved this puzzle and get user statistics
         boolean alreadySolved = false;
-        long totalSolved = 0L;
-        long totalAttempts = 0L;
+        Integer userPuzzleRating = null;
         
         if (userId != null && !userId.isEmpty() && !userId.equals("00000000-0000-0000-0000-000000000000")) {
             try {
@@ -402,20 +425,41 @@ public class PuzzleService {
                     log.debug("No existing puzzle solution found for user {} on puzzle {}", userUUID, puzzle.getId());
                 }
                 
-                // Get user's total puzzle statistics
-                totalSolved = userPuzzleSolutionRepository.countSolvedByUserId(userUUID);
-                totalAttempts = userPuzzleSolutionRepository.countAttemptsByUserId(userUUID);
-                log.debug("User {} puzzle stats: solved={}, attempts={}", userUUID, totalSolved, totalAttempts);
+                UserStats stats = getOrCreateUserStats(userUUID);
+                userPuzzleRating = stats.getPuzzleRating();
             } catch (IllegalArgumentException e) {
                 log.warn("Invalid user ID format: {}", userId);
             }
         }
         
         response.setAlreadySolved(alreadySolved);
-        response.setPreviousAttempts(null);
-        response.setTotalSolved(totalSolved);
-        response.setTotalAttempts(totalAttempts);
+        response.setUserPuzzleRating(userPuzzleRating);
         return response;
+    }
+
+    private UserStats getOrCreateUserStats(UUID userId) {
+        return userStatsRepository.findById(userId)
+                .map(stats -> {
+                    if (stats.getPuzzleRating() == null) {
+                        stats.setPuzzleRating(1200);
+                        return userStatsRepository.save(stats);
+                    }
+                    return stats;
+                })
+                .orElseGet(() -> {
+                    User user = userRepository.findById(userId)
+                            .orElseThrow(() -> new RuntimeException("User not found"));
+                    UserStats stats = new UserStats();
+                    stats.setUser(user);
+                    stats.setPuzzleRating(1200);
+                    return userStatsRepository.save(stats);
+                });
+    }
+
+    private int calculatePuzzleEloChange(int userRating, int puzzleRating, boolean solved) {
+        double expected = 1.0 / (1.0 + Math.pow(10.0, (puzzleRating - userRating) / 400.0));
+        double score = solved ? 1.0 : 0.0;
+        return (int) Math.round(PUZZLE_RATING_K * (score - expected));
     }
 
 }

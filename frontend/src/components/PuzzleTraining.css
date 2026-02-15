@@ -180,7 +180,7 @@
 
 .stats-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr;
   gap: 12px;
   text-align: center;
 }
@@ -204,6 +204,19 @@
   font-size: 0.75rem;
   color: var(--text-secondary);
   font-weight: 500;
+}
+
+.puzzle-elo-change {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.puzzle-elo-change.positive {
+  color: var(--success);
+}
+
+.puzzle-elo-change.negative {
+  color: var(--error-text);
 }
 
 .puzzle-difficulty {

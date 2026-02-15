@@ -41,6 +41,9 @@ public class UserStats {
     @Column(name = "games_played", nullable = false)
     private Integer gamesPlayed = 0;
 
+    @Column(name = "puzzle_rating", nullable = false)
+    private Integer puzzleRating = 1200;
+
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
@@ -104,6 +107,14 @@ public class UserStats {
 
     public void setGamesPlayed(Integer gamesPlayed) {
         this.gamesPlayed = gamesPlayed;
+    }
+
+    public Integer getPuzzleRating() {
+        return puzzleRating;
+    }
+
+    public void setPuzzleRating(Integer puzzleRating) {
+        this.puzzleRating = puzzleRating;
     }
 
     public Instant getUpdatedAt() {

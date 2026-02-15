@@ -67,7 +67,7 @@ public class BotService {
     private StockfishService.PositionEvaluation analyzePosition(String fen, BotDifficulty difficulty) throws Exception {
         stockfishService.startEngine();
         try {
-            return stockfishService.analyzePositionWithEngine(fen, difficulty.getDepth());
+            return stockfishService.analyzePositionWithEngine(fen, difficulty);
         } finally {
             stockfishService.stopEngine();
         }

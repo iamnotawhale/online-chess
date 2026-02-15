@@ -10,14 +10,11 @@ public class PuzzleResponse {
     private int rating;
     private List<String> themes;
     private boolean alreadySolved;
-    private Integer previousAttempts;
     
     // For daily puzzle
     private LocalDateTime dailyDate;
     
-    // Statistics
-    private Long totalSolved;
-    private Long totalAttempts;
+    private Integer userPuzzleRating;
     
     // Getters and setters
     public String getId() { return id; }
@@ -38,15 +35,9 @@ public class PuzzleResponse {
     public boolean isAlreadySolved() { return alreadySolved; }
     public void setAlreadySolved(boolean alreadySolved) { this.alreadySolved = alreadySolved; }
     
-    public Integer getPreviousAttempts() { return previousAttempts; }
-    public void setPreviousAttempts(Integer previousAttempts) { this.previousAttempts = previousAttempts; }
-    
     public LocalDateTime getDailyDate() { return dailyDate; }
     public void setDailyDate(LocalDateTime dailyDate) { this.dailyDate = dailyDate; }
     
-    public Long getTotalSolved() { return totalSolved; }
-    public void setTotalSolved(Long totalSolved) { this.totalSolved = totalSolved; }
-    
-    public Long getTotalAttempts() { return totalAttempts; }
-    public void setTotalAttempts(Long totalAttempts) { this.totalAttempts = totalAttempts; }
+    public Integer getUserPuzzleRating() { return userPuzzleRating; }
+    public void setUserPuzzleRating(Integer userPuzzleRating) { this.userPuzzleRating = userPuzzleRating; }
 }

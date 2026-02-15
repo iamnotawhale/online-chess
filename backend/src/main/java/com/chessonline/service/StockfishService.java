@@ -4,6 +4,8 @@ import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.chessonline.model.BotDifficulty;
+
 import java.io.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ExecutorService;
@@ -220,6 +222,19 @@ public class StockfishService {
         }
     }
 
+    public synchronized PositionEvaluation analyzePositionWithEngine(String fen, BotDifficulty difficulty) throws IOException, InterruptedException {
+        BufferedReader reader = readerHolder.get();
+        BufferedWriter writer = writerHolder.get();
+        ExecutorService executor = executorHolder.get();
+
+        if (reader == null || writer == null) {
+            throw new IllegalStateException("Engine not started. Call startEngine() first");
+        }
+
+        applyBotStrength(difficulty, writer, reader, executor);
+        return analyzePositionWithEngine(fen, difficulty != null ? difficulty.getDepth() : DEFAULT_DEPTH);
+    }
+
     private void sendCommand(BufferedWriter writer, String command) throws IOException {
         writer.write(command);
         writer.newLine();
@@ -247,6 +262,18 @@ public class StockfishService {
         } catch (java.util.concurrent.ExecutionException e) {
             throw new IOException("Error waiting for response: " + expectedResponse, e);
         }
+    }
+
+    private void applyBotStrength(BotDifficulty difficulty, BufferedWriter writer, BufferedReader reader, ExecutorService executor) throws IOException, InterruptedException {
+        if (difficulty == null) {
+            return;
+        }
+
+        sendCommand(writer, "setoption name UCI_LimitStrength value true");
+        sendCommand(writer, "setoption name UCI_Elo value " + difficulty.getElo());
+        sendCommand(writer, "setoption name Skill Level value " + difficulty.getSkillLevel());
+        sendCommand(writer, "isready");
+        waitForResponse(reader, "readyok", executor);
     }
 
     private PositionEvaluation parseEvaluation(String infoLine, String bestMove) {

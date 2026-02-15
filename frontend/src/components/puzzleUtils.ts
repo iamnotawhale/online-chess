@@ -7,9 +7,7 @@ export interface PuzzleData {
   rating: number;
   themes: string[];
   alreadySolved: boolean;
-  previousAttempts: number | null;
-  totalSolved: number;
-  totalAttempts: number;
+  userPuzzleRating?: number;
 }
 
 export const getFirstOpponentMove = (data: PuzzleData): string | null => {
