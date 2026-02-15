@@ -219,6 +219,41 @@
   color: var(--error-text);
 }
 
+.puzzle-elo-history {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+.puzzle-elo-pill {
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  min-width: 44px;
+  text-align: center;
+}
+
+.puzzle-elo-pill.positive {
+  background: var(--success-bg);
+  color: var(--success-text);
+  border-color: var(--success-border);
+}
+
+.puzzle-elo-pill.neutral {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  border-color: var(--warning-border);
+}
+
+.puzzle-elo-pill.negative {
+  background: var(--danger-bg);
+  color: var(--danger-text);
+  border-color: var(--danger-border);
+}
+
 .puzzle-difficulty {
   display: flex;
   flex-direction: column;
