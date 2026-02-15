@@ -7,6 +7,66 @@ import './PuzzleTraining.css';
 import { PuzzleData, applyUciMove } from './puzzleUtils';
 import { usePuzzleGame } from './usePuzzleGame';
 
+const HISTORY_STORAGE_KEY = 'puzzleTrainingEloHistory';
+const FILTER_STORAGE_KEY = 'puzzleTrainingRatingFilter';
+
+const readRatingHistory = (): number[] => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = window.localStorage.getItem(HISTORY_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as number[];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((value) => Number.isFinite(value)).slice(0, 8);
+  } catch {
+    return [];
+  }
+};
+
+const writeRatingHistory = (history: number[]) => {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(history));
+  } catch {
+    // Ignore storage errors.
+  }
+};
+
+const readRatingFilter = () => {
+  if (typeof window === 'undefined') return { min: 1000, max: 2000 };
+  try {
+    const raw = window.localStorage.getItem(FILTER_STORAGE_KEY);
+    if (!raw) return { min: 1000, max: 2000 };
+    const parsed = JSON.parse(raw) as { min: number; max: number };
+    if (!Number.isFinite(parsed?.min) || !Number.isFinite(parsed?.max)) {
+      return { min: 1000, max: 2000 };
+    }
+    return normalizeRatingFilter({ min: parsed.min, max: parsed.max });
+  } catch {
+    return { min: 1000, max: 2000 };
+  }
+};
+
+const writeRatingFilter = (filter: { min: number; max: number }) => {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify(filter));
+  } catch {
+    // Ignore storage errors.
+  }
+};
+
+function normalizeRatingFilter(filter: { min: number; max: number }) {
+  const minBound = 800;
+  const maxBound = 2500;
+  const clampedMin = Math.min(maxBound, Math.max(minBound, filter.min));
+  const clampedMax = Math.min(maxBound, Math.max(minBound, filter.max));
+  if (clampedMin > clampedMax) {
+    return { min: clampedMax, max: clampedMin };
+  }
+  return { min: clampedMin, max: clampedMax };
+}
+
 export const PuzzleTraining: React.FC = () => {
   const { t } = useTranslation();
   const puzzleStorageKey = 'puzzleTrainingActive';
@@ -16,9 +76,10 @@ export const PuzzleTraining: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [hintUsed, setHintUsed] = useState(false);
   const [streak, setStreak] = useState(0);
-  const [ratingFilter, setRatingFilter] = useState({ min: 1000, max: 2000 });
+  const [ratingFilter, setRatingFilter] = useState(() => readRatingFilter());
   const [puzzleElo, setPuzzleElo] = useState<number | null>(null);
   const [puzzleEloDelta, setPuzzleEloDelta] = useState(0);
+  const [ratingHistory, setRatingHistory] = useState<number[]>(() => readRatingHistory());
 
   const {
     game,
@@ -54,8 +115,19 @@ export const PuzzleTraining: React.FC = () => {
     onRatingChange: (rating, delta) => {
       setPuzzleElo(rating);
       setPuzzleEloDelta(delta);
+      if (delta !== 0) {
+        setRatingHistory(prev => {
+          const next = [delta, ...prev].slice(0, 8);
+          writeRatingHistory(next);
+          return next;
+        });
+      }
     }
   });
+
+  useEffect(() => {
+    writeRatingFilter(ratingFilter);
+  }, [ratingFilter]);
 
   const readStoredPuzzle = (): PuzzleData | null => {
     if (typeof window === 'undefined') return null;
@@ -220,6 +292,12 @@ export const PuzzleTraining: React.FC = () => {
       }
     : null;
 
+  const getDeltaTone = (delta: number) => {
+    const absDelta = Math.abs(delta);
+    if (absDelta <= 3) return 'neutral';
+    return delta > 0 ? 'positive' : 'negative';
+  };
+
   return (
     <div className="puzzle-training-container">
       <div className="puzzle-header">
@@ -307,6 +385,15 @@ export const PuzzleTraining: React.FC = () => {
                 )}
               </div>
             </div>
+            {ratingHistory.length > 0 && (
+              <div className="puzzle-elo-history">
+                {ratingHistory.map((delta, idx) => (
+                  <span key={`${delta}-${idx}`} className={`puzzle-elo-pill ${getDeltaTone(delta)}`}>
+                    {delta > 0 ? `+${delta}` : delta}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="puzzle-container puzzle-difficulty">
@@ -320,7 +407,14 @@ export const PuzzleTraining: React.FC = () => {
                 max="2500" 
                 step="100"
                 value={ratingFilter.min}
-                onChange={(e) => setRatingFilter({ ...ratingFilter, min: parseInt(e.target.value) })}
+                onChange={(e) =>
+                  setRatingFilter(
+                    normalizeRatingFilter({
+                      ...ratingFilter,
+                      min: parseInt(e.target.value)
+                    })
+                  )
+                }
               />
               
               <label>
@@ -332,7 +426,14 @@ export const PuzzleTraining: React.FC = () => {
                 max="2500" 
                 step="100"
                 value={ratingFilter.max}
-                onChange={(e) => setRatingFilter({ ...ratingFilter, max: parseInt(e.target.value) })}
+                onChange={(e) =>
+                  setRatingFilter(
+                    normalizeRatingFilter({
+                      ...ratingFilter,
+                      max: parseInt(e.target.value)
+                    })
+                  )
+                }
               />
             </div>
           </div>
