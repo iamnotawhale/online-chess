@@ -19,7 +19,7 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: frontend/Dockerfile
     container_name: chess_backend_prod
     restart: always
     environment:
@@ -41,8 +41,8 @@ services:
 
   frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: frontend/Dockerfile
       args:
         VITE_API_URL: ${BACKEND_URL}
     container_name: chess_frontend_prod
