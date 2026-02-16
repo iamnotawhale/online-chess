@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { apiService } from './api';
+import logoSvg from '../../public/logo.svg?url';
 import { Login } from './components/Login';
 import { Register } from './components/Register';
 import { Dashboard } from './components/Dashboard';
@@ -132,7 +133,7 @@ const Header: React.FC<HeaderProps> = ({ themeMode, onToggleTheme }) => {
     <header className="header">
       <div className="header-content">
         <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-          <img src="/logo.svg" alt="OnChess Logo" className="logo-icon" />
+          <img src={logoSvg} alt="OnChess Logo" className="logo-icon" />
           <span className="logo-text">ONCHESS</span>
         </div>
         <div className="header-actions">
