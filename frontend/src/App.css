@@ -13,7 +13,7 @@
   --muted-2: #999999;
   --border: #e5e5e5;
   --border-2: #dddddd;
-  --accent: #333333;
+  --accent: #05b69e;
   --accent-contrast: #ffffff;
   --info-bg: #e3f2fd;
   --info-text: #1976d2;
@@ -126,23 +126,9 @@ body {
 }
 
 .logo-icon {
-  display: flex;
-  gap: 1px;
-  font-size: 20px;
-  position: relative;
-  color: var(--text);
-}
-
-.chess-piece {
-  transition: none;
-}
-
-.logo:hover .chess-piece:first-child {
-  transform: none;
-}
-
-.logo:hover .chess-piece:last-child {
-  transform: none;
+  width: 32px;
+  height: 32px;
+  display: block;
 }
 
 .logo-text {

@@ -132,10 +132,7 @@ const Header: React.FC<HeaderProps> = ({ themeMode, onToggleTheme }) => {
     <header className="header">
       <div className="header-content">
         <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-          <div className="logo-icon">
-            <span className="chess-piece">♔</span>
-            <span className="chess-piece">♚</span>
-          </div>
+          <img src="/logo.svg" alt="OnChess Logo" className="logo-icon" />
           <span className="logo-text">ONCHESS</span>
         </div>
         <div className="header-actions">
