@@ -326,8 +326,6 @@
 .game-info {
   background: var(--surface);
   padding: 12px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
   display: flex;
   flex-direction: column;
 }
@@ -475,8 +473,6 @@
 .move-history {
   background: var(--surface);
   padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
 }
 
 .move-history h3 {
