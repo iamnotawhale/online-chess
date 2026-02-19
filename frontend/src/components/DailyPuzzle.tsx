@@ -88,9 +88,9 @@ export const DailyPuzzle: React.FC = () => {
     <div className="section">
       <div className="puzzle-header">
         <h3>{t('dailyPuzzle')}</h3>
-        <span className="puzzle-rating">⭐ {puzzle.rating}</span>
+        <div className="puzzle-rating">⭐ {puzzle.rating}</div>
       </div>
-      
+
       <div className="puzzle-board">
         <ChessBoardWrapper
           position={position}
@@ -128,7 +128,7 @@ export const DailyPuzzle: React.FC = () => {
       </div>
 
       <div className="puzzle-actions">
-        <a href="/puzzles" className="puzzle-btn-train">
+        <a href="/puzzles" className="btn btn-primary">
           {t('puzzleTrainMore')}
         </a>
       </div>

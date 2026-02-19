@@ -253,6 +253,7 @@
 .invite-preset-btn:hover:not(:disabled) {
   border-color: var(--surface-2);
   background: var(--accent);
+  color: var(--surface);
 }
 
 .invite-preset-btn.active {

@@ -55,10 +55,10 @@ export const GameAnalysis: React.FC = () => {
     const updateBoardWidths = () => {
       if (typeof window === 'undefined') return;
       const isMobile = window.innerWidth <= 768;
-      // For mobile, use almost full width; for desktop, cap at 650px
+      // For mobile, use almost full width; for desktop, cap at 800px
       const maxBoardWidth = isMobile 
         ? window.innerWidth  // полная ширина
-        : Math.min(650, Math.max(280, window.innerWidth - 40));
+        : Math.min(800, Math.max(280, window.innerWidth - 40));
       setAnalysisBoardWidth(maxBoardWidth);
     };
 
@@ -287,7 +287,10 @@ export const GameAnalysis: React.FC = () => {
   }
 
   return (
-    <div className="game-analysis-container">
+    <div className="page-wrapper">
+      <div className="page-header">
+        <h2>{t('moveAnalysis')}</h2>
+      </div>
       {error && <div className="error-message">{error}</div>}
 
       {!analysis ? (
@@ -317,9 +320,8 @@ export const GameAnalysis: React.FC = () => {
           )}
         </div>
       ) : (
-        <div className="analysis-results">
-          {/* Interactive Board */}
-          <div className="analysis-board-section">
+        <div className="layout-2col">
+          <div className="layout-2col-board">
             <div className="analysis-result-board chess-board-wrapper">
               <ChessBoardWrapper
                 position={boardPosition}
@@ -327,7 +329,7 @@ export const GameAnalysis: React.FC = () => {
                 arePiecesDraggable={false}
                 isInteractive={false}
                 showLegalMoves={false}
-                showCheck={false}
+                showCheck={true}
                 boardWidth={analysisBoardWidth}
                 customSquareStyles={highlightSquares}
                 customArrows={arrows}
@@ -369,61 +371,61 @@ export const GameAnalysis: React.FC = () => {
             </div>
           </div>
 
-          {/* Moves Table */}
-          <div className="moves-analysis">
-            <h3>{t('analysisMovesTitle')}</h3>
-            <div className="moves-table">
-              <div className="table-header">
-                <div className="col-move">{t('analysisMoveCol')}</div>
-                <div className="col-eval">{t('analysisEvalCol')}</div>
-                <div className="col-type">{t('analysisTypeCol')}</div>
-                <div className="col-best">{t('analysisBestCol')}</div>
-              </div>
-              {analysis.moves.map((m, idx) => (
-                <div 
-                  key={idx}
-                  ref={(el) => { moveRowRefs.current[idx] = el; }}
-                  className={`table-row ${m.isBlunder ? 'blunder' : m.isMistake ? 'mistake' : ''} ${selectedMoveIndex === idx ? 'selected' : ''}`}
-                  onClick={() => handleMoveClick(idx)}
-                >
-                  <div className="col-move">{m.moveNumber}{m.isWhiteMove ? '.' : '...'} {m.move}</div>
-                  <div className="col-eval">{(m.evaluation / 100).toFixed(1)}</div>
-                  <div className="col-type">
-                    {m.isBlunder ? '💣' : m.isMistake ? '❌' : '✓'}
+          <div className="layout-2col-sidebar">
+            <div className="panel moves-analysis">
+              <div className="moves-table">
+                <div className="table-header">
+                  <div className="col-move">{t('analysisMoveCol')}</div>
+                  <div className="col-eval">{t('analysisEvalCol')}</div>
+                  <div className="col-type">{t('analysisTypeCol')}</div>
+                  <div className="col-best">{t('analysisBestCol')}</div>
+                </div>
+                {analysis.moves.map((m, idx) => (
+                  <div 
+                    key={idx}
+                    ref={(el) => { moveRowRefs.current[idx] = el; }}
+                    className={`table-row ${m.isBlunder ? 'blunder' : m.isMistake ? 'mistake' : ''} ${selectedMoveIndex === idx ? 'selected' : ''}`}
+                    onClick={() => handleMoveClick(idx)}
+                  >
+                    <div className="col-move">{m.moveNumber}{m.isWhiteMove ? '.' : '...'} {m.move}</div>
+                    <div className="col-eval">{(m.evaluation / 100).toFixed(1)}</div>
+                    <div className="col-type">
+                      {m.isBlunder ? '💣' : m.isMistake ? '❌' : '✓'}
+                    </div>
+                    <div className="col-best">{m.bestMove || '-'}</div>
                   </div>
-                  <div className="col-best">{m.bestMove || '-'}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Accuracy Summary */}
-          <div className="accuracy-summary">
-            <h3>{t('analysisTitle')} - {t('accuracyLabel')}</h3>
-            <div className="accuracy-cards">
-              <div className="accuracy-card">
-                <div className="accuracy-player-header">
-                  <span>♔</span>
-                  <span>{t('analysisWhite')}</span>
-                </div>
-                <div className="accuracy-player-name">{game.whitePlayerName || game.whitePlayerId}</div>
-                <div className="accuracy-percent">{Math.round(analysis.whiteAccuracy)}%</div>
-                <div className="accuracy-details">
-                  <span>❌ {analysis.whiteMistakes}</span>
-                  <span>💣 {analysis.whiteBlunders}</span>
-                </div>
+                ))}
               </div>
+            </div>
 
-              <div className="accuracy-card">
-                <div className="accuracy-player-header">
-                  <span>♚</span>
-                  <span>{t('analysisBlack')}</span>
+            {/* Accuracy Summary */}
+            <div className="panel accuracy-summary">
+              <h3>{t('analysisTitle')} - {t('accuracyLabel')}</h3>
+              <div className="accuracy-cards">
+                <div className="accuracy-card">
+                  <div className="accuracy-player-header">
+                    <span>♔</span>
+                    <span>{t('analysisWhite')}</span>
+                  </div>
+                  <div className="accuracy-player-name">{game.whitePlayerName || game.whitePlayerId}</div>
+                  <div className="accuracy-percent">{Math.round(analysis.whiteAccuracy)}%</div>
+                  <div className="accuracy-details">
+                    <span>❌ {analysis.whiteMistakes}</span>
+                    <span>💣 {analysis.whiteBlunders}</span>
+                  </div>
                 </div>
-                <div className="accuracy-player-name">{game.blackPlayerName || game.blackPlayerId}</div>
-                <div className="accuracy-percent">{Math.round(analysis.blackAccuracy)}%</div>
-                <div className="accuracy-details">
-                  <span>❌ {analysis.blackMistakes}</span>
-                  <span>💣 {analysis.blackBlunders}</span>
+
+                <div className="accuracy-card">
+                  <div className="accuracy-player-header">
+                    <span>♚</span>
+                    <span>{t('analysisBlack')}</span>
+                  </div>
+                  <div className="accuracy-player-name">{game.blackPlayerName || game.blackPlayerId}</div>
+                  <div className="accuracy-percent">{Math.round(analysis.blackAccuracy)}%</div>
+                  <div className="accuracy-details">
+                    <span>❌ {analysis.blackMistakes}</span>
+                    <span>💣 {analysis.blackBlunders}</span>
+                  </div>
                 </div>
               </div>
             </div>

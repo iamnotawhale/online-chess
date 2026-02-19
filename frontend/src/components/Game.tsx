@@ -696,15 +696,15 @@ export const GameView: React.FC = () => {
   const incrementSeconds = getIncrementSeconds(game.timeControl);
 
   return (
-    <div className="game-container">
+    <div className="page-wrapper">
       {toast && (
         <div className={`game-toast ${toast.type || 'info'}`}>
           {toast.message}
         </div>
       )}
-      <div className="game-header">
+      <div className="page-header">
         <h1>{game.gameMode} ({game.timeControl})</h1>
-        <div className="game-status">
+        <div className="page-header-actions">
           <span className={`status-badge ${game.status === 'finished' ? 'finished' : 'active'}`}>
             {getStatusLabel(game.status).toUpperCase()}
           </span>
@@ -713,8 +713,8 @@ export const GameView: React.FC = () => {
         </div>
       </div>
 
-      <div className="game-content">
-        <div className="board-section">
+      <div className="layout-2col">
+        <div className="layout-2col-board">
           {userIsWhite ? (
             <div className="player-info black-player">
               <div className="player-name">
@@ -815,8 +815,8 @@ export const GameView: React.FC = () => {
           )}
         </div>
 
-        <div className="info-section">
-          <div className="move-history">
+        <div className="layout-2col-sidebar">
+          <div className="panel move-history">
             <h3>{t('moveHistory')}</h3>
             <div className="history-controls">
               <button 
@@ -885,7 +885,7 @@ export const GameView: React.FC = () => {
             </div>
           </div>
           
-          <div className="game-info">
+          <div className="panel game-info">
             <h3>{t('gameInfo')}</h3>
             <p><strong>{t('id')}:</strong> {game.id}</p>
             <p><strong>{t('status')}:</strong> {getStatusLabel(game.status)}</p>

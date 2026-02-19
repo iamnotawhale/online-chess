@@ -95,6 +95,7 @@ export const translations = {
 
     // Analysis
     analysisTitle: 'Game Analysis',
+    moveAnalysis: 'Move Analysis',
     analysisLoadingGame: 'Loading game...',
     analysisGameNotFound: 'Game not found',
     analysisLoadError: 'Failed to load game',
@@ -362,6 +363,7 @@ export const translations = {
 
     // Analysis
     analysisTitle: 'Анализ партии',
+    moveAnalysis: 'Анализ ходов',
     analysisLoadingGame: 'Загрузка партии...',
     analysisGameNotFound: 'Партия не найдена',
     analysisLoadError: 'Ошибка загрузки партии',
@@ -384,7 +386,7 @@ export const translations = {
     analysisMoveCol: 'Ход',
     analysisEvalCol: 'Оценка',
     analysisTypeCol: 'Тип',
-    analysisBestCol: 'Лучше было',
+    analysisBestCol: 'Лучший',
     
     // Result reasons
     checkmate: 'Мат',

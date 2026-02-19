@@ -43,6 +43,7 @@
 }
 
 .game-header {
+  /* Moved to .page-header in common.css */
   background: var(--surface);
   color: var(--text);
   padding: 10px 16px;
