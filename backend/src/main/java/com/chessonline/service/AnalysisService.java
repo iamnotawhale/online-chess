@@ -278,10 +278,11 @@ public class AnalysisService {
     private Move parseMove(Board board, String sanMove) {
         try {
             List<Move> legalMoves = board.legalMoves();
+            String normalizedMove = sanMove == null ? "" : sanMove.trim();
             
             // Try direct UCI/coordinate match first (e.g., "e2e4")
-            if (sanMove.length() == 4 && Character.isLetter(sanMove.charAt(0))) {
-                String uciMove = sanMove.toLowerCase();
+            if (isUciLike(normalizedMove)) {
+                String uciMove = normalizedMove.toLowerCase();
                 for (Move move : legalMoves) {
                     if (move.toString().equals(uciMove)) {
                         return move;
@@ -290,7 +291,7 @@ public class AnalysisService {
             }
             
             // Try SAN notation matching
-            String cleanSan = sanMove.replaceAll("[+#!?]", ""); // Remove annotations
+            String cleanSan = normalizedMove.replaceAll("[+#!?]", ""); // Remove annotations
             
             for (Move move : legalMoves) {
                 String moveStr = move.toString(); // UCI format
@@ -303,13 +304,39 @@ public class AnalysisService {
             }
             
             logger.warn("No matching move found for: '{}' (board has {} legal moves)", 
-                       sanMove, legalMoves.size());
+                       normalizedMove, legalMoves.size());
             return null;
             
         } catch (Exception e) {
             logger.error("Error parsing move '{}': {}", sanMove, e.getMessage());
             return null;
         }
+    }
+
+    private boolean isUciLike(String move) {
+        if (move == null || move.isEmpty()) {
+            return false;
+        }
+
+        int length = move.length();
+        if (length != 4 && length != 5) {
+            return false;
+        }
+
+        boolean baseCoordinates = Character.isLetter(move.charAt(0))
+                && Character.isDigit(move.charAt(1))
+                && Character.isLetter(move.charAt(2))
+                && Character.isDigit(move.charAt(3));
+
+        if (!baseCoordinates) {
+            return false;
+        }
+
+        if (length == 5) {
+            return Character.isLetter(move.charAt(4));
+        }
+
+        return true;
     }
     
     /**
@@ -356,6 +383,18 @@ public class AnalysisService {
             
             return move.equalsIgnoreCase(uci);
         }
+
+        // Support UCI promotion moves (e.g., "e7e8q")
+        if (move.length() == 5 && 
+            Character.isLetter(move.charAt(0)) && 
+            Character.isDigit(move.charAt(1)) &&
+            Character.isLetter(move.charAt(2)) && 
+            Character.isDigit(move.charAt(3)) &&
+            Character.isLetter(move.charAt(4))) {
+            
+            return move.equalsIgnoreCase(uci);
+        }
+
         return false;
     }
 }
