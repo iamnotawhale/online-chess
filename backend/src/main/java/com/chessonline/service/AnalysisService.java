@@ -90,8 +90,9 @@ public class AnalysisService {
                 }
                 board.doMove(move);
 
-                // Check if game ended with this move (checkmate, stalemate, draw)
-                boolean gameEnded = board.isMated() || board.isStaleMate() || board.isDraw();
+                // Check if game ended with this move (checkmate or stalemate)
+                // Do not stop on claimable draws (threefold/50-move) since the game can continue.
+                boolean gameEnded = board.isMated() || board.isStaleMate();
                 
                 // Get evaluation after the move
                 String fenAfterMove = board.getFen();
@@ -106,9 +107,9 @@ public class AnalysisService {
                     logger.info("Move {}{} {} - Checkmate! Winner: {}", 
                         moveNumber, isWhiteMove ? "." : "...", sanMove, isWhiteMove ? "White" : "Black");
                 } else if (gameEnded) {
-                    // Stalemate or draw
+                    // Stalemate
                     afterEval = new StockfishService.PositionEvaluation(0, "", false, 0);
-                    logger.info("Move {}{} {} - Game ended (stalemate/draw)", 
+                    logger.info("Move {}{} {} - Game ended (stalemate)", 
                         moveNumber, isWhiteMove ? "." : "...", sanMove);
                 } else {
                     // Normal position, analyze with Stockfish
