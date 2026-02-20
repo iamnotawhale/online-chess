@@ -609,6 +609,76 @@
   font-size: 14px;
 }
 
+/* Education Widget */
+.education-widget {
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%);
+  border: 1px solid var(--accent);
+  position: relative;
+  overflow: hidden;
+}
+
+.education-widget::before {
+  content: '📚✏️🎓';
+  position: absolute;
+  top: -20px;
+  right: -30px;
+  font-size: 80px;
+  opacity: 0.1;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.education-widget h2 {
+  position: relative;
+  z-index: 1;
+}
+
+.education-widget p {
+  position: relative;
+  z-index: 1;
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+.education-preview {
+  display: flex;
+  gap: 16px;
+  margin: 16px 0;
+  position: relative;
+  z-index: 1;
+}
+
+.preview-stat {
+  flex: 1;
+  text-align: center;
+  padding: 12px;
+  background: var(--surface);
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+.stat-label {
+  display: block;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.stat-desc {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.education-widget .matchmaking-btn {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
 /* Mobile adjustments for game history cards */
 @media (max-width: 767px) {
   .game-action-link {

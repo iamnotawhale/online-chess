@@ -9,6 +9,7 @@ import { GameAnalysis } from './components/GameAnalysis';
 import { InviteAccept } from './components/InviteAccept';
 import { Profile } from './components/Profile';
 import { PuzzleTraining } from './components/PuzzleTraining';
+import { Education } from './components/Education';
 import { useTranslation } from './i18n/LanguageContext';
 import './App.css';
 
@@ -273,6 +274,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <PuzzleTraining />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/education"
+            element={
+              <ProtectedRoute>
+                <Education />
               </ProtectedRoute>
             }
           />
