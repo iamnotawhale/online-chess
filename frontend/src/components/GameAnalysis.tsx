@@ -91,11 +91,19 @@ export const GameAnalysis: React.FC = () => {
 
   // Scroll selected move into view within moves table
   useEffect(() => {
-    if (selectedMoveIndex !== null && moveRowRefs.current[selectedMoveIndex]) {
+    const movesTable = document.querySelector('.moves-table') as HTMLElement;
+    if (!movesTable) return;
+
+    if (selectedMoveIndex === null) {
+      // Scroll to top when at starting position
+      movesTable.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    } else if (selectedMoveIndex !== null && moveRowRefs.current[selectedMoveIndex]) {
       const selectedRow = moveRowRefs.current[selectedMoveIndex];
-      const movesTable = document.querySelector('.moves-table') as HTMLElement;
       
-      if (selectedRow && movesTable) {
+      if (selectedRow) {
         // Use getBoundingClientRect for accurate positioning
         const rowRect = selectedRow.getBoundingClientRect();
         const tableRect = movesTable.getBoundingClientRect();
@@ -326,7 +334,7 @@ export const GameAnalysis: React.FC = () => {
       </div>
       {error && <div className="error-message">{error}</div>}
 
-      {!analysis ? (
+      {!analysis || analyzing ? (
         <div className="analysis-start">
           {!analyzing ? (
             <>

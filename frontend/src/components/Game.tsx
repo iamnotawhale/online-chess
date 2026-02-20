@@ -72,6 +72,7 @@ export const GameView: React.FC = () => {
     const isMobile = window.innerWidth <= 768;
     return isMobile ? Math.max(320, window.innerWidth) : 800;
   });
+  const moveRowRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   // Очистить таймер при размонтировании
   useEffect(() => {
@@ -443,6 +444,34 @@ export const GameView: React.FC = () => {
       console.error('Error loading move history:', err);
     }
   };
+
+  // Auto-scroll move history to selected move
+  useEffect(() => {
+    const movesList = document.querySelector('.moves-list') as HTMLElement;
+    if (!movesList) return;
+
+    if (currentMoveIndex === -1) {
+      // Scroll to top for initial position
+      movesList.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    } else if (currentMoveIndex !== undefined && currentMoveIndex !== null && currentMoveIndex >= 0 && moveRowRefs.current[currentMoveIndex]) {
+      const selectedButton = moveRowRefs.current[currentMoveIndex];
+      
+      if (selectedButton) {
+        const buttonRect = selectedButton.getBoundingClientRect();
+        const listRect = movesList.getBoundingClientRect();
+        const elementTopRelativeToContainer = buttonRect.top - listRect.top + movesList.scrollTop;
+        const desiredScroll = Math.max(0, elementTopRelativeToContainer - 40);
+        
+        movesList.scrollTo({
+          top: desiredScroll,
+          behavior: 'smooth'
+        });
+      }
+    }
+  }, [currentMoveIndex]);
 
   const handleOnDrop = (sourceSquare: string, targetSquare: string) => {
     if (!game || !chessInstance || !currentUser) return false;
@@ -861,7 +890,9 @@ export const GameView: React.FC = () => {
                     
                     return (
                       <div key={pairIndex} className="move-row">
+                        <span className="move-number">{pairIndex + 1}.</span>
                         <button
+                          ref={(el) => { moveRowRefs.current[whiteIndex] = el; }}
                           className={`move-button ${whiteIndex === currentMoveIndex ? 'current' : ''}`}
                           onClick={() => goToMove(whiteIndex)}
                         >
@@ -869,6 +900,7 @@ export const GameView: React.FC = () => {
                         </button>
                         {blackMove ? (
                           <button
+                            ref={(el) => { moveRowRefs.current[blackIndex] = el; }}
                             className={`move-button ${blackIndex === currentMoveIndex ? 'current' : ''}`}
                             onClick={() => goToMove(blackIndex)}
                           >
