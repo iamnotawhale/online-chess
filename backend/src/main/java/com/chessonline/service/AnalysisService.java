@@ -158,7 +158,7 @@ public class AnalysisService {
             // Build response
             AnalysisResponse response = new AnalysisResponse();
             response.setGameId(request.getGameId());
-            response.setTotalMoves(moves.size());
+            response.setTotalMoves(moveAnalyses.size());
             response.setWhiteAccuracy(whiteAccuracy);
             response.setBlackAccuracy(blackAccuracy);
             response.setWhiteMistakes(whiteMistakes);
