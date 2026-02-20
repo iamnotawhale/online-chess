@@ -400,12 +400,23 @@ export const PuzzleTraining: React.FC = () => {
   }
 
   // Calculate last move for highlighting
-  const lastMove = userMoves.length > 0 
-    ? {
-        from: userMoves[userMoves.length - 1].slice(0, 2),
-        to: userMoves[userMoves.length - 1].slice(2, 4),
-      }
-    : null;
+  // When viewing history, highlight the current move; otherwise highlight the actual last move
+  const lastMove = (() => {
+    if (isViewingHistory && currentMoveIndex >= 0 && currentMoveIndex < userMoves.length) {
+      const moveUci = userMoves[currentMoveIndex];
+      return {
+        from: moveUci.slice(0, 2),
+        to: moveUci.slice(2, 4),
+      };
+    } else if (!isViewingHistory && userMoves.length > 0) {
+      const moveUci = userMoves[userMoves.length - 1];
+      return {
+        from: moveUci.slice(0, 2),
+        to: moveUci.slice(2, 4),
+      };
+    }
+    return null;
+  })();
 
   const getDeltaTone = (delta: number) => {
     const absDelta = Math.abs(delta);
