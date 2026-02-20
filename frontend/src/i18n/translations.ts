@@ -119,6 +119,10 @@ export const translations = {
     analysisEvalCol: 'Eval',
     analysisTypeCol: 'Type',
     analysisBestCol: 'Best move',
+    analysisAdvantage: 'Advantage',
+    analysisPhaseOpening: 'Opening',
+    analysisPhaseMiddlegame: 'Middlegame',
+    analysisPhaseEndgame: 'Endgame',
     
     // Result reasons
     checkmate: 'Checkmate',
@@ -387,6 +391,10 @@ export const translations = {
     analysisEvalCol: 'Оценка',
     analysisTypeCol: 'Тип',
     analysisBestCol: 'Лучший',
+    analysisAdvantage: 'Преимущество',
+    analysisPhaseOpening: 'Дебют',
+    analysisPhaseMiddlegame: 'Миттельшпиль',
+    analysisPhaseEndgame: 'Эндшпиль',
     
     // Result reasons
     checkmate: 'Мат',

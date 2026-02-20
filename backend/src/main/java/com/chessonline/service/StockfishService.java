@@ -288,9 +288,29 @@ public class StockfishService {
         Matcher mateMatcher = SCORE_MATE_PATTERN.matcher(infoLine);
         if (mateMatcher.find()) {
             int mateIn = Integer.parseInt(mateMatcher.group(1));
-            // Convert mate score to large centipawn values (beyond normal range)
-            // Positive = white wins, Negative = black wins
-            int evaluation = mateIn > 0 ? 50000 : -50000;
+            
+            // Convert mate score to centipawn values based on moves to mate
+            // This provides more useful gradations than just ±50000 for all mates
+            // Formula: base 10000 + bonus for being closer to mate
+            int absMateIn = Math.abs(mateIn);
+            int evaluation;
+            
+            if (absMateIn == 0) {
+                // Mate on board (shouldn't happen in analysis, but handle it)
+                evaluation = mateIn >= 0 ? 50000 : -50000;
+            } else if (absMateIn == 1) {
+                // Mate in 1: very strong advantage
+                evaluation = mateIn > 0 ? 10000 : -10000;
+            } else {
+                // Mate in N: scale from 10000 down to 3000 as distance increases
+                // Cap at mate in 20 (beyond that, use minimum advantage of 3000)
+                int cappedMateIn = Math.min(absMateIn, 20);
+                // Linear interpolation from 10000 (mate in 1) to 3000 (mate in 20+)
+                evaluation = mateIn > 0 
+                    ? 10000 - ((cappedMateIn - 1) * 350)  // Decreases by ~350 per move
+                    : -10000 + ((cappedMateIn - 1) * 350);
+            }
+            
             return new PositionEvaluation(evaluation, bestMove, true, mateIn);
         }
 

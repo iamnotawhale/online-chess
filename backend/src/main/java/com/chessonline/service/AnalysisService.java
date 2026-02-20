@@ -90,19 +90,65 @@ public class AnalysisService {
                 }
                 board.doMove(move);
 
+                // Check if game ended with this move (checkmate, stalemate, draw)
+                boolean gameEnded = board.isMated() || board.isStaleMate() || board.isDraw();
+                
                 // Get evaluation after the move
                 String fenAfterMove = board.getFen();
-                StockfishService.PositionEvaluation afterEval = stockfishService.analyzePositionWithEngine(fenAfterMove, depth);
+                StockfishService.PositionEvaluation afterEval;
+                
+                if (gameEnded && board.isMated()) {
+                    // For checkmate, set a mate evaluation from White's perspective (already converted)
+                    // If white just moved and it's checkmate, black got mated (white wins) → +10000
+                    // If black just moved and it's checkmate, white got mated (black wins) → -10000
+                    int mateEval = isWhiteMove ? 10000 : -10000;
+                    afterEval = new StockfishService.PositionEvaluation(mateEval, "", true, 0);
+                    logger.info("Move {}{} {} - Checkmate! Winner: {}", 
+                        moveNumber, isWhiteMove ? "." : "...", sanMove, isWhiteMove ? "White" : "Black");
+                } else if (gameEnded) {
+                    // Stalemate or draw
+                    afterEval = new StockfishService.PositionEvaluation(0, "", false, 0);
+                    logger.info("Move {}{} {} - Game ended (stalemate/draw)", 
+                        moveNumber, isWhiteMove ? "." : "...", sanMove);
+                } else {
+                    // Normal position, analyze with Stockfish
+                    afterEval = stockfishService.analyzePositionWithEngine(fenAfterMove, depth);
+                    
+                    // Log evaluation details for debugging
+                    if (afterEval.isMate()) {
+                        logger.info("Move {}{} {} - Mate score: mateIn={}, eval={}", 
+                            moveNumber, isWhiteMove ? "." : "...", sanMove, 
+                            afterEval.getMateIn(), afterEval.getEvaluation());
+                    }
+                }
+
+                // Stockfish returns evaluation from perspective of side to move in the position
+                // We want to display evaluation from White's perspective (standard convention)
+                // After White's move: next side to move is Black, so Stockfish returns Black's perspective → invert
+                // After Black's move: next side to move is White, so Stockfish returns White's perspective → keep as is
+                // Exception: For checkmate on board, evaluation is already from White's perspective
+                int displayEvaluation;
+                int displayBestEvaluation;
+                
+                if (gameEnded && board.isMated()) {
+                    // Checkmate eval is already from White's perspective, don't invert
+                    displayEvaluation = afterEval.getEvaluation();
+                    displayBestEvaluation = isWhiteMove ? -prevEval.getEvaluation() : prevEval.getEvaluation();
+                } else {
+                    // Normal conversion with inversion for white moves
+                    displayEvaluation = isWhiteMove ? -afterEval.getEvaluation() : afterEval.getEvaluation();
+                    displayBestEvaluation = isWhiteMove ? -prevEval.getEvaluation() : prevEval.getEvaluation();
+                }
 
                 // Create move analysis
                 MoveAnalysis analysis = new MoveAnalysis(
                     moveNumber,
                     isWhiteMove,
                     sanMove,
-                    afterEval.getEvaluation(),
+                    displayEvaluation,
                     prevEval.getBestMove()
                 );
-                analysis.setBestEvaluation(prevEval.getEvaluation());
+                analysis.setBestEvaluation(displayBestEvaluation);
 
                 // Don't classify moves as mistakes if:
                 // 1. Mate/checkmate is detected
@@ -133,9 +179,9 @@ public class AnalysisService {
                 moveAnalyses.add(analysis);
                 prevEval = afterEval;
                 
-                // Stop analysis if mate detected (end of game)
-                if (afterEval.isMate()) {
-                    logger.info("Mate detected after move {}. Stopping analysis.", sanMove);
+                // Stop analysis if game ended
+                if (gameEnded) {
+                    logger.info("Analysis completed. Game ended after move {}.", sanMove);
                     break;
                 }
                 

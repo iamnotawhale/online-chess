@@ -33,6 +33,7 @@ export const GameAnalysis: React.FC = () => {
   const [arrows, setArrows] = useState<any[]>([]);
   const [analysisBoardWidth, setAnalysisBoardWidth] = useState(800);
   const moveRowRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [hoveredMoveIndex, setHoveredMoveIndex] = useState<number | null>(null);
 
   // Load game and its moves
   useEffect(() => {
@@ -158,7 +159,8 @@ export const GameAnalysis: React.FC = () => {
             const color = moveIndex % 2 === 0 ? '.' : '...';
             setCurrentMove(`${moveNum}${color} ${sanMoves[moveIndex]}`);
             moveIndex++;
-            setProgress(Math.floor((moveIndex / sanMoves.length) * 95));
+            // Cap visualization at 90% - remaining 10% after API response
+            setProgress(Math.min(90, Math.floor((moveIndex / sanMoves.length) * 90)));
           } catch (e) {
             console.error('Invalid move during visualization:', sanMoves[moveIndex]);
             moveIndex++;
@@ -175,7 +177,6 @@ export const GameAnalysis: React.FC = () => {
       );
 
       clearInterval(progressInterval);
-      setProgress(100);
 
       // Transform backend response to frontend format
       const analysisResults: MoveAnalysis[] = response.moves.map((m: any) => ({
@@ -188,6 +189,14 @@ export const GameAnalysis: React.FC = () => {
         isInaccuracy: m.inaccuracy,
         isBlunder: m.blunder,
       }));
+
+      // Update to show actual last analyzed move
+      if (analysisResults.length > 0) {
+        const lastMove = analysisResults[analysisResults.length - 1];
+        setCurrentMove(`${lastMove.moveNumber}${lastMove.isWhiteMove ? '.' : '...'} ${lastMove.move}`);
+      }
+      
+      setProgress(100);
 
       setAnalysis({
         gameId: gameId!,
@@ -309,6 +318,123 @@ export const GameAnalysis: React.FC = () => {
     if (!analysis) return;
     handleMoveClick(analysis.moves.length - 1);
   };
+  const getEvalDeltas = (analysisMoves: MoveAnalysis[]) => {
+    if (analysisMoves.length === 0) return [];
+    return analysisMoves.map((move, index) => {
+      if (index === 0) {
+        return move.evaluation;
+      }
+      return move.evaluation - analysisMoves[index - 1].evaluation;
+    });
+  };
+
+  const getPhaseValue = (chess: Chess) => {
+    const board = chess.board();
+    let phase = 0;
+    let queens = 0;
+
+    for (const row of board) {
+      for (const piece of row) {
+        if (!piece) continue;
+        switch (piece.type) {
+          case 'n':
+          case 'b':
+            phase += 1;
+            break;
+          case 'r':
+            phase += 2;
+            break;
+          case 'q':
+            phase += 4;
+            queens += 1;
+            break;
+          default:
+            break;
+        }
+      }
+    }
+
+    return { phase, queens };
+  };
+
+  const getPhaseStage = (phase: number, queens: number, moveIndex: number) => {
+    const maxPhase = 24;
+    const phaseRatio = Math.max(0, Math.min(1, phase / maxPhase));
+
+    if (queens === 0 || phaseRatio <= 0.25) {
+      return 'endgame';
+    }
+
+    if (phaseRatio <= 0.6 || moveIndex >= 16) {
+      return 'middlegame';
+    }
+
+    return 'opening';
+  };
+
+  const getPhaseBoundaries = (moveCount: number, evals: number[]) => {
+    const stageByMove: Array<'opening' | 'middlegame' | 'endgame'> = [];
+    const chess = new Chess();
+    if (game?.startFen) {
+      chess.load(game.startFen);
+    }
+
+    const sanMoves = moves.map((m: any) => m.san || m.move || '').slice(0, moveCount);
+
+    for (const sanMove of sanMoves) {
+      try {
+        chess.move(sanMove);
+      } catch (error) {
+        // Keep the last known phase if move cannot be applied
+      }
+      const { phase, queens } = getPhaseValue(chess);
+      const stage = getPhaseStage(phase, queens, stageByMove.length + 1);
+      stageByMove.push(stage);
+    }
+
+    const midStartRaw = stageByMove.findIndex((stage) => stage === 'middlegame');
+    const endStartRaw = stageByMove.findIndex((stage) => stage === 'endgame');
+
+    const advantageThreshold = 500;
+    const advantageWindow = 4;
+    const advantageStartRaw = evals.findIndex((_, index) => {
+      if (index + advantageWindow > evals.length) return false;
+      for (let offset = 0; offset < advantageWindow; offset++) {
+        if (Math.abs(evals[index + offset]) < advantageThreshold) {
+          return false;
+        }
+      }
+      return true;
+    });
+    const advantageEndStart = advantageStartRaw >= 0 ? advantageStartRaw : null;
+
+    const fallbackMid = moveCount > 0 ? Math.min(moveCount - 1, 23) : null; // ~move 12
+    const fallbackEnd = moveCount > 0 ? Math.min(moveCount - 1, 79) : null; // ~move 40
+
+    const resolvedMid = midStartRaw >= 0 ? midStartRaw : fallbackMid;
+    const resolvedEnd = endStartRaw >= 0 ? endStartRaw : (advantageEndStart ?? fallbackEnd);
+
+    let normalizedMid = resolvedMid !== null && resolvedMid > 0 ? resolvedMid : null;
+    let normalizedEnd = resolvedEnd !== null && resolvedEnd > 0 ? resolvedEnd : null;
+
+    if (normalizedMid === null && moveCount > 1) {
+      normalizedMid = Math.min(moveCount - 1, Math.floor(moveCount * 0.35));
+    }
+    if (normalizedEnd === null && moveCount > 1) {
+      normalizedEnd = moveCount - 1;
+    }
+    if (normalizedMid !== null && normalizedEnd !== null) {
+      const minGap = 6;
+      if (normalizedEnd <= normalizedMid + minGap) {
+        normalizedEnd = Math.min(moveCount - 1, normalizedMid + minGap);
+      }
+    }
+
+    return {
+      midStart: normalizedMid,
+      endStart: normalizedEnd,
+    };
+  };
 
   const boardOrientation = currentUser && game
     ? (game.whitePlayerId === currentUser.id
@@ -317,6 +443,207 @@ export const GameAnalysis: React.FC = () => {
           ? 'black'
           : 'white')
     : 'white';
+
+  const analysisEvalDeltas = analysis ? getEvalDeltas(analysis.moves) : [];
+
+  const renderEvalChart = (extraClassName: string) => {
+    if (!analysis || analysis.moves.length === 0) {
+      return null;
+    }
+
+    const evalDeltas = getEvalDeltas(analysis.moves);
+    const cumulativeValues = evalDeltas.reduce<number[]>((acc, value, index) => {
+      const previous = index === 0 ? 0 : acc[index - 1];
+      acc.push(previous + value);
+      return acc;
+    }, []);
+    const chartValues = cumulativeValues;
+    const width = 600;
+    const height = 140;
+    const padding = 12;
+    const baseline = height / 2;
+    const rawMaxAbs = Math.max(100, ...chartValues.map((value) => Math.abs(value)));
+    const maxAbs = Math.min(1200, rawMaxAbs);
+    const scale = (height / 2 - padding) / maxAbs;
+
+    const points = chartValues.map((value, index) => {
+      const x = analysis.moves.length === 1 ? width / 2 : (width * index) / (analysis.moves.length - 1);
+      const y = baseline - value * scale;
+      return { x, y, value };
+    });
+
+    const linePath = points
+      .map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`)
+      .join(' ');
+
+    const segments: Array<{ sign: 'pos' | 'neg'; points: Array<{ x: number; y: number }> }> = [];
+    let currentSegment: { sign: 'pos' | 'neg'; points: Array<{ x: number; y: number }> } | null = null;
+
+    const getSign = (value: number) => (value >= 0 ? 'pos' : 'neg');
+    const startSegment = (sign: 'pos' | 'neg', point: { x: number; y: number }) => {
+      currentSegment = { sign, points: [point] };
+      segments.push(currentSegment);
+    };
+    const addPoint = (point: { x: number; y: number }) => {
+      if (!currentSegment) return;
+      currentSegment.points.push(point);
+    };
+
+    for (let i = 0; i < points.length - 1; i++) {
+      const current = points[i];
+      const next = points[i + 1];
+      const currentSign = getSign(current.value);
+      const nextSign = getSign(next.value);
+
+      if (!currentSegment) {
+        startSegment(currentSign, { x: current.x, y: current.y });
+      }
+
+      if (currentSign === nextSign) {
+        addPoint({ x: next.x, y: next.y });
+        continue;
+      }
+
+      const t = current.value / (current.value - next.value);
+      const crossX = current.x + (next.x - current.x) * t;
+      const crossPoint = { x: crossX, y: baseline };
+
+      addPoint(crossPoint);
+      startSegment(nextSign, crossPoint);
+      addPoint({ x: next.x, y: next.y });
+    }
+
+    const buildAreaPath = (segmentPoints: Array<{ x: number; y: number }>) => {
+      if (segmentPoints.length === 0) return '';
+      const first = segmentPoints[0];
+      const last = segmentPoints[segmentPoints.length - 1];
+      const line = segmentPoints
+        .map((point, index) => `${index === 0 ? 'L' : 'L'} ${point.x} ${point.y}`)
+        .join(' ');
+      return `M ${first.x} ${baseline} ${line} L ${last.x} ${baseline} Z`;
+    };
+
+    const positiveAreas = segments
+      .filter((segment) => segment.sign === 'pos')
+      .map((segment) => buildAreaPath(segment.points));
+    const negativeAreas = segments
+      .filter((segment) => segment.sign === 'neg')
+      .map((segment) => buildAreaPath(segment.points));
+
+    const { midStart, endStart } = getPhaseBoundaries(analysis.moves.length, cumulativeValues);
+    const selectedIndex = selectedMoveIndex ?? null;
+    const hoverIndex = hoveredMoveIndex ?? null;
+    const activeIndex = hoverIndex !== null ? hoverIndex : selectedIndex;
+    const activePoint = activeIndex !== null ? points[activeIndex] : null;
+
+    const getLabelLeft = (index: number) => {
+      const minX = 8;
+      const maxX = width - 16;
+      const clampedX = Math.min(Math.max(points[index].x, minX), maxX);
+      return `${(clampedX / width) * 100}%`;
+    };
+
+    const handleChartMove = (event: React.MouseEvent<SVGSVGElement>) => {
+      const rect = event.currentTarget.getBoundingClientRect();
+      const relativeX = Math.min(Math.max(event.clientX - rect.left, 0), rect.width);
+      const ratio = rect.width === 0 ? 0 : relativeX / rect.width;
+      const index = Math.round(ratio * (analysis.moves.length - 1));
+      setHoveredMoveIndex(index);
+    };
+
+    const handleChartClick = (event: React.MouseEvent<SVGSVGElement>) => {
+      const rect = event.currentTarget.getBoundingClientRect();
+      const relativeX = Math.min(Math.max(event.clientX - rect.left, 0), rect.width);
+      const ratio = rect.width === 0 ? 0 : relativeX / rect.width;
+      const index = Math.round(ratio * (analysis.moves.length - 1));
+      handleMoveClick(index);
+    };
+
+    return (
+      <div className={`panel eval-chart ${extraClassName}`}>
+        <div className="eval-chart-header">
+          <span>{t('analysisAdvantage')}</span>
+        </div>
+        <div className="eval-chart-container">
+          <svg
+            className="eval-chart-svg"
+            viewBox={`0 0 ${width} ${height}`}
+            preserveAspectRatio="none"
+            onMouseMove={handleChartMove}
+            onMouseLeave={() => setHoveredMoveIndex(null)}
+            onClick={handleChartClick}
+            role="img"
+            aria-label="Evaluation delta chart"
+          >
+            <line x1="0" y1={height * 0.25} x2={width} y2={height * 0.25} className="eval-chart-guide" />
+            <line x1="0" y1={height * 0.75} x2={width} y2={height * 0.75} className="eval-chart-guide" />
+            <line x1="0" y1={baseline} x2={width} y2={baseline} className="eval-chart-baseline" />
+
+            {midStart !== null && midStart > 0 && (
+              <line
+                x1={points[midStart].x}
+                y1="0"
+                x2={points[midStart].x}
+                y2={height}
+                className="eval-chart-phase-line"
+              />
+            )}
+            {endStart !== null && endStart > 0 && (
+              <line
+                x1={points[endStart].x}
+                y1="0"
+                x2={points[endStart].x}
+                y2={height}
+                className="eval-chart-phase-line"
+              />
+            )}
+
+            {positiveAreas.map((path, index) => (
+              <path key={`pos-${index}`} d={path} className="eval-chart-area eval-chart-area-pos" />
+            ))}
+            {negativeAreas.map((path, index) => (
+              <path key={`neg-${index}`} d={path} className="eval-chart-area eval-chart-area-neg" />
+            ))}
+
+            <path d={linePath} className="eval-chart-line" />
+
+            {activePoint && (
+              <line x1={activePoint.x} y1="0" x2={activePoint.x} y2={height} className="eval-chart-cursor" />
+            )}
+
+          </svg>
+
+          <div className="eval-chart-phase-label eval-chart-phase-opening">{t('analysisPhaseOpening')}</div>
+          {midStart !== null && midStart > 0 && (
+            <div
+              className="eval-chart-phase-label"
+              style={{ left: getLabelLeft(midStart) }}
+            >
+              {t('analysisPhaseMiddlegame')}
+            </div>
+          )}
+          {endStart !== null && endStart > 0 && (
+            <div
+              className="eval-chart-phase-label"
+              style={{ left: getLabelLeft(endStart) }}
+            >
+              {t('analysisPhaseEndgame')}
+            </div>
+          )}
+
+          {hoverIndex !== null && activePoint && (
+            <div
+              className="eval-chart-tooltip"
+              style={{ left: `${(activePoint.x / width) * 100}%` }}
+            >
+              <div>Move {analysis.moves[hoverIndex].moveNumber}{analysis.moves[hoverIndex].isWhiteMove ? '.' : '...'} {analysis.moves[hoverIndex].move}</div>
+              <div>{(cumulativeValues[hoverIndex] / 100).toFixed(1)} eval</div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
 
 
   if (loading) {
@@ -377,6 +704,7 @@ export const GameAnalysis: React.FC = () => {
                 customArrows={arrows}
               />
             </div>
+            {renderEvalChart('eval-chart-desktop')}
           </div>
 
           <div className="layout-2col-sidebar">
@@ -419,7 +747,7 @@ export const GameAnalysis: React.FC = () => {
               <div className="moves-table">
                 <div className="table-header">
                   <div className="col-move">{t('analysisMoveCol')}</div>
-                  <div className="col-eval">{t('analysisEvalCol')}</div>
+                  <div className="col-eval">Δ {t('analysisEvalCol')}</div>
                   <div className="col-type">{t('analysisTypeCol')}</div>
                   <div className="col-best">{t('analysisBestCol')}</div>
                 </div>
@@ -431,7 +759,7 @@ export const GameAnalysis: React.FC = () => {
                     onClick={() => handleMoveClick(idx)}
                   >
                     <div className="col-move">{m.moveNumber}{m.isWhiteMove ? '.' : '...'} {m.move}</div>
-                    <div className="col-eval">{(m.evaluation / 100).toFixed(1)}</div>
+                    <div className="col-eval">{(analysisEvalDeltas[idx] / 100).toFixed(1)}</div>
                     <div className="col-type">
                       {m.isBlunder ? '💣' : m.isMistake ? '❌' : '✓'}
                     </div>
@@ -472,6 +800,7 @@ export const GameAnalysis: React.FC = () => {
                 </div>
               </div>
             </div>
+            {renderEvalChart('eval-chart-mobile')}
           </div>
         </div>
       )}

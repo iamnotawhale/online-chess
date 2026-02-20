@@ -271,6 +271,142 @@
   border-radius: 4px;
   border: 1px solid var(--border);
 }
+
+/* Eval Chart */
+.eval-chart {
+  padding: 16px;
+}
+
+.eval-chart-header {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin-bottom: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.eval-chart-subtitle {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.eval-chart-container {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.04), transparent 55%),
+              linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0));
+  border-radius: 6px;
+  overflow: hidden;
+  border: 0;
+}
+
+.eval-chart-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: pointer;
+}
+
+.eval-chart-baseline {
+  stroke: rgba(255, 255, 255, 0.12);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+.eval-chart-guide {
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 1;
+}
+
+.eval-chart-phase-line {
+  stroke: rgba(255, 255, 255, 0.18);
+  stroke-width: 1;
+}
+
+.eval-chart-area {
+  stroke: none;
+  opacity: 0.9;
+}
+
+.eval-chart-area-pos {
+  fill: rgba(245, 245, 245, 0.75);
+}
+
+.eval-chart-area-neg {
+  fill: rgba(20, 20, 20, 0.75);
+}
+
+.eval-chart-line {
+  fill: none;
+  stroke: #f08b3a;
+  stroke-width: 1;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  opacity: 0.7;
+  filter: drop-shadow(0 1px 3px rgba(240, 139, 58, 0.25));
+}
+
+.eval-chart-cursor {
+  stroke: rgba(240, 139, 58, 0.7);
+  stroke-width: 1;
+  opacity: 0.6;
+}
+
+
+.eval-chart-tick {
+  fill: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.eval-chart-tooltip {
+  position: absolute;
+  top: 8px;
+  transform: translateX(-50%);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 11px;
+  color: var(--text);
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.eval-chart-phase-label {
+  position: absolute;
+  top: 8px;
+  transform: translate(8px, 0);
+  transform-origin: left center;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+}
+
+.eval-chart-phase-opening {
+  left: 0;
+  transform: translate(8px, 0);
+}
+
+
+.eval-chart-desktop {
+  width: 100%;
+  max-width: 800px;
+}
+
+.eval-chart-mobile {
+  display: none;
+}
 zz
 .moves-analysis h3 {
   margin: 0 0 16px 0;
@@ -517,6 +653,26 @@ zz
 
   .col-move {
     word-break: break-word;
+  }
+
+  .eval-chart-mobile {
+    display: block;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    margin-right: calc(-50vw + 50%);
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+}
+
+@media (max-width: 1200px) {
+  .eval-chart-desktop {
+    display: none;
+  }
+
+  .eval-chart-mobile {
+    display: block;
   }
 }
 
