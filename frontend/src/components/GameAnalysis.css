@@ -275,6 +275,16 @@
 /* Eval Chart */
 .eval-chart {
   padding: 16px;
+  --chart-line: var(--accent);
+  --chart-baseline: var(--muted-2);
+  --chart-guide: var(--border);
+  --chart-phase: var(--muted);
+  --chart-label: var(--muted);
+  --chart-pos-area: var(--surface-2);
+  --chart-neg-area: var(--surface-4);
+  --chart-cursor: var(--accent);
+  --chart-tooltip-bg: var(--surface-2);
+  --chart-tooltip-border: var(--border);
 }
 
 .eval-chart-header {
@@ -312,18 +322,18 @@
 }
 
 .eval-chart-baseline {
-  stroke: rgba(255, 255, 255, 0.12);
+  stroke: var(--chart-baseline);
   stroke-width: 1;
   stroke-dasharray: 4 4;
 }
 
 .eval-chart-guide {
-  stroke: rgba(255, 255, 255, 0.08);
+  stroke: var(--chart-guide);
   stroke-width: 1;
 }
 
 .eval-chart-phase-line {
-  stroke: rgba(255, 255, 255, 0.18);
+  stroke: var(--chart-phase);
   stroke-width: 1;
 }
 
@@ -333,25 +343,25 @@
 }
 
 .eval-chart-area-pos {
-  fill: rgba(245, 245, 245, 0.75);
+  fill: var(--chart-pos-area);
 }
 
 .eval-chart-area-neg {
-  fill: rgba(20, 20, 20, 0.75);
+  fill: var(--chart-neg-area);
 }
 
 .eval-chart-line {
   fill: none;
-  stroke: #f08b3a;
+  stroke: var(--chart-line);
   stroke-width: 1;
   stroke-linejoin: round;
   stroke-linecap: round;
   opacity: 0.7;
-  filter: drop-shadow(0 1px 3px rgba(240, 139, 58, 0.25));
+  filter: drop-shadow(0 1px 2px var(--chart-line));
 }
 
 .eval-chart-cursor {
-  stroke: rgba(240, 139, 58, 0.7);
+  stroke: var(--chart-cursor);
   stroke-width: 1;
   opacity: 0.6;
 }
@@ -367,8 +377,8 @@
   position: absolute;
   top: 8px;
   transform: translateX(-50%);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
+  background: var(--chart-tooltip-bg);
+  border: 1px solid var(--chart-tooltip-border);
   border-radius: 4px;
   padding: 6px 8px;
   font-size: 11px;
@@ -385,9 +395,9 @@
   transform-origin: left center;
   writing-mode: vertical-rl;
   text-orientation: mixed;
-  font-size: 11px;
+  font-size: 9px;
   font-weight: 600;
-  color: var(--muted);
+  color: var(--chart-label);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   pointer-events: none;
