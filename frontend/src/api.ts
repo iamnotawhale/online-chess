@@ -300,6 +300,21 @@ class ApiService {
     }).then(res => res.data);
   }
 
+  getPuzzleRating(): Promise<{ rating: number }> {
+    return this.client.get('/puzzles/me/rating').then(res => res.data);
+  }
+
+  getPuzzleRatingHistory(): Promise<any[]> {
+    return this.client.get('/puzzles/me/history').then(res => res.data);
+  }
+
+  getPuzzleHint(puzzleId: string, currentMoves: string[]): Promise<any> {
+    return this.client.post('/puzzles/hint', {
+      puzzleId,
+      currentMoves
+    }).then(res => res.data);
+  }
+
   // Bot endpoints
   getBotDifficulties(): Promise<any[]> {
     return this.client.get('/bot/difficulties').then(res => res.data);

@@ -288,8 +288,9 @@ public class StockfishService {
         Matcher mateMatcher = SCORE_MATE_PATTERN.matcher(infoLine);
         if (mateMatcher.find()) {
             int mateIn = Integer.parseInt(mateMatcher.group(1));
-            // Convert mate score to centipawns (very large value)
-            int evaluation = mateIn > 0 ? 10000 : -10000;
+            // Convert mate score to large centipawn values (beyond normal range)
+            // Positive = white wins, Negative = black wins
+            int evaluation = mateIn > 0 ? 50000 : -50000;
             return new PositionEvaluation(evaluation, bestMove, true, mateIn);
         }
 

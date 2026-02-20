@@ -21,9 +21,9 @@ public class AnalysisService {
     private final StockfishService stockfishService;
 
     // Threshold values in centipawns
-    private static final int BLUNDER_THRESHOLD = 200;
-    private static final int MISTAKE_THRESHOLD = 50;
-    private static final int INACCURACY_THRESHOLD = 20;
+    private static final int BLUNDER_THRESHOLD = 300;      // 3.0 pawns - gross error
+    private static final int MISTAKE_THRESHOLD = 100;      // 1.0 pawn - significant error
+    private static final int INACCURACY_THRESHOLD = 50;    // 0.5 pawns - minor inaccuracy
     
     // Analysis parameters
     private static final int DEFAULT_DEPTH = 8; // Reduced from 10 for faster analysis (3-4x faster per position)
@@ -94,11 +94,6 @@ public class AnalysisService {
                 String fenAfterMove = board.getFen();
                 StockfishService.PositionEvaluation afterEval = stockfishService.analyzePositionWithEngine(fenAfterMove, depth);
 
-                // Calculate evaluation loss/gain (from perspective of player who made the move)
-                int evaluationDelta = calculateEvaluationDelta(prevEval.getEvaluation(), 
-                                                               afterEval.getEvaluation(), 
-                                                               isWhiteMove);
-
                 // Create move analysis
                 MoveAnalysis analysis = new MoveAnalysis(
                     moveNumber,
@@ -109,20 +104,40 @@ public class AnalysisService {
                 );
                 analysis.setBestEvaluation(prevEval.getEvaluation());
 
-                // Classify the move
-                if (evaluationDelta >= BLUNDER_THRESHOLD) {
-                    analysis.setBlunder(true);
-                    if (isWhiteMove) whiteBlunders++; else blackBlunders++;
-                } else if (evaluationDelta >= MISTAKE_THRESHOLD) {
-                    analysis.setMistake(true);
-                    if (isWhiteMove) whiteMistakes++; else blackMistakes++;
-                } else if (evaluationDelta >= INACCURACY_THRESHOLD) {
-                    analysis.setInaccuracy(true);
-                    if (isWhiteMove) whiteInaccuracies++; else blackInaccuracies++;
+                // Don't classify moves as mistakes if:
+                // 1. Mate/checkmate is detected
+                // 2. The move matches the recommended best move
+                // 3. Previous position was in checkmate
+                boolean isBestMove = sanMove.equals(prevEval.getBestMove());
+                int evaluationDelta = 0;
+                
+                if (!afterEval.isMate() && !isBestMove && !prevEval.isMate()) {
+                    // Calculate evaluation loss/gain (from perspective of player who made the move)
+                    evaluationDelta = calculateEvaluationDelta(prevEval.getEvaluation(), 
+                                                                   afterEval.getEvaluation(), 
+                                                                   isWhiteMove);
+
+                    // Classify the move
+                    if (evaluationDelta >= BLUNDER_THRESHOLD) {
+                        analysis.setBlunder(true);
+                        if (isWhiteMove) whiteBlunders++; else blackBlunders++;
+                    } else if (evaluationDelta >= MISTAKE_THRESHOLD) {
+                        analysis.setMistake(true);
+                        if (isWhiteMove) whiteMistakes++; else blackMistakes++;
+                    } else if (evaluationDelta >= INACCURACY_THRESHOLD) {
+                        analysis.setInaccuracy(true);
+                        if (isWhiteMove) whiteInaccuracies++; else blackInaccuracies++;
+                    }
                 }
 
                 moveAnalyses.add(analysis);
                 prevEval = afterEval;
+                
+                // Stop analysis if mate detected (end of game)
+                if (afterEval.isMate()) {
+                    logger.info("Mate detected after move {}. Stopping analysis.", sanMove);
+                    break;
+                }
                 
                 if (!isWhiteMove) {
                     moveNumber++;

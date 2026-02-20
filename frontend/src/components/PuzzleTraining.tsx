@@ -7,30 +7,7 @@ import './PuzzleTraining.css';
 import { PuzzleData, applyUciMove } from './puzzleUtils';
 import { usePuzzleGame } from './usePuzzleGame';
 
-const HISTORY_STORAGE_KEY = 'puzzleTrainingEloHistory';
 const FILTER_STORAGE_KEY = 'puzzleTrainingRatingFilter';
-
-const readRatingHistory = (): number[] => {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = window.localStorage.getItem(HISTORY_STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as number[];
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter((value) => Number.isFinite(value)).slice(0, 8);
-  } catch {
-    return [];
-  }
-};
-
-const writeRatingHistory = (history: number[]) => {
-  if (typeof window === 'undefined') return;
-  try {
-    window.localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(history));
-  } catch {
-    // Ignore storage errors.
-  }
-};
 
 const readRatingFilter = () => {
   if (typeof window === 'undefined') return { min: 1000, max: 2000 };
@@ -79,7 +56,14 @@ export const PuzzleTraining: React.FC = () => {
   const [ratingFilter, setRatingFilter] = useState(() => readRatingFilter());
   const [puzzleElo, setPuzzleElo] = useState<number | null>(null);
   const [puzzleEloDelta, setPuzzleEloDelta] = useState(0);
-  const [ratingHistory, setRatingHistory] = useState<number[]>(() => readRatingHistory());
+  const [ratingHistory, setRatingHistory] = useState<number[]>([]);
+  
+  // Move history states
+  const [moveHistory, setMoveHistory] = useState<string[]>([]);
+  const [moveFens, setMoveFens] = useState<string[]>([]);
+  const [currentMoveIndex, setCurrentMoveIndex] = useState<number>(-1);
+  const [isViewingHistory, setIsViewingHistory] = useState(false);
+  const [displayPosition, setDisplayPosition] = useState<string>('start');
 
   const {
     game,
@@ -115,19 +99,53 @@ export const PuzzleTraining: React.FC = () => {
     onRatingChange: (rating, delta) => {
       setPuzzleElo(rating);
       setPuzzleEloDelta(delta);
-      if (delta !== 0) {
-        setRatingHistory(prev => {
-          const next = [delta, ...prev].slice(0, 8);
-          writeRatingHistory(next);
-          return next;
-        });
-      }
+    },
+    onHistoryUpdate: (history) => {
+      setRatingHistory(history.slice(0, 8));
     }
   });
 
   useEffect(() => {
+    const loadRatingHistory = async () => {
+      try {
+        const history = await apiService.getPuzzleRatingHistory();
+        const deltas = Array.isArray(history)
+          ? history
+              .map((item) => item?.ratingChange)
+              .filter((value) => Number.isFinite(value))
+          : [];
+        setRatingHistory(deltas.slice(0, 8));
+      } catch {
+        setRatingHistory([]);
+      }
+    };
+
+    loadRatingHistory();
+  }, []);
+
+  useEffect(() => {
     writeRatingFilter(ratingFilter);
   }, [ratingFilter]);
+
+  // Update display position based on history navigation
+  useEffect(() => {
+    if (!puzzle) {
+      setDisplayPosition('start');
+      return;
+    }
+
+    if (isViewingHistory) {
+      if (currentMoveIndex < 0) {
+        // Show starting position
+        setDisplayPosition(puzzle.fen);
+      } else if (currentMoveIndex < moveFens.length) {
+        setDisplayPosition(moveFens[currentMoveIndex]);
+      }
+    } else {
+      // Show current game position
+      setDisplayPosition(position);
+    }
+  }, [isViewingHistory, currentMoveIndex, position, puzzle?.fen, moveFens]);
 
   const readStoredPuzzle = (): PuzzleData | null => {
     if (typeof window === 'undefined') return null;
@@ -135,7 +153,7 @@ export const PuzzleTraining: React.FC = () => {
       const raw = window.localStorage.getItem(puzzleStorageKey);
       if (!raw) return null;
       const parsed = JSON.parse(raw) as PuzzleData;
-      if (!parsed?.id || !parsed?.fen || !Array.isArray(parsed?.solution)) return null;
+      if (!parsed?.id || !parsed?.fen || typeof parsed?.firstMove !== 'string') return null;
       return parsed;
     } catch {
       return null;
@@ -218,6 +236,14 @@ export const PuzzleTraining: React.FC = () => {
         setMessageKey('');
         setHintUsed(readHintUsed(stored.id));
         setLoading(false);
+        try {
+          const ratingResponse = await apiService.getPuzzleRating();
+          if (typeof ratingResponse?.rating === 'number') {
+            setPuzzleElo(ratingResponse.rating);
+          }
+        } catch {
+          // Ignore rating fetch errors.
+        }
         return;
       }
     }
@@ -241,22 +267,33 @@ export const PuzzleTraining: React.FC = () => {
   };
 
 
-  const handleHint = () => {
+  const handleHint = async () => {
     if (!puzzle || hintUsed || status === 'complete') return;
-    if (!puzzle.solution || puzzle.solution.length === 0) return;
 
-    const gameCopy = new Chess(game.fen());
-    const prevFen = game.fen();
-    const expectedMove = puzzle.solution[userMoves.length];
-    if (!expectedMove) return;
+    try {
+      const response = await apiService.getPuzzleHint(puzzle.id, userMoves);
+      
+      if (!response?.nextMove) {
+        console.error('No hint available');
+        return;
+      }
 
-    if (!applyUciMove(gameCopy, expectedMove)) return;
+      const gameCopy = new Chess(game.fen());
+      const prevFen = game.fen();
 
-    const newUserMoves = [...userMoves, expectedMove];
-    setHintUsed(true);
-    markHintUsed(puzzle.id);
-    setUserMoves(newUserMoves);
-    checkSolution(puzzle.id, newUserMoves, gameCopy, prevFen);
+      if (!applyUciMove(gameCopy, response.nextMove)) {
+        console.error('Failed to apply hint move');
+        return;
+      }
+
+      const newUserMoves = [...userMoves, response.nextMove];
+      setHintUsed(true);
+      markHintUsed(puzzle.id);
+      setUserMoves(newUserMoves);
+      checkSolution(puzzle.id, newUserMoves, gameCopy, prevFen);
+    } catch (error) {
+      console.error('Failed to get hint:', error);
+    }
   };
 
   const handleSkip = () => {
@@ -266,6 +303,84 @@ export const PuzzleTraining: React.FC = () => {
     clearStoredPuzzle();
     clearHintUsed();
     loadRandomPuzzle(true);
+  };
+
+  // Generate move history from userMoves
+  useEffect(() => {
+    if (!puzzle || !game) {
+      setMoveHistory([]);
+      setMoveFens([]);
+      setCurrentMoveIndex(-1);
+      setIsViewingHistory(false);
+      return;
+    }
+
+    try {
+      const tempGame = new Chess(puzzle.fen);
+      const notations: string[] = [];
+      const fens: string[] = [];
+
+      // Apply each move and collect notation + FEN
+      for (const uciMove of userMoves) {
+        const from = uciMove.slice(0, 2);
+        const to = uciMove.slice(2, 4);
+        const promotion = uciMove.length === 5 ? uciMove[4].toLowerCase() : undefined;
+        
+        try {
+          const result = tempGame.move({ from, to, promotion } as any);
+          if (result) {
+            notations.push(result.san);
+            fens.push(tempGame.fen());
+          }
+        } catch (e) {
+          console.error('Error generating move notation:', uciMove, e);
+        }
+      }
+
+      setMoveHistory(notations);
+      setMoveFens(fens);
+      
+      // Auto-scroll to latest move if not viewing history
+      if (!isViewingHistory) {
+        setCurrentMoveIndex(notations.length - 1);
+      }
+    } catch (err) {
+      console.error('Error generating move history:', err);
+    }
+  }, [userMoves, puzzle?.id]);
+
+  // Navigation functions
+  const goToMove = (moveIndex: number) => {
+    if (!puzzle) return;
+    
+    setIsViewingHistory(moveIndex < moveHistory.length - 1);
+    setCurrentMoveIndex(moveIndex);
+  };
+
+  const goToStart = () => {
+    if (!puzzle) return;
+    setIsViewingHistory(true);
+    setCurrentMoveIndex(-1);
+  };
+
+  const goToPreviousMove = () => {
+    if (currentMoveIndex >= 0) {
+      const newIndex = currentMoveIndex - 1;
+      goToMove(newIndex);
+    }
+  };
+
+  const goToNextMove = () => {
+    if (currentMoveIndex < moveHistory.length - 1) {
+      goToMove(currentMoveIndex + 1);
+    }
+  };
+
+  const goToLatest = () => {
+    if (moveHistory.length > 0) {
+      setCurrentMoveIndex(moveHistory.length - 1);
+      setIsViewingHistory(false);
+    }
   };
 
   if (loading && !puzzle) {
@@ -310,13 +425,13 @@ export const PuzzleTraining: React.FC = () => {
       <div className="puzzle-training-grid">
         <div className="puzzle-board-section">
           <ChessBoardWrapper
-            position={position}
+            position={displayPosition}
             game={game}
             onMove={handleMove}
             lastMove={lastMove}
             orientation={playerColor}
             boardWidth={boardWidth}
-            isInteractive={status !== 'complete'}
+            isInteractive={status !== 'complete' && !isViewingHistory}
           />
 
           {messageKey && (
@@ -372,6 +487,73 @@ export const PuzzleTraining: React.FC = () => {
               {t('puzzleNext')}
             </button>
           </div>
+
+          {moveHistory.length > 0 && (
+            <div className="puzzle-container puzzle-moves-history">
+              <div className="moves-controls">
+                <button 
+                  onClick={goToStart} 
+                  disabled={currentMoveIndex === -1}
+                  title={t('toStart')}
+                >
+                  ⏮
+                </button>
+                <button 
+                  onClick={goToPreviousMove} 
+                  disabled={currentMoveIndex <= -1}
+                  title={t('previous')}
+                >
+                  ◀
+                </button>
+                <button 
+                  onClick={goToNextMove} 
+                  disabled={currentMoveIndex >= moveHistory.length - 1}
+                  title={t('next')}
+                >
+                  ▶
+                </button>
+                <button 
+                  onClick={goToLatest} 
+                  disabled={!isViewingHistory}
+                  title={t('toLatest')}
+                >
+                  ⏭
+                </button>
+              </div>
+              <div className="moves-list">
+                <div className="moves-grid">
+                  {Array.from({ length: Math.ceil(moveHistory.length / 2) }).map((_, pairIndex) => {
+                    const whiteIndex = pairIndex * 2;
+                    const blackIndex = pairIndex * 2 + 1;
+                    const whiteMove = moveHistory[whiteIndex];
+                    const blackMove = blackIndex < moveHistory.length ? moveHistory[blackIndex] : null;
+                    
+                    return (
+                      <div key={pairIndex} className="move-row">
+                        <span className="move-number">{pairIndex + 1}.</span>
+                        <button
+                          className={`move-button ${whiteIndex === currentMoveIndex ? 'current' : ''}`}
+                          onClick={() => goToMove(whiteIndex)}
+                        >
+                          {whiteMove}
+                        </button>
+                        {blackMove ? (
+                          <button
+                            className={`move-button ${blackIndex === currentMoveIndex ? 'current' : ''}`}
+                            onClick={() => goToMove(blackIndex)}
+                          >
+                            {blackMove}
+                          </button>
+                        ) : (
+                          <div></div>
+                        )}
+                      </div>
+                    );  
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="puzzle-container puzzle-stats">
             <div className="stats-row">

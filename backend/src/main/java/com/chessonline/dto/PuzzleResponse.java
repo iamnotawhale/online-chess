@@ -6,7 +6,7 @@ import java.util.List;
 public class PuzzleResponse {
     private String id;
     private String fen;
-    private List<String> solution; // Solution moves in UCI format
+    private String firstMove; // Only first opponent move (not full solution for security)
     private int rating;
     private List<String> themes;
     private boolean alreadySolved;
@@ -23,8 +23,8 @@ public class PuzzleResponse {
     public String getFen() { return fen; }
     public void setFen(String fen) { this.fen = fen; }
     
-    public List<String> getSolution() { return solution; }
-    public void setSolution(List<String> solution) { this.solution = solution; }
+    public String getFirstMove() { return firstMove; }
+    public void setFirstMove(String firstMove) { this.firstMove = firstMove; }
     
     public int getRating() { return rating; }
     public void setRating(int rating) { this.rating = rating; }

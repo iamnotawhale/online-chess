@@ -4,11 +4,13 @@ import com.chessonline.model.Puzzle;
 import com.chessonline.model.UserPuzzleSolution;
 import com.chessonline.model.User;
 import com.chessonline.model.UserStats;
+import com.chessonline.model.PuzzleRatingHistory;
 import com.chessonline.dto.PuzzleResponse;
 import com.chessonline.repository.UserPuzzleSolutionRepository;
 import com.chessonline.repository.PuzzleRepository;
 import com.chessonline.repository.UserRepository;
 import com.chessonline.repository.UserStatsRepository;
+import com.chessonline.repository.PuzzleRatingHistoryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +20,7 @@ import jakarta.annotation.PostConstruct;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.UUID;
@@ -39,6 +42,7 @@ public class PuzzleService {
     private final PuzzleRepository puzzleRepository;
     private final UserStatsRepository userStatsRepository;
     private final UserRepository userRepository;
+    private final PuzzleRatingHistoryRepository puzzleRatingHistoryRepository;
     
     private Map<String, Puzzle> puzzleCache = new ConcurrentHashMap<>();
     private List<Puzzle> allPuzzles = null;
@@ -50,11 +54,13 @@ public class PuzzleService {
     public PuzzleService(UserPuzzleSolutionRepository userPuzzleSolutionRepository,
                          PuzzleRepository puzzleRepository,
                          UserStatsRepository userStatsRepository,
-                         UserRepository userRepository) {
+                         UserRepository userRepository,
+                         PuzzleRatingHistoryRepository puzzleRatingHistoryRepository) {
         this.userPuzzleSolutionRepository = userPuzzleSolutionRepository;
         this.puzzleRepository = puzzleRepository;
         this.userStatsRepository = userStatsRepository;
         this.userRepository = userRepository;
+        this.puzzleRatingHistoryRepository = puzzleRatingHistoryRepository;
     }
     
     /**
@@ -170,16 +176,20 @@ public class PuzzleService {
                     // Apply puzzle Elo changes
                     UserStats stats = getOrCreateUserStats(userUUID);
                     int currentPuzzleRating = stats.getPuzzleRating() != null ? stats.getPuzzleRating() : 1200;
+                    int puzzleRatingBefore = currentPuzzleRating;
                     puzzleRatingAfter = currentPuzzleRating;
+                    boolean shouldRecordHistory = false;
                     if (!correct && !wasSolved && !wasPenaltyApplied) {
                         puzzleRatingChange = calculatePuzzleEloChange(currentPuzzleRating, puzzle.getRating(), false);
                         stats.setPuzzleRating(currentPuzzleRating + puzzleRatingChange);
                         solution.setPenaltyApplied(true);
                         puzzleRatingAfter = stats.getPuzzleRating();
+                        shouldRecordHistory = puzzleRatingChange != 0;
                     } else if (isComplete && !wasSolved && !wasPenaltyApplied) {
                         puzzleRatingChange = calculatePuzzleEloChange(currentPuzzleRating, puzzle.getRating(), true);
                         stats.setPuzzleRating(currentPuzzleRating + puzzleRatingChange);
                         puzzleRatingAfter = stats.getPuzzleRating();
+                        shouldRecordHistory = puzzleRatingChange != 0;
                     }
                     
                     log.info("About to save solution with solved={}", solution.isSolved());
@@ -192,6 +202,10 @@ public class PuzzleService {
                         }
                     } catch (Exception e) {
                         log.warn("Failed to ensure puzzle in database: {}", e.getMessage());
+                    }
+
+                    if (shouldRecordHistory) {
+                        recordPuzzleRatingHistory(stats.getUser(), puzzle, puzzleRatingBefore, puzzleRatingAfter, puzzleRatingChange);
                     }
                     
                     userPuzzleSolutionRepository.save(solution);
@@ -212,15 +226,74 @@ public class PuzzleService {
             result.put("correct", correct);
             result.put("complete", isComplete);
             result.put("nextMove", userMoves.size() < correctMoves.size() ? correctMoves.get(userMoves.size()) : null);
-            result.put("solution", correctMoves);
+            // Don't send full solution to client for security
             if (puzzleRatingAfter != null) {
                 result.put("puzzleRating", puzzleRatingAfter);
                 result.put("puzzleRatingChange", puzzleRatingChange);
+                
+                // Include rating history in response
+                try {
+                    UUID userUUID = UUID.fromString(userId);
+                    List<PuzzleRatingHistory> histories = puzzleRatingHistoryRepository.findTop8ByUserIdOrderByCreatedAtDesc(userUUID);
+                    List<Integer> historyDeltas = histories.stream()
+                        .map(PuzzleRatingHistory::getRatingChange)
+                        .collect(Collectors.toList());
+                    result.put("puzzleRatingHistory", historyDeltas);
+                } catch (Exception e) {
+                    log.warn("Failed to fetch puzzle rating history: {}", e.getMessage());
+                }
             }
             
             return result;
         } catch (Exception e) {
             log.error("Error in checkSolution: {}", e.getMessage(), e);
+            throw e;
+        }
+    }
+    
+    /**
+     * Get hint for puzzle - returns next correct move without penalty
+     */
+    public Map<String, Object> getHint(String puzzleId, List<String> currentMoves) {
+        try {
+            Puzzle puzzle = puzzleCache.get(puzzleId);
+            if (puzzle == null) {
+                puzzle = getPuzzleById(puzzleId);
+            }
+            if (puzzle == null) {
+                log.error("Puzzle not found: {}", puzzleId);
+                throw new RuntimeException("Puzzle not found: " + puzzleId);
+            }
+            
+            if (puzzle.getMoves() == null || puzzle.getMoves().isEmpty()) {
+                log.error("Puzzle {} has no moves", puzzleId);
+                throw new RuntimeException("Puzzle has no solution moves");
+            }
+            
+            List<String> correctMoves = Arrays.asList(puzzle.getMoves().split(" "));
+            
+            // Validate that current moves are correct so far
+            if (currentMoves.size() >= correctMoves.size()) {
+                throw new RuntimeException("No more hints available - puzzle should be complete");
+            }
+            
+            for (int i = 0; i < currentMoves.size(); i++) {
+                if (!currentMoves.get(i).equals(correctMoves.get(i))) {
+                    throw new RuntimeException("Current moves are incorrect - cannot provide hint");
+                }
+            }
+            
+            // Return the next correct move
+            String nextMove = correctMoves.get(currentMoves.size());
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("nextMove", nextMove);
+            result.put("movesRemaining", correctMoves.size() - currentMoves.size() - 1);
+            
+            log.info("Hint provided for puzzle {}: move {}/{}", puzzleId, currentMoves.size() + 1, correctMoves.size());
+            return result;
+        } catch (Exception e) {
+            log.error("Error getting hint: {}", e.getMessage(), e);
             throw e;
         }
     }
@@ -404,7 +477,9 @@ public class PuzzleService {
         PuzzleResponse response = new PuzzleResponse();
         response.setId(puzzle.getId());
         response.setFen(puzzle.getFen());
-        response.setSolution(Arrays.asList(puzzle.getMoves().split(" ")));
+        // Only send first move for security - full solution stays on server
+        String[] moves = puzzle.getMoves().split(" ");
+        response.setFirstMove(moves.length > 0 ? moves[0] : null);
         response.setRating(puzzle.getRating());
         response.setThemes(puzzle.getThemes() != null ? Arrays.asList(puzzle.getThemes().split(" ")) : Collections.emptyList());
         response.setDailyDate(puzzle.getDailyDate());
@@ -460,6 +535,28 @@ public class PuzzleService {
         double expected = 1.0 / (1.0 + Math.pow(10.0, (puzzleRating - userRating) / 400.0));
         double score = solved ? 1.0 : 0.0;
         return (int) Math.round(PUZZLE_RATING_K * (score - expected));
+    }
+
+    public int getCurrentPuzzleRating(UUID userId) {
+        UserStats stats = getOrCreateUserStats(userId);
+        return stats.getPuzzleRating() != null ? stats.getPuzzleRating() : 1200;
+    }
+
+    public List<PuzzleRatingHistory> getUserPuzzleRatingHistory(UUID userId) {
+        return puzzleRatingHistoryRepository.findTop8ByUserIdOrderByCreatedAtDesc(userId);
+    }
+
+    private void recordPuzzleRatingHistory(User user, Puzzle puzzle, int ratingBefore, int ratingAfter, int change) {
+        if (user == null || puzzle == null) {
+            return;
+        }
+        PuzzleRatingHistory history = new PuzzleRatingHistory();
+        history.setUser(user);
+        history.setPuzzle(puzzle);
+        history.setRatingBefore(ratingBefore);
+        history.setRatingAfter(ratingAfter);
+        history.setRatingChange(change);
+        puzzleRatingHistoryRepository.save(history);
     }
 
 }

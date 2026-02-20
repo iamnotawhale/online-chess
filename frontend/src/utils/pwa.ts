@@ -22,9 +22,16 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
     // Check for updates periodically
     setInterval(async () => {
       try {
-        await registration.update();
-      } catch (error) {
-        console.error('[PWA] Failed to check for updates:', error);
+        // Only check if registration still has an active worker
+        if (registration.active || registration.waiting || registration.installing) {
+          await registration.update();
+        }
+      } catch (error: any) {
+        // Silently ignore update check errors in development
+        // (service-worker.js might return 404 in dev server)
+        if (error?.name !== 'TypeError' && !error?.message?.includes('MIME type')) {
+          console.debug('[PWA] Update check skipped:', error?.message || error);
+        }
       }
     }, 60000); // Check every 60 seconds
 

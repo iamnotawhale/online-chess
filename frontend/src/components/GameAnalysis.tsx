@@ -7,6 +7,13 @@ import { apiService } from '../api';
 import { useTranslation } from '../i18n/LanguageContext';
 import { MoveAnalysis, GameAnalysisResult } from '../utils/analysisTypes';
 
+interface User {
+  id: string;
+  email: string;
+  username: string;
+  rating: number;
+}
+
 export const GameAnalysis: React.FC = () => {
   const { t } = useTranslation();
   const { gameId } = useParams<{ gameId: string }>();
@@ -17,9 +24,11 @@ export const GameAnalysis: React.FC = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentMove, setCurrentMove] = useState('');
   const [selectedMoveIndex, setSelectedMoveIndex] = useState<number | null>(null);
   const [boardPosition, setBoardPosition] = useState('');
+  const [chessInstance, setChessInstance] = useState<Chess | null>(null);
   const [highlightSquares, setHighlightSquares] = useState<{[key: string]: any}>({});
   const [arrows, setArrows] = useState<any[]>([]);
   const [analysisBoardWidth, setAnalysisBoardWidth] = useState(800);
@@ -50,6 +59,19 @@ export const GameAnalysis: React.FC = () => {
 
     loadGameData();
   }, [gameId]);
+
+  useEffect(() => {
+    const loadCurrentUser = async () => {
+      try {
+        const user = await apiService.getMe();
+        setCurrentUser(user);
+      } catch (err) {
+        setCurrentUser(null);
+      }
+    };
+
+    loadCurrentUser();
+  }, []);
 
   useEffect(() => {
     const updateBoardWidths = () => {
@@ -177,6 +199,7 @@ export const GameAnalysis: React.FC = () => {
       if (game?.startFen) {
         initialChess.load(game.startFen);
       }
+      setChessInstance(initialChess);
       setBoardPosition(initialChess.fen());
     } catch (err) {
       setError(`${t('analysisErrorPrefix')}${err instanceof Error ? err.message : t('analysisUnknownError')}`);
@@ -207,12 +230,12 @@ export const GameAnalysis: React.FC = () => {
           const highlights: {[key: string]: any} = {};
           const nextArrows: Array<[string, string, string]> = [];
 
-          // Highlight the move that was made (yellow: from light, to dark)
+          // Highlight the move that was made (blue: from light, to dark)
           highlights[moveResult.from] = {
-            background: 'rgba(255, 220, 50, 0.5)'
+            background: 'rgba(52, 152, 219, 0.18)'
           };
           highlights[moveResult.to] = {
-            background: 'rgba(255, 200, 0, 0.75)'
+            background: 'rgba(52, 152, 219, 0.28)'
           };
 
           // Show best move as arrow if different
@@ -234,6 +257,7 @@ export const GameAnalysis: React.FC = () => {
       }
     }
     
+    setChessInstance(chess);
     setBoardPosition(chess.fen());
   };
 
@@ -245,6 +269,7 @@ export const GameAnalysis: React.FC = () => {
     setSelectedMoveIndex(null);
     setHighlightSquares({});
     setArrows([]);
+    setChessInstance(startChess);
     setBoardPosition(startChess.fen());
     
     // Scroll moves table to top
@@ -276,6 +301,14 @@ export const GameAnalysis: React.FC = () => {
     if (!analysis) return;
     handleMoveClick(analysis.moves.length - 1);
   };
+
+  const boardOrientation = currentUser && game
+    ? (game.whitePlayerId === currentUser.id
+        ? 'white'
+        : game.blackPlayerId === currentUser.id
+          ? 'black'
+          : 'white')
+    : 'white';
 
 
   if (loading) {
@@ -325,54 +358,56 @@ export const GameAnalysis: React.FC = () => {
             <div className="analysis-result-board chess-board-wrapper">
               <ChessBoardWrapper
                 position={boardPosition}
-                game={null}
+                game={chessInstance}
                 arePiecesDraggable={false}
                 isInteractive={false}
                 showLegalMoves={false}
                 showCheck={true}
                 boardWidth={analysisBoardWidth}
+                orientation={boardOrientation}
                 customSquareStyles={highlightSquares}
                 customArrows={arrows}
               />
-            </div>
-            <div className="analysis-board-controls">
-              <button
-                className="analysis-nav-btn"
-                onClick={goToStart}
-                disabled={!analysis || analysis.moves.length === 0 || selectedMoveIndex === null}
-                title={t('toStart')}
-              >
-                ⏮
-              </button>
-              <button
-                className="analysis-nav-btn"
-                onClick={goToPrev}
-                disabled={!analysis || analysis.moves.length === 0 || selectedMoveIndex === null}
-                title={t('previous')}
-              >
-                ◀
-              </button>
-              <button
-                className="analysis-nav-btn"
-                onClick={goToNext}
-                disabled={!analysis || analysis.moves.length === 0 || (selectedMoveIndex !== null && selectedMoveIndex >= analysis.moves.length - 1)}
-                title={t('next')}
-              >
-                ▶
-              </button>
-              <button
-                className="analysis-nav-btn"
-                onClick={goToLatest}
-                disabled={!analysis || analysis.moves.length === 0 || (selectedMoveIndex !== null && selectedMoveIndex >= analysis.moves.length - 1)}
-                title={t('toLatest')}
-              >
-                ⏭
-              </button>
             </div>
           </div>
 
           <div className="layout-2col-sidebar">
             <div className="panel moves-analysis">
+              <h3>{t('moveHistory')}</h3>
+              <div className="analysis-board-controls">
+                <button
+                  className="analysis-nav-btn"
+                  onClick={goToStart}
+                  disabled={!analysis || analysis.moves.length === 0 || selectedMoveIndex === null}
+                  title={t('toStart')}
+                >
+                  ⏮
+                </button>
+                <button
+                  className="analysis-nav-btn"
+                  onClick={goToPrev}
+                  disabled={!analysis || analysis.moves.length === 0 || selectedMoveIndex === null}
+                  title={t('previous')}
+                >
+                  ◀
+                </button>
+                <button
+                  className="analysis-nav-btn"
+                  onClick={goToNext}
+                  disabled={!analysis || analysis.moves.length === 0 || (selectedMoveIndex !== null && selectedMoveIndex >= analysis.moves.length - 1)}
+                  title={t('next')}
+                >
+                  ▶
+                </button>
+                <button
+                  className="analysis-nav-btn"
+                  onClick={goToLatest}
+                  disabled={!analysis || analysis.moves.length === 0 || (selectedMoveIndex !== null && selectedMoveIndex >= analysis.moves.length - 1)}
+                  title={t('toLatest')}
+                >
+                  ⏭
+                </button>
+              </div>
               <div className="moves-table">
                 <div className="table-header">
                   <div className="col-move">{t('analysisMoveCol')}</div>

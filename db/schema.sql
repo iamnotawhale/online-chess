@@ -105,6 +105,17 @@ CREATE TABLE user_puzzle_solutions (
   UNIQUE(user_id, puzzle_id)
 );
 
+-- Puzzle Rating History
+CREATE TABLE puzzle_rating_history (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  puzzle_id VARCHAR(10) NOT NULL REFERENCES puzzles(id) ON DELETE CASCADE,
+  rating_before INTEGER NOT NULL,
+  rating_after INTEGER NOT NULL,
+  rating_change INTEGER NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Indexes for performance
 CREATE INDEX idx_users_username ON users(username);
 CREATE INDEX idx_users_email ON users(email);
@@ -128,6 +139,9 @@ CREATE INDEX idx_puzzles_daily_date ON puzzles(daily_date);
 
 CREATE INDEX idx_user_puzzle_solutions_user_id ON user_puzzle_solutions(user_id);
 CREATE INDEX idx_user_puzzle_solutions_puzzle_id ON user_puzzle_solutions(puzzle_id);
+
+CREATE INDEX idx_puzzle_rating_history_user_id ON puzzle_rating_history(user_id);
+CREATE INDEX idx_puzzle_rating_history_created_at ON puzzle_rating_history(created_at DESC);
 
 -- Trigger для автообновления updated_at
 CREATE OR REPLACE FUNCTION update_updated_at()

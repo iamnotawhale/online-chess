@@ -3,7 +3,7 @@ import { Chess } from 'chess.js';
 export interface PuzzleData {
   id: string;
   fen: string;
-  solution: string[];
+  firstMove: string; // Only first opponent move, not full solution
   rating: number;
   themes: string[];
   alreadySolved: boolean;
@@ -11,8 +11,7 @@ export interface PuzzleData {
 }
 
 export const getFirstOpponentMove = (data: PuzzleData): string | null => {
-  if (!data.solution || data.solution.length === 0) return null;
-  return data.solution[0];
+  return data.firstMove || null;
 };
 
 export const applyUciMove = (game: Chess, moveUci: string): boolean => {

@@ -2,6 +2,9 @@ package com.chessonline.controller;
 
 import com.chessonline.dto.CheckPuzzleSolutionRequest;
 import com.chessonline.dto.PuzzleResponse;
+import com.chessonline.dto.PuzzleRatingHistoryResponse;
+import com.chessonline.dto.PuzzleHintRequest;
+import com.chessonline.model.PuzzleRatingHistory;
 import com.chessonline.service.PuzzleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +13,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/puzzles")
@@ -69,5 +75,78 @@ public class PuzzleController {
         );
         
         return ResponseEntity.ok(result);
+    }
+
+    /**
+     * Get hint for puzzle - returns next correct move
+     */
+    @PostMapping("/hint")
+    public ResponseEntity<?> getHint(
+            Authentication authentication,
+            @RequestBody PuzzleHintRequest request
+    ) {
+        try {
+            log.info("User requested hint for puzzle {}", request.getPuzzleId());
+            Map<String, Object> result = puzzleService.getHint(
+                request.getPuzzleId(),
+                request.getCurrentMoves()
+            );
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("Error getting hint: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Get current puzzle rating for authenticated user
+     */
+    @GetMapping("/me/rating")
+    public ResponseEntity<?> getMyPuzzleRating(Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+        try {
+            UUID userId = UUID.fromString(authentication.getName());
+            int rating = puzzleService.getCurrentPuzzleRating(userId);
+            return ResponseEntity.ok(Map.of("rating", rating));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Get puzzle rating history for authenticated user
+     */
+    @GetMapping("/me/history")
+    public ResponseEntity<?> getMyPuzzleRatingHistory(Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+        try {
+            UUID userId = UUID.fromString(authentication.getName());
+            List<PuzzleRatingHistory> histories = puzzleService.getUserPuzzleRatingHistory(userId);
+            List<PuzzleRatingHistoryResponse> responses = histories.stream()
+                    .map(this::mapToResponse)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(responses);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    private PuzzleRatingHistoryResponse mapToResponse(PuzzleRatingHistory history) {
+        PuzzleRatingHistoryResponse response = new PuzzleRatingHistoryResponse();
+        response.setId(history.getId());
+        response.setUserId(history.getUser().getId());
+        response.setPuzzleId(history.getPuzzle().getId());
+        response.setRatingBefore(history.getRatingBefore());
+        response.setRatingAfter(history.getRatingAfter());
+        response.setRatingChange(history.getRatingChange());
+        response.setCreatedAt(history.getCreatedAt());
+        return response;
     }
 }

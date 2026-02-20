@@ -21,6 +21,7 @@ type UsePuzzleGameOptions = {
   onCorrect?: (gameCopy: Chess, nextMove?: string | null) => void;
   onWrong?: () => void;
   onRatingChange?: (rating: number, delta: number) => void;
+  onHistoryUpdate?: (history: number[]) => void;
 };
 
 type UsePuzzleGameResult = {
@@ -50,7 +51,8 @@ export const usePuzzleGame = ({
   onComplete,
   onCorrect,
   onWrong,
-  onRatingChange
+  onRatingChange,
+  onHistoryUpdate
 }: UsePuzzleGameOptions): UsePuzzleGameResult => {
   const [game, setGame] = useState(new Chess());
   const [position, setPosition] = useState('');
@@ -86,7 +88,7 @@ export const usePuzzleGame = ({
   // Play opponent's first move - same as original main branch logic
   useEffect(() => {
     if (!puzzle || loading || skipAutoFirstMove) return undefined;
-    if (!puzzle.solution || puzzle.solution.length === 0) return undefined;
+    if (!puzzle.firstMove) return undefined;
     if (autoPlayedPuzzleId.current === puzzle.id) return undefined;
 
     const firstOpponentMove = getFirstOpponentMove(puzzle);
@@ -147,6 +149,10 @@ export const usePuzzleGame = ({
 
       if (typeof response?.puzzleRating === 'number' && typeof response?.puzzleRatingChange === 'number') {
         onRatingChange?.(response.puzzleRating, response.puzzleRatingChange);
+      }
+
+      if (Array.isArray(response?.puzzleRatingHistory)) {
+        onHistoryUpdate?.(response.puzzleRatingHistory);
       }
 
       if (response.complete) {
