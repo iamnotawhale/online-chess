@@ -3,82 +3,100 @@
 import csv
 import json
 import subprocess
-import io
 from collections import defaultdict
 from pathlib import Path
 
-# Структура основных дебютов для учебной базы
-MAIN_OPENINGS = {
-    "Sicilian_Defense": {
-        "name": "Защита Сицилиана",
-        "icon": "♞",
-        "elo_range": "1300+",
-        "description": "Самый популярный и боевой ответ на 1.e4"
+# Классификация дебютов по типам
+OPENING_CATEGORIES = {
+    "Открытые дебюты (1.e4 e5)": {
+        "emoji": "🎯",
+        "description": "Классические боевые дебюты с открытым центром",
+        "openings": [
+            "Italian_Game",
+            "Spanish_Opening", 
+            "Ruy_Lopez",
+            "Scotch_Game",
+            "Four_Knights_Game",
+            "Russian_Game",
+            "Vienna_Game",
+            "Kings_Gambit_Accepted",
+            "Kings_Gambit_Declined",
+            "Bishops_Opening",
+        ]
     },
-    "French_Defense": {
-        "name": "Защита Французов",
-        "icon": "♗",
-        "elo_range": "1200+",
-        "description": "Солидный и стратегический выбор против 1.e4"
+    "Полуоткрытые дебюты (1.e4 на д6/с5)": {
+        "emoji": "⚔️",
+        "description": "Защиты чёрных против 1.e4",
+        "openings": [
+            "Sicilian_Defense",
+            "French_Defense",
+            "Caro-Kann_Defense",
+            "Scandinavian_Defense",
+            "Pirc_Defense",
+            "Modern_Defense",
+            "Alekhine_Defense",
+            "Philidor_Defense",
+            "Horwitz_Defense",
+            "Owen_Defense",
+        ]
     },
-    "Caro-Kann_Defense": {
-        "name": "Защита Каро-Канн",
-        "icon": "♕",
-        "elo_range": "1200+",
-        "description": "Надёжная защита с контрольем центра"
+    "Закрытые дебюты (1.d4)": {
+        "emoji": "🏰",
+        "description": "Стратегические дебюты с закрытым центром",
+        "openings": [
+            "Queens_Gambit_Declined",
+            "Queens_Gambit_Accepted",
+            "Indian_Defense",
+            "Queens_Indian_Defense",
+            "Kings_Indian_Defense",
+            "Nimzo-Indian_Defense",
+            "Grunfeld_Defense",
+            "Slav_Defense",
+            "Semi-Slav_Defense",
+            "Benoni_Defense",
+        ]
     },
-    "Queens_Gambit_Declined": {
-        "name": "Отказанный королевский гамбит",
-        "icon": "♘",
-        "elo_range": "1400+",
-        "description": "Лучший дебют за белых в классических партиях"
+    "Гамбиты (пожертвование материала)": {
+        "emoji": "🎲",
+        "description": "Дебюты с ранним пожертвованием пешки или фигуры",
+        "openings": [
+            "Kings_Gambit_Accepted",
+            "Kings_Gambit_Declined",
+            "Danish_Gambit_Accepted",
+            "Danish_Gambit",
+            "Englund_Gambit",
+            "Englund_Gambit_Declined",
+            "Benko_Gambit",
+            "Benko_Gambit_Accepted",
+            "Elephant_Gambit",
+            "Blackmar-Diemer_Gambit",
+        ]
     },
-    "Italian_Game": {
-        "name": "Итальянская партия",
-        "icon": "♗",
-        "elo_range": "1100+",
-        "description": "Классический дебют с естественным развитием"
-    },
-    "Ruy_Lopez": {
-        "name": "Испанская партия",
-        "icon": "♕",
-        "elo_range": "1300+",
-        "description": "Самая популярная и сильная дебютная система"
-    },
-    "English_Opening": {
-        "name": "Английское начало",
-        "icon": "☗",
-        "elo_range": "1200+",
-        "description": "Гибкое начало с контролем центра с фланга"
-    },
-    "Queens_Pawn_Game": {
-        "name": "Ферзевая дебют",
-        "icon": "♘",
-        "elo_range": "1100+",
-        "description": "Прямолинейное начально с 1.d4"
-    },
-    "Scandinavian_Defense": {
-        "name": "Скандинавская защита",
-        "icon": "♗",
-        "elo_range": "1100+",
-        "description": "Активная защита с ранней позиционной игрой"
-    },
-    "Indian_Defense": {
-        "name": "Индийская защита",
-        "icon": "☗",
-        "elo_range": "1300+",
-        "description": "Гибкое управление центром с помощью фланговых фигур"
+    "Нестандартные начала": {
+        "emoji": "✨",
+        "description": "Редкие и необычные дебютные системы",
+        "openings": [
+            "Zukertort_Opening",
+            "English_Opening",
+            "Trompowsky_Attack",
+            "Bird_Opening",
+            "Reti_Opening",
+            "Catalan_Opening",
+            "Nimzo-Larsen_Attack",
+            "Polish_Opening",
+            "Grob_Opening",
+            "Van_Geet_Opening",
+        ]
     }
 }
 
-def parse_puzzle_database(csv_path):
-    """Парсить lichess_db_puzzle.csv.zst и собрать статистику по OpeningTags"""
+def parse_puzzle_database(csv_path, target_openings):
+    """Парсить базу пазлов и собрать статистику по выбранным дебютам"""
     opening_puzzles = defaultdict(list)
     puzzle_count = 0
     
     print(f"📖 Чтение файла {csv_path}...")
     
-    # Распаковываем файл через zstd и читаем CSV
     try:
         process = subprocess.Popen(
             ['zstd', '-d', '-c', str(csv_path)],
@@ -91,13 +109,13 @@ def parse_puzzle_database(csv_path):
         
         for row in reader:
             puzzle_count += 1
-            if puzzle_count % 100000 == 0:
+            if puzzle_count % 500000 == 0:
                 print(f"  ✓ Обработано {puzzle_count:,} пазлов...")
             
             opening_tag = row.get('OpeningTags', '').strip()
             if opening_tag:
-                main_opening = opening_tag.split()[0]  # Первая часть
-                if main_opening in MAIN_OPENINGS:  # Только нужные дебюты
+                main_opening = opening_tag.split()[0]
+                if main_opening in target_openings:
                     opening_puzzles[main_opening].append({
                         'id': row['PuzzleId'],
                         'fen': row['FEN'],
@@ -114,64 +132,121 @@ def parse_puzzle_database(csv_path):
     
     return opening_puzzles
 
-def generate_lessons_structure(opening_puzzles):
-    """Генерировать JSON структуру уроков"""
+def generate_lessons_structure(opening_puzzles, opening_categories):
+    """Генерировать JSON структуру уроков с категориями"""
     lessons = {
         "version": "1.0",
-        "categories": [
-            {
-                "id": "beginners",
-                "name": "Начинающим",
-                "icon": "📚",
-                "description": "Основные дебютные принципы",
-                "subtopics": []
-            }
-        ]
+        "categories": []
     }
     
-    main_category = lessons["categories"][0]
+    # Маппинг дебютов на названия для отображения
+    opening_names = {
+        "Sicilian_Defense": ("Защита Сицилиана", "♞"),
+        "French_Defense": ("Защита Французов", "♗"),
+        "Caro-Kann_Defense": ("Защита Каро-Канн", "♕"),
+        "Queens_Gambit_Declined": ("Отказанный королевский гамбит", "♘"),
+        "Italian_Game": ("Итальянская партия", "♗"),
+        "Ruy_Lopez": ("Испанская партия", "♕"),
+        "English_Opening": ("Английское начало", "☗"),
+        "Queens_Pawn_Game": ("Ферзевая дебют", "♘"),
+        "Scandinavian_Defense": ("Скандинавская защита", "♗"),
+        "Indian_Defense": ("Индийская защита", "☗"),
+        "Spanish_Opening": ("Испанское начало", "♕"),
+        "Scotch_Game": ("Шотландская партия", "♘"),
+        "Four_Knights_Game": ("Партия четырёх коней", "♘"),
+        "Russian_Game": ("Русская партия", "♗"),
+        "Vienna_Game": ("Венская партия", "♗"),
+        "Kings_Gambit_Accepted": ("Королевский гамбит принят", "🎲"),
+        "Kings_Gambit_Declined": ("Королевский гамбит отклонен", "🎲"),
+        "Bishops_Opening": ("Партия слонов", "♗"),
+        "Pirc_Defense": ("Защита Пирца", "♗"),
+        "Modern_Defense": ("Современная защита", "☗"),
+        "Alekhine_Defense": ("Защита Алехина", "♞"),
+        "Philidor_Defense": ("Защита Филидора", "♞"),
+        "Horwitz_Defense": ("Защита Горвица", "♞"),
+        "Owen_Defense": ("Защита Оуэна", "♞"),
+        "Queens_Gambit_Accepted": ("Принятый королевский гамбит", "♘"),
+        "Queens_Indian_Defense": ("Королевская индийская защита", "♗"),
+        "Kings_Indian_Defense": ("Королевская индийская защита (королевская)", "☗"),
+        "Nimzo-Indian_Defense": ("Защита Нимцовича-Индийская", "♗"),
+        "Grunfeld_Defense": ("Защита Грюнфельда", "☗"),
+        "Slav_Defense": ("Защита славян", "♘"),
+        "Semi-Slav_Defense": ("Полусла́вская защита", "♘"),
+        "Benoni_Defense": ("Защита Бенони", "♘"),
+        "Zukertort_Opening": ("Начало Цукерторта", "♞"),
+        "Trompowsky_Attack": ("Атака Тромповского", "♗"),
+        "Bird_Opening": ("Начало Берда", "♗"),
+        "Reti_Opening": ("Начало Рети", "♞"),
+        "Catalan_Opening": ("Каталанское начало", "♘"),
+        "Nimzo-Larsen_Attack": ("Атака Нимцовича-Ларсена", "♗"),
+        "Polish_Opening": ("Польское начало", "♞"),
+        "Grob_Opening": ("Начало Гроба", "♞"),
+        "Van_Geet_Opening": ("Начало Ван Гита", "♞"),
+        "Danish_Gambit_Accepted": ("Датский гамбит принят", "🎲"),
+        "Danish_Gambit": ("Датский гамбит", "🎲"),
+        "Englund_Gambit": ("Гамбит Энглунда", "🎲"),
+        "Englund_Gambit_Declined": ("Гамбит Энглунда отклонен", "🎲"),
+        "Benko_Gambit": ("Гамбит Бенко", "🎲"),
+        "Benko_Gambit_Accepted": ("Гамбит Бенко принят", "🎲"),
+        "Elephant_Gambit": ("Гамбит слона", "🎲"),
+        "Blackmar-Diemer_Gambit": ("Гамбит Блекмара-Димера", "🎲"),
+    }
     
-    for opening_id, opening_info in sorted(MAIN_OPENINGS.items()):
-        puzzles_count = len(opening_puzzles.get(opening_id, []))
-        if puzzles_count == 0:
-            continue
-            
-        subtopic = {
-            "id": opening_id.lower(),
-            "name": opening_info["name"],
-            "opening": opening_id,
-            "icon": opening_info["icon"],
-            "elo_range": opening_info["elo_range"],
-            "description": opening_info["description"],
-            "puzzles_count": puzzles_count,
-            "lessons": [
-                {
-                    "id": f"{opening_id.lower()}_basics",
-                    "title": f"Основы {opening_info['name']}",
-                    "order": 1,
-                    "description": f"Изучение основных идей и принципов {opening_info['name']}",
-                    "puzzle_themes": ["opening", "middlegame"],
-                    "puzzle_limit": 5
-                },
-                {
-                    "id": f"{opening_id.lower()}_traps",
-                    "title": f"Ловушки и опасности",
-                    "order": 2,
-                    "description": "Типичные ошибки и тактические удары",
-                    "puzzle_themes": ["crushing", "hangingPiece", "fork"],
-                    "puzzle_limit": 3
-                },
-                {
-                    "id": f"{opening_id.lower()}_tactics",
-                    "title": f"Тактика в {opening_info['name']}",
-                    "order": 3,
-                    "description": "Типичные тактические мотивы в этом дебюте",
-                    "puzzle_themes": ["pin", "skewer", "verylong"],
-                    "puzzle_limit": 5
-                }
-            ]
+    for category_name, category_info in opening_categories.items():
+        category = {
+            "id": category_name.lower().replace(" ", "-").replace("(", "").replace(")", ""),
+            "name": category_name,
+            "icon": category_info["emoji"],
+            "description": category_info["description"],
+            "subtopics": []
         }
-        main_category["subtopics"].append(subtopic)
+        
+        for opening_id in category_info["openings"]:
+            puzzles = opening_puzzles.get(opening_id, [])
+            if not puzzles:
+                continue
+            
+            name, icon = opening_names.get(opening_id, (opening_id.replace("_", " "), "♘"))
+            
+            subtopic = {
+                "id": opening_id.lower(),
+                "name": name,
+                "opening": opening_id,
+                "icon": icon,
+                "elo_range": "1100+",
+                "description": f"Изучение основных идей и принципов {name}",
+                "puzzles_count": len(puzzles),
+                "lessons": [
+                    {
+                        "id": f"{opening_id.lower()}_basics",
+                        "title": f"Основы {name}",
+                        "order": 1,
+                        "description": "Изучение начальных принципов и ключевых идей",
+                        "puzzle_themes": ["opening", "middlegame"],
+                        "puzzle_limit": 5
+                    },
+                    {
+                        "id": f"{opening_id.lower()}_traps",
+                        "title": "Ловушки и опасности",
+                        "order": 2,
+                        "description": "Типичные ошибки и тактические удары",
+                        "puzzle_themes": ["crushing", "hangingPiece", "fork"],
+                        "puzzle_limit": 3
+                    },
+                    {
+                        "id": f"{opening_id.lower()}_tactics",
+                        "title": "Тактика в этом дебюте",
+                        "order": 3,
+                        "description": "Типичные тактические мотивы",
+                        "puzzle_themes": ["pin", "skewer", "verylong"],
+                        "puzzle_limit": 5
+                    }
+                ]
+            }
+            category["subtopics"].append(subtopic)
+        
+        if category["subtopics"]:
+            lessons["categories"].append(category)
     
     return lessons
 
@@ -182,16 +257,24 @@ def main():
         print(f"❌ Файл не найден: {csv_path}")
         return
     
+    # Собираем все дебюты для парсинга
+    all_openings = set()
+    for category in OPENING_CATEGORIES.values():
+        all_openings.update(category["openings"])
+    
+    print(f"📊 Будет загружено дебютов: {len(all_openings)}")
+    
     # Парсим базу пазлов
-    opening_puzzles = parse_puzzle_database(csv_path)
+    opening_puzzles = parse_puzzle_database(csv_path, all_openings)
     if not opening_puzzles:
         return
     
-    print(f"\n✅ Загружено пазлов по дебютам: {sum(len(p) for p in opening_puzzles.values()):,}")
-    print(f"📊 Найденных открытий: {len(opening_puzzles)}")
+    total_puzzles = sum(len(p) for p in opening_puzzles.values())
+    print(f"\n✅ Загружено пазлов: {total_puzzles:,}")
+    print(f"📊 Найденных дебютов: {len(opening_puzzles)}")
     
     # Генерируем структуру уроков
-    lessons = generate_lessons_structure(opening_puzzles)
+    lessons = generate_lessons_structure(opening_puzzles, OPENING_CATEGORIES)
     
     # Сохраняем JSON
     output_path = Path("./frontend/src/data/lessons.json")
@@ -201,9 +284,20 @@ def main():
         json.dump(lessons, f, indent=2, ensure_ascii=False)
     
     print(f"\n✅ Сохранено в {output_path}")
-    print(f"📚 Создано категорий: {len(lessons['categories'])}")
-    print(f"📖 Создано подтем: {sum(len(c['subtopics']) for c in lessons['categories'])}")
-    print(f"✏️  Создано уроков: {sum(len(st['lessons']) for c in lessons['categories'] for st in c['subtopics'])}")
+    total_categories = len(lessons['categories'])
+    total_subtopics = sum(len(c['subtopics']) for c in lessons['categories'])
+    total_lessons = sum(len(st['lessons']) for c in lessons['categories'] for st in c['subtopics'])
+    
+    print(f"📚 Категорий: {total_categories}")
+    print(f"📖 Подтем (дебютов): {total_subtopics}")
+    print(f"✏️  Уроков: {total_lessons}")
+    
+    # Печать статистики по категориям
+    print("\n📊 Статистика по категориям:")
+    for category in lessons['categories']:
+        count = len(category['subtopics'])
+        puzzles = sum(st['puzzles_count'] for st in category['subtopics'])
+        print(f"  {category['icon']} {category['name']}: {count} дебютов, {puzzles:,} пазлов")
 
 if __name__ == "__main__":
     main()

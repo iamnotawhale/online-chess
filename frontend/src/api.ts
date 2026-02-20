@@ -94,6 +94,25 @@ interface InviteResponse {
   createdAt: string;
 }
 
+export interface LessonProgress {
+  id: string;
+  lessonId: string;
+  categoryId: string;
+  completed: boolean;
+  puzzlesSolved: number;
+  puzzlesTotal: number;
+  viewedAt?: string | null;
+  completedAt?: string | null;
+}
+
+export interface LessonProgressRequest {
+  lessonId: string;
+  categoryId: string;
+  puzzlesSolved: number;
+  puzzlesTotal: number;
+  completed: boolean;
+}
+
 // Get API base URL - use backend server for API calls
 const getApiBaseUrl = (): string => {
   if (typeof window === 'undefined') return '/api';
@@ -178,6 +197,14 @@ class ApiService {
 
   updateProfile(data: { username?: string; password?: string; country?: string; bio?: string; avatarUrl?: string }): Promise<any> {
     return this.client.patch('/users/me', data).then(res => res.data);
+  }
+
+  getLessonProgress(): Promise<LessonProgress[]> {
+    return this.client.get('/education/progress').then(res => res.data);
+  }
+
+  updateLessonProgress(data: LessonProgressRequest): Promise<LessonProgress> {
+    return this.client.post('/education/progress', data).then(res => res.data);
   }
 
   joinMatchmaking(data: MatchmakingJoinRequest): Promise<MatchmakingJoinResponse> {
@@ -290,6 +317,15 @@ class ApiService {
     if (maxRating !== undefined) params.append('maxRating', maxRating.toString());
     const query = params.toString() ? `?${params.toString()}` : '';
     return this.client.get(`/puzzles/random${query}`).then(res => res.data);
+  }
+
+  getLessonPuzzle(openingTag: string, themes: string[] = [], minRating?: number, maxRating?: number): Promise<any> {
+    const params = new URLSearchParams();
+    params.append('openingTag', openingTag);
+    if (themes.length > 0) params.append('themes', themes.join(','));
+    if (minRating !== undefined) params.append('minRating', minRating.toString());
+    if (maxRating !== undefined) params.append('maxRating', maxRating.toString());
+    return this.client.get(`/puzzles/lesson?${params.toString()}`).then(res => res.data);
   }
 
   checkPuzzleSolution(puzzleId: string, moves: string[], timeSpentSeconds: number): Promise<any> {

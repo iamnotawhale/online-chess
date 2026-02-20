@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Chess } from 'chess.js';
 import { apiService } from '../api';
 import { useTranslation } from '../i18n/LanguageContext';
@@ -8,6 +9,7 @@ import { PuzzleData, applyUciMove } from './puzzleUtils';
 import { usePuzzleGame } from './usePuzzleGame';
 
 const FILTER_STORAGE_KEY = 'puzzleTrainingRatingFilter';
+const ACTIVE_LESSON_STORAGE_KEY = 'educationActiveLesson';
 
 const readRatingFilter = () => {
   if (typeof window === 'undefined') return { min: 1000, max: 2000 };
@@ -46,6 +48,7 @@ function normalizeRatingFilter(filter: { min: number; max: number }) {
 
 export const PuzzleTraining: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const puzzleStorageKey = 'puzzleTrainingActive';
   const hintStorageKey = 'puzzleTrainingHintUsed';
   const [boardWidth, setBoardWidth] = useState(800);
@@ -57,6 +60,9 @@ export const PuzzleTraining: React.FC = () => {
   const [puzzleElo, setPuzzleElo] = useState<number | null>(null);
   const [puzzleEloDelta, setPuzzleEloDelta] = useState(0);
   const [ratingHistory, setRatingHistory] = useState<number[]>([]);
+  
+  // Lesson completion states
+  const [lessonProgress, setLessonProgress] = useState<{ puzzlesSolved: number; puzzlesTotal: number } | null>(null);
   
   // Move history states
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
@@ -82,6 +88,7 @@ export const PuzzleTraining: React.FC = () => {
     loading,
     autoFirstMoveDelayMs: 400,
     onComplete: () => {
+      updateLessonProgressAfterSolve();
       setStreak(prev => prev + 1);
       setTimeout(() => {
         clearStoredPuzzle();
@@ -205,8 +212,83 @@ export const PuzzleTraining: React.FC = () => {
     }
   };
 
+  const readActiveLesson = () => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const raw = window.localStorage.getItem(ACTIVE_LESSON_STORAGE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as {
+        lessonId?: string;
+        categoryId?: string;
+        subtopicId?: string;
+        openingTag?: string;
+        themes?: string[];
+        puzzlesTotal?: number;
+      };
+      if (!parsed?.lessonId || !parsed?.categoryId || !parsed?.openingTag) return null;
+      return {
+        lessonId: parsed.lessonId,
+        categoryId: parsed.categoryId,
+        subtopicId: parsed.subtopicId,
+        openingTag: parsed.openingTag,
+        themes: Array.isArray(parsed.themes) ? parsed.themes : [],
+        puzzlesTotal: typeof parsed.puzzlesTotal === 'number' ? parsed.puzzlesTotal : undefined,
+      };
+    } catch {
+      return null;
+    }
+  };
+
+  const updateLessonProgressAfterSolve = async () => {
+    const activeLesson = readActiveLesson();
+    if (!activeLesson) return;
+
+    try {
+      const progressList = await apiService.getLessonProgress();
+      const existing = progressList.find(item => item.lessonId === activeLesson.lessonId);
+      const puzzlesTotal = activeLesson.puzzlesTotal ?? existing?.puzzlesTotal ?? 0;
+      const puzzlesSolved = (existing?.puzzlesSolved ?? 0) + 1;
+      const completed = puzzlesTotal > 0 && puzzlesSolved >= puzzlesTotal;
+
+      await apiService.updateLessonProgress({
+        lessonId: activeLesson.lessonId,
+        categoryId: activeLesson.categoryId,
+        puzzlesSolved,
+        puzzlesTotal: puzzlesTotal || puzzlesSolved,
+        completed,
+      });
+      
+      // Update local state for UI feedback
+      setLessonProgress({
+        puzzlesSolved,
+        puzzlesTotal: puzzlesTotal || puzzlesSolved,
+      });
+    } catch {
+      // Игнорируем ошибки обновления прогресса, чтобы не мешать решению.
+    }
+  };
+
   useEffect(() => {
     loadRandomPuzzle(false);
+    // Initialize lesson progress on component mount
+    const initLessonProgress = async () => {
+      const activeLesson = readActiveLesson();
+      if (activeLesson) {
+        try {
+          const progressList = await apiService.getLessonProgress();
+          const existing = progressList.find(item => item.lessonId === activeLesson.lessonId);
+          if (existing) {
+            setLessonProgress({
+              puzzlesSolved: existing.puzzlesSolved ?? 0,
+              puzzlesTotal: existing.puzzlesTotal ?? activeLesson.puzzlesTotal ?? 0,
+            });
+          }
+        } catch {
+          // Ignore errors
+        }
+      }
+    };
+    initLessonProgress();
   }, []);
 
   useEffect(() => {
@@ -226,6 +308,45 @@ export const PuzzleTraining: React.FC = () => {
 
   const loadRandomPuzzle = async (forceNew: boolean) => {
     setLoading(true);
+    const activeLesson = readActiveLesson();
+    if (activeLesson) {
+      // Try to restore from localStorage first if not forcing new
+      if (!forceNew) {
+        const stored = readStoredPuzzle();
+        if (stored && !stored.alreadySolved) {
+          setPuzzle(stored);
+          setPuzzleElo(typeof stored.userPuzzleRating === 'number' ? stored.userPuzzleRating : null);
+          setPuzzleEloDelta(0);
+          setStatus('playing');
+          setMessageKey('');
+          setHintUsed(readHintUsed(stored.id));
+          setLoading(false);
+          return;
+        }
+      }
+
+      try {
+        const data = await apiService.getLessonPuzzle(
+          activeLesson.openingTag,
+          activeLesson.themes,
+          ratingFilter.min,
+          ratingFilter.max
+        );
+        setPuzzle(data);
+        setPuzzleElo(typeof data.userPuzzleRating === 'number' ? data.userPuzzleRating : null);
+        setPuzzleEloDelta(0);
+        writeStoredPuzzle(data);
+        clearHintUsed();
+        setStatus('playing');
+        setMessageKey('');
+        setHintUsed(false);
+        setLoading(false);
+        return;
+      } catch (error) {
+        console.error('Failed to load lesson puzzle:', error);
+      }
+    }
+
     if (!forceNew) {
       const stored = readStoredPuzzle();
       if (stored && !stored.alreadySolved) {
@@ -399,6 +520,11 @@ export const PuzzleTraining: React.FC = () => {
     );
   }
 
+  // Check if lesson is completed
+  const isLessonCompleted = lessonProgress && 
+    lessonProgress.puzzlesTotal > 0 && 
+    lessonProgress.puzzlesSolved >= lessonProgress.puzzlesTotal;
+
   // Calculate last move for highlighting
   // When viewing history, highlight the current move; otherwise highlight the actual last move
   const lastMove = (() => {
@@ -424,10 +550,81 @@ export const PuzzleTraining: React.FC = () => {
     return delta > 0 ? 'positive' : 'negative';
   };
 
+  // Show congratulations screen if lesson is completed
+  if (isLessonCompleted) {
+    return (
+      <div className="puzzle-training-container">
+        <div className="lesson-completion-overlay">
+          <div className="lesson-completion-card">
+            <div className="completion-confetti">
+              {[...Array(30)].map((_, i) => (
+                <span key={i} className="confetti-piece"></span>
+              ))}
+            </div>
+            
+            <div className="completion-content">
+              <h2 className="completion-title">🎉 Поздравляем!</h2>
+              <p className="completion-subtitle">Вы завершили урок</p>
+              
+              <div className="completion-stats">
+                <div className="stat-box">
+                  <div className="stat-value">{lessonProgress.puzzlesSolved}</div>
+                  <div className="stat-label">Пазлов решено</div>
+                </div>
+                <div className="stat-box">
+                  <div className="stat-value">✓</div>
+                  <div className="stat-label">Урок завершен</div>
+                </div>
+              </div>
+              
+              <div className="completion-actions">
+                <button 
+                  className="btn btn-primary"
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      window.localStorage.removeItem(ACTIVE_LESSON_STORAGE_KEY);
+                    }
+                    setLessonProgress(null);
+                    loadRandomPuzzle(true);
+                  }}
+                >
+                  ← Решить ещё пазлы
+                </button>
+                <button 
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    navigate('/education');
+                  }}
+                >
+                  Закончить урок →
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="puzzle-training-container">
       <div className="puzzle-header">
         <h3>{t('puzzleTraining')}</h3>
+        {lessonProgress && lessonProgress.puzzlesTotal > 0 && (
+          <div className="lesson-progress-indicator">
+            <span className="progress-text">
+              {lessonProgress.puzzlesSolved}/{lessonProgress.puzzlesTotal}
+            </span>
+            <div className="progress-bar">
+              <div 
+                className="progress-fill" 
+                style={{ 
+                  width: `${(lessonProgress.puzzlesSolved / lessonProgress.puzzlesTotal) * 100}%` 
+                }}
+              />
+            </div>
+          </div>
+        )}
         <span className="puzzle-streak-badge">
           🔥 {streak}
         </span>

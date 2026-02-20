@@ -2,209 +2,25 @@
   "version": "1.0",
   "categories": [
     {
-      "id": "beginners",
-      "name": "Начинающим",
-      "icon": "📚",
-      "description": "Основные дебютные принципы",
+      "id": "открытые-дебюты-1.e4-e5",
+      "name": "Открытые дебюты (1.e4 e5)",
+      "icon": "🎯",
+      "description": "Классические боевые дебюты с открытым центром",
       "subtopics": [
-        {
-          "id": "caro-kann_defense",
-          "name": "Защита Каро-Канн",
-          "opening": "Caro-Kann_Defense",
-          "icon": "♕",
-          "elo_range": "1200+",
-          "description": "Надёжная защита с контрольем центра",
-          "puzzles_count": 65733,
-          "lessons": [
-            {
-              "id": "caro-kann_defense_basics",
-              "title": "Основы Защита Каро-Канн",
-              "order": 1,
-              "description": "Изучение основных идей и принципов Защита Каро-Канн",
-              "puzzle_themes": [
-                "opening",
-                "middlegame"
-              ],
-              "puzzle_limit": 5
-            },
-            {
-              "id": "caro-kann_defense_traps",
-              "title": "Ловушки и опасности",
-              "order": 2,
-              "description": "Типичные ошибки и тактические удары",
-              "puzzle_themes": [
-                "crushing",
-                "hangingPiece",
-                "fork"
-              ],
-              "puzzle_limit": 3
-            },
-            {
-              "id": "caro-kann_defense_tactics",
-              "title": "Тактика в Защита Каро-Канн",
-              "order": 3,
-              "description": "Типичные тактические мотивы в этом дебюте",
-              "puzzle_themes": [
-                "pin",
-                "skewer",
-                "verylong"
-              ],
-              "puzzle_limit": 5
-            }
-          ]
-        },
-        {
-          "id": "english_opening",
-          "name": "Английское начало",
-          "opening": "English_Opening",
-          "icon": "☗",
-          "elo_range": "1200+",
-          "description": "Гибкое начало с контролем центра с фланга",
-          "puzzles_count": 36780,
-          "lessons": [
-            {
-              "id": "english_opening_basics",
-              "title": "Основы Английское начало",
-              "order": 1,
-              "description": "Изучение основных идей и принципов Английское начало",
-              "puzzle_themes": [
-                "opening",
-                "middlegame"
-              ],
-              "puzzle_limit": 5
-            },
-            {
-              "id": "english_opening_traps",
-              "title": "Ловушки и опасности",
-              "order": 2,
-              "description": "Типичные ошибки и тактические удары",
-              "puzzle_themes": [
-                "crushing",
-                "hangingPiece",
-                "fork"
-              ],
-              "puzzle_limit": 3
-            },
-            {
-              "id": "english_opening_tactics",
-              "title": "Тактика в Английское начало",
-              "order": 3,
-              "description": "Типичные тактические мотивы в этом дебюте",
-              "puzzle_themes": [
-                "pin",
-                "skewer",
-                "verylong"
-              ],
-              "puzzle_limit": 5
-            }
-          ]
-        },
-        {
-          "id": "french_defense",
-          "name": "Защита Французов",
-          "opening": "French_Defense",
-          "icon": "♗",
-          "elo_range": "1200+",
-          "description": "Солидный и стратегический выбор против 1.e4",
-          "puzzles_count": 76859,
-          "lessons": [
-            {
-              "id": "french_defense_basics",
-              "title": "Основы Защита Французов",
-              "order": 1,
-              "description": "Изучение основных идей и принципов Защита Французов",
-              "puzzle_themes": [
-                "opening",
-                "middlegame"
-              ],
-              "puzzle_limit": 5
-            },
-            {
-              "id": "french_defense_traps",
-              "title": "Ловушки и опасности",
-              "order": 2,
-              "description": "Типичные ошибки и тактические удары",
-              "puzzle_themes": [
-                "crushing",
-                "hangingPiece",
-                "fork"
-              ],
-              "puzzle_limit": 3
-            },
-            {
-              "id": "french_defense_tactics",
-              "title": "Тактика в Защита Французов",
-              "order": 3,
-              "description": "Типичные тактические мотивы в этом дебюте",
-              "puzzle_themes": [
-                "pin",
-                "skewer",
-                "verylong"
-              ],
-              "puzzle_limit": 5
-            }
-          ]
-        },
-        {
-          "id": "indian_defense",
-          "name": "Индийская защита",
-          "opening": "Indian_Defense",
-          "icon": "☗",
-          "elo_range": "1300+",
-          "description": "Гибкое управление центром с помощью фланговых фигур",
-          "puzzles_count": 32136,
-          "lessons": [
-            {
-              "id": "indian_defense_basics",
-              "title": "Основы Индийская защита",
-              "order": 1,
-              "description": "Изучение основных идей и принципов Индийская защита",
-              "puzzle_themes": [
-                "opening",
-                "middlegame"
-              ],
-              "puzzle_limit": 5
-            },
-            {
-              "id": "indian_defense_traps",
-              "title": "Ловушки и опасности",
-              "order": 2,
-              "description": "Типичные ошибки и тактические удары",
-              "puzzle_themes": [
-                "crushing",
-                "hangingPiece",
-                "fork"
-              ],
-              "puzzle_limit": 3
-            },
-            {
-              "id": "indian_defense_tactics",
-              "title": "Тактика в Индийская защита",
-              "order": 3,
-              "description": "Типичные тактические мотивы в этом дебюте",
-              "puzzle_themes": [
-                "pin",
-                "skewer",
-                "verylong"
-              ],
-              "puzzle_limit": 5
-            }
-          ]
-        },
         {
           "id": "italian_game",
           "name": "Итальянская партия",
           "opening": "Italian_Game",
           "icon": "♗",
           "elo_range": "1100+",
-          "description": "Классический дебют с естественным развитием",
+          "description": "Изучение основных идей и принципов Итальянская партия",
           "puzzles_count": 66002,
           "lessons": [
             {
               "id": "italian_game_basics",
               "title": "Основы Итальянская партия",
               "order": 1,
-              "description": "Изучение основных идей и принципов Итальянская партия",
+              "description": "Изучение начальных принципов и ключевых идей",
               "puzzle_themes": [
                 "opening",
                 "middlegame"
@@ -225,101 +41,9 @@
             },
             {
               "id": "italian_game_tactics",
-              "title": "Тактика в Итальянская партия",
+              "title": "Тактика в этом дебюте",
               "order": 3,
-              "description": "Типичные тактические мотивы в этом дебюте",
-              "puzzle_themes": [
-                "pin",
-                "skewer",
-                "verylong"
-              ],
-              "puzzle_limit": 5
-            }
-          ]
-        },
-        {
-          "id": "queens_gambit_declined",
-          "name": "Отказанный королевский гамбит",
-          "opening": "Queens_Gambit_Declined",
-          "icon": "♘",
-          "elo_range": "1400+",
-          "description": "Лучший дебют за белых в классических партиях",
-          "puzzles_count": 43937,
-          "lessons": [
-            {
-              "id": "queens_gambit_declined_basics",
-              "title": "Основы Отказанный королевский гамбит",
-              "order": 1,
-              "description": "Изучение основных идей и принципов Отказанный королевский гамбит",
-              "puzzle_themes": [
-                "opening",
-                "middlegame"
-              ],
-              "puzzle_limit": 5
-            },
-            {
-              "id": "queens_gambit_declined_traps",
-              "title": "Ловушки и опасности",
-              "order": 2,
-              "description": "Типичные ошибки и тактические удары",
-              "puzzle_themes": [
-                "crushing",
-                "hangingPiece",
-                "fork"
-              ],
-              "puzzle_limit": 3
-            },
-            {
-              "id": "queens_gambit_declined_tactics",
-              "title": "Тактика в Отказанный королевский гамбит",
-              "order": 3,
-              "description": "Типичные тактические мотивы в этом дебюте",
-              "puzzle_themes": [
-                "pin",
-                "skewer",
-                "verylong"
-              ],
-              "puzzle_limit": 5
-            }
-          ]
-        },
-        {
-          "id": "queens_pawn_game",
-          "name": "Ферзевая дебют",
-          "opening": "Queens_Pawn_Game",
-          "icon": "♘",
-          "elo_range": "1100+",
-          "description": "Прямолинейное начально с 1.d4",
-          "puzzles_count": 70074,
-          "lessons": [
-            {
-              "id": "queens_pawn_game_basics",
-              "title": "Основы Ферзевая дебют",
-              "order": 1,
-              "description": "Изучение основных идей и принципов Ферзевая дебют",
-              "puzzle_themes": [
-                "opening",
-                "middlegame"
-              ],
-              "puzzle_limit": 5
-            },
-            {
-              "id": "queens_pawn_game_traps",
-              "title": "Ловушки и опасности",
-              "order": 2,
-              "description": "Типичные ошибки и тактические удары",
-              "puzzle_themes": [
-                "crushing",
-                "hangingPiece",
-                "fork"
-              ],
-              "puzzle_limit": 3
-            },
-            {
-              "id": "queens_pawn_game_tactics",
-              "title": "Тактика в Ферзевая дебют",
-              "order": 3,
-              "description": "Типичные тактические мотивы в этом дебюте",
+              "description": "Типичные тактические мотивы",
               "puzzle_themes": [
                 "pin",
                 "skewer",
@@ -334,15 +58,15 @@
           "name": "Испанская партия",
           "opening": "Ruy_Lopez",
           "icon": "♕",
-          "elo_range": "1300+",
-          "description": "Самая популярная и сильная дебютная система",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Испанская партия",
           "puzzles_count": 35403,
           "lessons": [
             {
               "id": "ruy_lopez_basics",
               "title": "Основы Испанская партия",
               "order": 1,
-              "description": "Изучение основных идей и принципов Испанская партия",
+              "description": "Изучение начальных принципов и ключевых идей",
               "puzzle_themes": [
                 "opening",
                 "middlegame"
@@ -363,9 +87,9 @@
             },
             {
               "id": "ruy_lopez_tactics",
-              "title": "Тактика в Испанская партия",
+              "title": "Тактика в этом дебюте",
               "order": 3,
-              "description": "Типичные тактические мотивы в этом дебюте",
+              "description": "Типичные тактические мотивы",
               "puzzle_themes": [
                 "pin",
                 "skewer",
@@ -376,19 +100,19 @@
           ]
         },
         {
-          "id": "scandinavian_defense",
-          "name": "Скандинавская защита",
-          "opening": "Scandinavian_Defense",
-          "icon": "♗",
+          "id": "scotch_game",
+          "name": "Шотландская партия",
+          "opening": "Scotch_Game",
+          "icon": "♘",
           "elo_range": "1100+",
-          "description": "Активная защита с ранней позиционной игрой",
-          "puzzles_count": 51029,
+          "description": "Изучение основных идей и принципов Шотландская партия",
+          "puzzles_count": 32868,
           "lessons": [
             {
-              "id": "scandinavian_defense_basics",
-              "title": "Основы Скандинавская защита",
+              "id": "scotch_game_basics",
+              "title": "Основы Шотландская партия",
               "order": 1,
-              "description": "Изучение основных идей и принципов Скандинавская защита",
+              "description": "Изучение начальных принципов и ключевых идей",
               "puzzle_themes": [
                 "opening",
                 "middlegame"
@@ -396,7 +120,7 @@
               "puzzle_limit": 5
             },
             {
-              "id": "scandinavian_defense_traps",
+              "id": "scotch_game_traps",
               "title": "Ловушки и опасности",
               "order": 2,
               "description": "Типичные ошибки и тактические удары",
@@ -408,10 +132,10 @@
               "puzzle_limit": 3
             },
             {
-              "id": "scandinavian_defense_tactics",
-              "title": "Тактика в Скандинавская защита",
+              "id": "scotch_game_tactics",
+              "title": "Тактика в этом дебюте",
               "order": 3,
-              "description": "Типичные тактические мотивы в этом дебюте",
+              "description": "Типичные тактические мотивы",
               "puzzle_themes": [
                 "pin",
                 "skewer",
@@ -422,19 +146,303 @@
           ]
         },
         {
+          "id": "four_knights_game",
+          "name": "Партия четырёх коней",
+          "opening": "Four_Knights_Game",
+          "icon": "♘",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Партия четырёх коней",
+          "puzzles_count": 17573,
+          "lessons": [
+            {
+              "id": "four_knights_game_basics",
+              "title": "Основы Партия четырёх коней",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "four_knights_game_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "four_knights_game_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "russian_game",
+          "name": "Русская партия",
+          "opening": "Russian_Game",
+          "icon": "♗",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Русская партия",
+          "puzzles_count": 18278,
+          "lessons": [
+            {
+              "id": "russian_game_basics",
+              "title": "Основы Русская партия",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "russian_game_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "russian_game_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "vienna_game",
+          "name": "Венская партия",
+          "opening": "Vienna_Game",
+          "icon": "♗",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Венская партия",
+          "puzzles_count": 16617,
+          "lessons": [
+            {
+              "id": "vienna_game_basics",
+              "title": "Основы Венская партия",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "vienna_game_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "vienna_game_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "kings_gambit_accepted",
+          "name": "Королевский гамбит принят",
+          "opening": "Kings_Gambit_Accepted",
+          "icon": "🎲",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Королевский гамбит принят",
+          "puzzles_count": 18007,
+          "lessons": [
+            {
+              "id": "kings_gambit_accepted_basics",
+              "title": "Основы Королевский гамбит принят",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "kings_gambit_accepted_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "kings_gambit_accepted_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "kings_gambit_declined",
+          "name": "Королевский гамбит отклонен",
+          "opening": "Kings_Gambit_Declined",
+          "icon": "🎲",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Королевский гамбит отклонен",
+          "puzzles_count": 9218,
+          "lessons": [
+            {
+              "id": "kings_gambit_declined_basics",
+              "title": "Основы Королевский гамбит отклонен",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "kings_gambit_declined_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "kings_gambit_declined_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "bishops_opening",
+          "name": "Партия слонов",
+          "opening": "Bishops_Opening",
+          "icon": "♗",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Партия слонов",
+          "puzzles_count": 16084,
+          "lessons": [
+            {
+              "id": "bishops_opening_basics",
+              "title": "Основы Партия слонов",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "bishops_opening_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "bishops_opening_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "полуоткрытые-дебюты-1.e4-на-д6/с5",
+      "name": "Полуоткрытые дебюты (1.e4 на д6/с5)",
+      "icon": "⚔️",
+      "description": "Защиты чёрных против 1.e4",
+      "subtopics": [
+        {
           "id": "sicilian_defense",
           "name": "Защита Сицилиана",
           "opening": "Sicilian_Defense",
           "icon": "♞",
-          "elo_range": "1300+",
-          "description": "Самый популярный и боевой ответ на 1.e4",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Защита Сицилиана",
           "puzzles_count": 180704,
           "lessons": [
             {
               "id": "sicilian_defense_basics",
               "title": "Основы Защита Сицилиана",
               "order": 1,
-              "description": "Изучение основных идей и принципов Защита Сицилиана",
+              "description": "Изучение начальных принципов и ключевых идей",
               "puzzle_themes": [
                 "opening",
                 "middlegame"
@@ -455,9 +463,1827 @@
             },
             {
               "id": "sicilian_defense_tactics",
-              "title": "Тактика в Защита Сицилиана",
+              "title": "Тактика в этом дебюте",
               "order": 3,
-              "description": "Типичные тактические мотивы в этом дебюте",
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "french_defense",
+          "name": "Защита Французов",
+          "opening": "French_Defense",
+          "icon": "♗",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Защита Французов",
+          "puzzles_count": 76859,
+          "lessons": [
+            {
+              "id": "french_defense_basics",
+              "title": "Основы Защита Французов",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "french_defense_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "french_defense_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "caro-kann_defense",
+          "name": "Защита Каро-Канн",
+          "opening": "Caro-Kann_Defense",
+          "icon": "♕",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Защита Каро-Канн",
+          "puzzles_count": 65733,
+          "lessons": [
+            {
+              "id": "caro-kann_defense_basics",
+              "title": "Основы Защита Каро-Канн",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "caro-kann_defense_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "caro-kann_defense_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "scandinavian_defense",
+          "name": "Скандинавская защита",
+          "opening": "Scandinavian_Defense",
+          "icon": "♗",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Скандинавская защита",
+          "puzzles_count": 51029,
+          "lessons": [
+            {
+              "id": "scandinavian_defense_basics",
+              "title": "Основы Скандинавская защита",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "scandinavian_defense_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "scandinavian_defense_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "pirc_defense",
+          "name": "Защита Пирца",
+          "opening": "Pirc_Defense",
+          "icon": "♗",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Защита Пирца",
+          "puzzles_count": 16657,
+          "lessons": [
+            {
+              "id": "pirc_defense_basics",
+              "title": "Основы Защита Пирца",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "pirc_defense_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "pirc_defense_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "modern_defense",
+          "name": "Современная защита",
+          "opening": "Modern_Defense",
+          "icon": "☗",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Современная защита",
+          "puzzles_count": 17197,
+          "lessons": [
+            {
+              "id": "modern_defense_basics",
+              "title": "Основы Современная защита",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "modern_defense_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "modern_defense_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "alekhine_defense",
+          "name": "Защита Алехина",
+          "opening": "Alekhine_Defense",
+          "icon": "♞",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Защита Алехина",
+          "puzzles_count": 10403,
+          "lessons": [
+            {
+              "id": "alekhine_defense_basics",
+              "title": "Основы Защита Алехина",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "alekhine_defense_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "alekhine_defense_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "philidor_defense",
+          "name": "Защита Филидора",
+          "opening": "Philidor_Defense",
+          "icon": "♞",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Защита Филидора",
+          "puzzles_count": 21983,
+          "lessons": [
+            {
+              "id": "philidor_defense_basics",
+              "title": "Основы Защита Филидора",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "philidor_defense_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "philidor_defense_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "horwitz_defense",
+          "name": "Защита Горвица",
+          "opening": "Horwitz_Defense",
+          "icon": "♞",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Защита Горвица",
+          "puzzles_count": 9328,
+          "lessons": [
+            {
+              "id": "horwitz_defense_basics",
+              "title": "Основы Защита Горвица",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "horwitz_defense_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "horwitz_defense_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "owen_defense",
+          "name": "Защита Оуэна",
+          "opening": "Owen_Defense",
+          "icon": "♞",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Защита Оуэна",
+          "puzzles_count": 9097,
+          "lessons": [
+            {
+              "id": "owen_defense_basics",
+              "title": "Основы Защита Оуэна",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "owen_defense_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "owen_defense_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "закрытые-дебюты-1.d4",
+      "name": "Закрытые дебюты (1.d4)",
+      "icon": "🏰",
+      "description": "Стратегические дебюты с закрытым центром",
+      "subtopics": [
+        {
+          "id": "queens_gambit_declined",
+          "name": "Отказанный королевский гамбит",
+          "opening": "Queens_Gambit_Declined",
+          "icon": "♘",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Отказанный королевский гамбит",
+          "puzzles_count": 43937,
+          "lessons": [
+            {
+              "id": "queens_gambit_declined_basics",
+              "title": "Основы Отказанный королевский гамбит",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "queens_gambit_declined_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "queens_gambit_declined_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "queens_gambit_accepted",
+          "name": "Принятый королевский гамбит",
+          "opening": "Queens_Gambit_Accepted",
+          "icon": "♘",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Принятый королевский гамбит",
+          "puzzles_count": 11970,
+          "lessons": [
+            {
+              "id": "queens_gambit_accepted_basics",
+              "title": "Основы Принятый королевский гамбит",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "queens_gambit_accepted_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "queens_gambit_accepted_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "indian_defense",
+          "name": "Индийская защита",
+          "opening": "Indian_Defense",
+          "icon": "☗",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Индийская защита",
+          "puzzles_count": 32136,
+          "lessons": [
+            {
+              "id": "indian_defense_basics",
+              "title": "Основы Индийская защита",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "indian_defense_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "indian_defense_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "queens_indian_defense",
+          "name": "Королевская индийская защита",
+          "opening": "Queens_Indian_Defense",
+          "icon": "♗",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Королевская индийская защита",
+          "puzzles_count": 1550,
+          "lessons": [
+            {
+              "id": "queens_indian_defense_basics",
+              "title": "Основы Королевская индийская защита",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "queens_indian_defense_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "queens_indian_defense_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "kings_indian_defense",
+          "name": "Королевская индийская защита (королевская)",
+          "opening": "Kings_Indian_Defense",
+          "icon": "☗",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Королевская индийская защита (королевская)",
+          "puzzles_count": 10456,
+          "lessons": [
+            {
+              "id": "kings_indian_defense_basics",
+              "title": "Основы Королевская индийская защита (королевская)",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "kings_indian_defense_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "kings_indian_defense_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "nimzo-indian_defense",
+          "name": "Защита Нимцовича-Индийская",
+          "opening": "Nimzo-Indian_Defense",
+          "icon": "♗",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Защита Нимцовича-Индийская",
+          "puzzles_count": 6982,
+          "lessons": [
+            {
+              "id": "nimzo-indian_defense_basics",
+              "title": "Основы Защита Нимцовича-Индийская",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "nimzo-indian_defense_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "nimzo-indian_defense_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "grunfeld_defense",
+          "name": "Защита Грюнфельда",
+          "opening": "Grunfeld_Defense",
+          "icon": "☗",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Защита Грюнфельда",
+          "puzzles_count": 3701,
+          "lessons": [
+            {
+              "id": "grunfeld_defense_basics",
+              "title": "Основы Защита Грюнфельда",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "grunfeld_defense_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "grunfeld_defense_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "slav_defense",
+          "name": "Защита славян",
+          "opening": "Slav_Defense",
+          "icon": "♘",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Защита славян",
+          "puzzles_count": 15526,
+          "lessons": [
+            {
+              "id": "slav_defense_basics",
+              "title": "Основы Защита славян",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "slav_defense_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "slav_defense_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "semi-slav_defense",
+          "name": "Полусла́вская защита",
+          "opening": "Semi-Slav_Defense",
+          "icon": "♘",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Полусла́вская защита",
+          "puzzles_count": 6314,
+          "lessons": [
+            {
+              "id": "semi-slav_defense_basics",
+              "title": "Основы Полусла́вская защита",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "semi-slav_defense_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "semi-slav_defense_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "benoni_defense",
+          "name": "Защита Бенони",
+          "opening": "Benoni_Defense",
+          "icon": "♘",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Защита Бенони",
+          "puzzles_count": 11384,
+          "lessons": [
+            {
+              "id": "benoni_defense_basics",
+              "title": "Основы Защита Бенони",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "benoni_defense_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "benoni_defense_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "гамбиты-пожертвование-материала",
+      "name": "Гамбиты (пожертвование материала)",
+      "icon": "🎲",
+      "description": "Дебюты с ранним пожертвованием пешки или фигуры",
+      "subtopics": [
+        {
+          "id": "kings_gambit_accepted",
+          "name": "Королевский гамбит принят",
+          "opening": "Kings_Gambit_Accepted",
+          "icon": "🎲",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Королевский гамбит принят",
+          "puzzles_count": 18007,
+          "lessons": [
+            {
+              "id": "kings_gambit_accepted_basics",
+              "title": "Основы Королевский гамбит принят",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "kings_gambit_accepted_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "kings_gambit_accepted_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "kings_gambit_declined",
+          "name": "Королевский гамбит отклонен",
+          "opening": "Kings_Gambit_Declined",
+          "icon": "🎲",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Королевский гамбит отклонен",
+          "puzzles_count": 9218,
+          "lessons": [
+            {
+              "id": "kings_gambit_declined_basics",
+              "title": "Основы Королевский гамбит отклонен",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "kings_gambit_declined_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "kings_gambit_declined_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "danish_gambit_accepted",
+          "name": "Датский гамбит принят",
+          "opening": "Danish_Gambit_Accepted",
+          "icon": "🎲",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Датский гамбит принят",
+          "puzzles_count": 3106,
+          "lessons": [
+            {
+              "id": "danish_gambit_accepted_basics",
+              "title": "Основы Датский гамбит принят",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "danish_gambit_accepted_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "danish_gambit_accepted_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "danish_gambit",
+          "name": "Датский гамбит",
+          "opening": "Danish_Gambit",
+          "icon": "🎲",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Датский гамбит",
+          "puzzles_count": 3096,
+          "lessons": [
+            {
+              "id": "danish_gambit_basics",
+              "title": "Основы Датский гамбит",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "danish_gambit_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "danish_gambit_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "englund_gambit",
+          "name": "Гамбит Энглунда",
+          "opening": "Englund_Gambit",
+          "icon": "🎲",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Гамбит Энглунда",
+          "puzzles_count": 8973,
+          "lessons": [
+            {
+              "id": "englund_gambit_basics",
+              "title": "Основы Гамбит Энглунда",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "englund_gambit_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "englund_gambit_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "englund_gambit_declined",
+          "name": "Гамбит Энглунда отклонен",
+          "opening": "Englund_Gambit_Declined",
+          "icon": "🎲",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Гамбит Энглунда отклонен",
+          "puzzles_count": 2148,
+          "lessons": [
+            {
+              "id": "englund_gambit_declined_basics",
+              "title": "Основы Гамбит Энглунда отклонен",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "englund_gambit_declined_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "englund_gambit_declined_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "benko_gambit",
+          "name": "Гамбит Бенко",
+          "opening": "Benko_Gambit",
+          "icon": "🎲",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Гамбит Бенко",
+          "puzzles_count": 826,
+          "lessons": [
+            {
+              "id": "benko_gambit_basics",
+              "title": "Основы Гамбит Бенко",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "benko_gambit_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "benko_gambit_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "benko_gambit_accepted",
+          "name": "Гамбит Бенко принят",
+          "opening": "Benko_Gambit_Accepted",
+          "icon": "🎲",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Гамбит Бенко принят",
+          "puzzles_count": 619,
+          "lessons": [
+            {
+              "id": "benko_gambit_accepted_basics",
+              "title": "Основы Гамбит Бенко принят",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "benko_gambit_accepted_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "benko_gambit_accepted_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "elephant_gambit",
+          "name": "Гамбит слона",
+          "opening": "Elephant_Gambit",
+          "icon": "🎲",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Гамбит слона",
+          "puzzles_count": 4901,
+          "lessons": [
+            {
+              "id": "elephant_gambit_basics",
+              "title": "Основы Гамбит слона",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "elephant_gambit_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "elephant_gambit_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "blackmar-diemer_gambit",
+          "name": "Гамбит Блекмара-Димера",
+          "opening": "Blackmar-Diemer_Gambit",
+          "icon": "🎲",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Гамбит Блекмара-Димера",
+          "puzzles_count": 4295,
+          "lessons": [
+            {
+              "id": "blackmar-diemer_gambit_basics",
+              "title": "Основы Гамбит Блекмара-Димера",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "blackmar-diemer_gambit_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "blackmar-diemer_gambit_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "нестандартные-начала",
+      "name": "Нестандартные начала",
+      "icon": "✨",
+      "description": "Редкие и необычные дебютные системы",
+      "subtopics": [
+        {
+          "id": "zukertort_opening",
+          "name": "Начало Цукерторта",
+          "opening": "Zukertort_Opening",
+          "icon": "♞",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Начало Цукерторта",
+          "puzzles_count": 17621,
+          "lessons": [
+            {
+              "id": "zukertort_opening_basics",
+              "title": "Основы Начало Цукерторта",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "zukertort_opening_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "zukertort_opening_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "english_opening",
+          "name": "Английское начало",
+          "opening": "English_Opening",
+          "icon": "☗",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Английское начало",
+          "puzzles_count": 36780,
+          "lessons": [
+            {
+              "id": "english_opening_basics",
+              "title": "Основы Английское начало",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "english_opening_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "english_opening_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "trompowsky_attack",
+          "name": "Атака Тромповского",
+          "opening": "Trompowsky_Attack",
+          "icon": "♗",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Атака Тромповского",
+          "puzzles_count": 3797,
+          "lessons": [
+            {
+              "id": "trompowsky_attack_basics",
+              "title": "Основы Атака Тромповского",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "trompowsky_attack_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "trompowsky_attack_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "bird_opening",
+          "name": "Начало Берда",
+          "opening": "Bird_Opening",
+          "icon": "♗",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Начало Берда",
+          "puzzles_count": 8681,
+          "lessons": [
+            {
+              "id": "bird_opening_basics",
+              "title": "Основы Начало Берда",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "bird_opening_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "bird_opening_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "reti_opening",
+          "name": "Начало Рети",
+          "opening": "Reti_Opening",
+          "icon": "♞",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Начало Рети",
+          "puzzles_count": 2044,
+          "lessons": [
+            {
+              "id": "reti_opening_basics",
+              "title": "Основы Начало Рети",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "reti_opening_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "reti_opening_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "catalan_opening",
+          "name": "Каталанское начало",
+          "opening": "Catalan_Opening",
+          "icon": "♘",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Каталанское начало",
+          "puzzles_count": 1999,
+          "lessons": [
+            {
+              "id": "catalan_opening_basics",
+              "title": "Основы Каталанское начало",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "catalan_opening_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "catalan_opening_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "nimzo-larsen_attack",
+          "name": "Атака Нимцовича-Ларсена",
+          "opening": "Nimzo-Larsen_Attack",
+          "icon": "♗",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Атака Нимцовича-Ларсена",
+          "puzzles_count": 10981,
+          "lessons": [
+            {
+              "id": "nimzo-larsen_attack_basics",
+              "title": "Основы Атака Нимцовича-Ларсена",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "nimzo-larsen_attack_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "nimzo-larsen_attack_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "polish_opening",
+          "name": "Польское начало",
+          "opening": "Polish_Opening",
+          "icon": "♞",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Польское начало",
+          "puzzles_count": 4124,
+          "lessons": [
+            {
+              "id": "polish_opening_basics",
+              "title": "Основы Польское начало",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "polish_opening_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "polish_opening_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "grob_opening",
+          "name": "Начало Гроба",
+          "opening": "Grob_Opening",
+          "icon": "♞",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Начало Гроба",
+          "puzzles_count": 3129,
+          "lessons": [
+            {
+              "id": "grob_opening_basics",
+              "title": "Основы Начало Гроба",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "grob_opening_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "grob_opening_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
+              "puzzle_themes": [
+                "pin",
+                "skewer",
+                "verylong"
+              ],
+              "puzzle_limit": 5
+            }
+          ]
+        },
+        {
+          "id": "van_geet_opening",
+          "name": "Начало Ван Гита",
+          "opening": "Van_Geet_Opening",
+          "icon": "♞",
+          "elo_range": "1100+",
+          "description": "Изучение основных идей и принципов Начало Ван Гита",
+          "puzzles_count": 2512,
+          "lessons": [
+            {
+              "id": "van_geet_opening_basics",
+              "title": "Основы Начало Ван Гита",
+              "order": 1,
+              "description": "Изучение начальных принципов и ключевых идей",
+              "puzzle_themes": [
+                "opening",
+                "middlegame"
+              ],
+              "puzzle_limit": 5
+            },
+            {
+              "id": "van_geet_opening_traps",
+              "title": "Ловушки и опасности",
+              "order": 2,
+              "description": "Типичные ошибки и тактические удары",
+              "puzzle_themes": [
+                "crushing",
+                "hangingPiece",
+                "fork"
+              ],
+              "puzzle_limit": 3
+            },
+            {
+              "id": "van_geet_opening_tactics",
+              "title": "Тактика в этом дебюте",
+              "order": 3,
+              "description": "Типичные тактические мотивы",
               "puzzle_themes": [
                 "pin",
                 "skewer",

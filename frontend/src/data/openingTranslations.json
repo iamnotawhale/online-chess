@@ -1,0 +1,162 @@
+{
+  "openings": {
+    "Italian_Game": {
+      "en": "Italian Game",
+      "ru": "Итальянская партия"
+    },
+    "Spanish_Opening": {
+      "en": "Spanish Opening (Ruy Lopez)",
+      "ru": "Испанская партия (Испанская дебютная система)"
+    },
+    "French_Defense": {
+      "en": "French Defense",
+      "ru": "Французская защита"
+    },
+    "Sicilian_Defense": {
+      "en": "Sicilian Defense",
+      "ru": "Сицилианская защита"
+    },
+    "Scandinavian_Defense": {
+      "en": "Scandinavian Defense",
+      "ru": "Скандинавская защита"
+    },
+    "Caro_Kann_Defense": {
+      "en": "Caro-Kann Defense",
+      "ru": "Защита Каро-Канн"
+    },
+    "Alekhine_Defense": {
+      "en": "Alekhine's Defense",
+      "ru": "Защита Алехина"
+    },
+    "Pirc_Defense": {
+      "en": "Pirc Defense",
+      "ru": "Защита Пирца"
+    },
+    "Modern_Defense": {
+      "en": "Modern Defense",
+      "ru": "Современная защита"
+    },
+    "English_Opening": {
+      "en": "English Opening",
+      "ru": "Английское начало"
+    },
+    "Reti_Opening": {
+      "en": "Réti Opening",
+      "ru": "Дебют Рети"
+    },
+    "Queens_Gambit": {
+      "en": "Queen's Gambit",
+      "ru": "Гамбит королевы"
+    },
+    "Closed_Game": {
+      "en": "Closed Game",
+      "ru": "Закрытая система"
+    },
+    "Semi_Closed": {
+      "en": "Semi-Closed Games",
+      "ru": "Полузакрытые системы"
+    }
+  },
+  "descriptions": {
+    "Italian_Game": {
+      "en": "Study the key ideas and principles of the Italian Game",
+      "ru": "Изучение основных идей и принципов Итальянская партия"
+    },
+    "Spanish_Opening": {
+      "en": "Study the key ideas and principles of the Spanish Opening",
+      "ru": "Изучение основных идей и принципов Испанская партия"
+    },
+    "French_Defense": {
+      "en": "Study the key ideas and principles of the French Defense",
+      "ru": "Изучение основных идей и принципов Французская защита"
+    },
+    "Sicilian_Defense": {
+      "en": "Study the key ideas and principles of the Sicilian Defense",
+      "ru": "Изучение основных идей и принципов Сицилианская защита"
+    },
+    "Scandinavian_Defense": {
+      "en": "Study the key ideas and principles of the Scandinavian Defense",
+      "ru": "Изучение основных идей и принципов Скандинавская защита"
+    },
+    "Caro_Kann_Defense": {
+      "en": "Study the key ideas and principles of the Caro-Kann Defense",
+      "ru": "Изучение основных идей и принципов Защита Каро-Канн"
+    },
+    "Alekhine_Defense": {
+      "en": "Study the key ideas and principles of Alekhine's Defense",
+      "ru": "Изучение основных идей и принципов Защита Алехина"
+    },
+    "Pirc_Defense": {
+      "en": "Study the key ideas and principles of the Pirc Defense",
+      "ru": "Изучение основных идей и принципов Защита Пирца"
+    },
+    "Modern_Defense": {
+      "en": "Study the key ideas and principles of the Modern Defense",
+      "ru": "Изучение основных идей и принципов Современная защита"
+    },
+    "English_Opening": {
+      "en": "Study the key ideas and principles of the English Opening",
+      "ru": "Изучение основных идей и принципов Английское начало"
+    },
+    "Reti_Opening": {
+      "en": "Study the key ideas and principles of the Réti Opening",
+      "ru": "Изучение основных идей и принципов Дебют Рети"
+    },
+    "Queens_Gambit": {
+      "en": "Study the key ideas and principles of the Queen's Gambit",
+      "ru": "Изучение основных идей и принципов Гамбит королевы"
+    },
+    "Closed_Game": {
+      "en": "Study the key ideas and principles of Closed Games",
+      "ru": "Изучение основных идей и принципов Закрытая система"
+    },
+    "Semi_Closed": {
+      "en": "Study the key ideas and principles of Semi-Closed Games",
+      "ru": "Изучение основных идей и принципов Полузакрытые системы"
+    }
+  },
+  "categoryNames": {
+    "открытые-дебюты-1.e4-e5": {
+      "en": "Open Games (1.e4 e5)",
+      "ru": "Открытые дебюты (1.e4 e5)"
+    },
+    "полуоткрытые-1.e4-c5-c6-d5": {
+      "en": "Semi-Open Games (1.e4 c5/c6/d5)",
+      "ru": "Полуоткрытые дебюты (1.e4 c5/c6/d5)"
+    },
+    "закрытые-1.d4": {
+      "en": "Closed Games (1.d4)",
+      "ru": "Закрытые дебюты (1.d4)"
+    },
+    "полузакрытые-1.d4-нестандартные": {
+      "en": "Semi-Closed and Irregular Games",
+      "ru": "Полузакрытые и нестандартные дебюты"
+    },
+    "фланговые-и-редкие": {
+      "en": "Flank and Rare Openings",
+      "ru": "Фланговые и редкие дебюты"
+    }
+  },
+  "categoryDescriptions": {
+    "открытые-дебюты-1.e4-e5": {
+      "en": "Classic tactical openings with an open center",
+      "ru": "Классические боевые дебюты с открытым центром"
+    },
+    "полуоткрытые-1.e4-c5-c6-d5": {
+      "en": "Asymmetric defenses against e4 with rich tactical possibilities",
+      "ru": "Асимметричные защиты против e4 с богатыми тактическими возможностями"
+    },
+    "закрытые-1.d4": {
+      "en": "Strategic games with a closed center and positional battles",
+      "ru": "Стратегические игры с закрытым центром и позиционными боями"
+    },
+    "полузакрытые-1.d4-нестандартные": {
+      "en": "Flexible systems and flexible responses to d4",
+      "ru": "Гибкие системы и гибкие ответы на d4"
+    },
+    "фланговые-и-редкие": {
+      "en": "Unconventional openings and flank strategies",
+      "ru": "Нетрадиционные начала и фланговые стратегии"
+    }
+  }
+}

@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -53,6 +54,30 @@ public class PuzzleController {
         log.info("User {} requested random puzzle (rating range: {}-{})", userId, minRating, maxRating);
         
         PuzzleResponse puzzle = puzzleService.getRandomPuzzle(userId, minRating, maxRating);
+        return ResponseEntity.ok(puzzle);
+    }
+
+    /**
+     * Get lesson puzzle by opening tag and themes
+     */
+    @GetMapping("/lesson")
+    public ResponseEntity<PuzzleResponse> getLessonPuzzle(
+            Authentication authentication,
+            @RequestParam String openingTag,
+            @RequestParam(required = false) String themes,
+            @RequestParam(required = false) Integer minRating,
+            @RequestParam(required = false) Integer maxRating
+    ) {
+        String userId = authentication != null ? authentication.getName() : ANONYMOUS_USER_ID;
+        List<String> themeList = themes == null || themes.isBlank()
+                ? List.of()
+                : Arrays.stream(themes.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .collect(Collectors.toList());
+
+        log.info("User {} requested lesson puzzle (openingTag={}, themes={})", userId, openingTag, themeList);
+        PuzzleResponse puzzle = puzzleService.getLessonPuzzle(userId, openingTag, themeList, minRating, maxRating);
         return ResponseEntity.ok(puzzle);
     }
     

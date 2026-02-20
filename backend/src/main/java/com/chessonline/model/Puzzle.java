@@ -23,6 +23,9 @@ public class Puzzle {
     
     @Column(length = 200)
     private String themes; // Comma-separated themes (e.g., "endgame,mate")
+
+    @Column(name = "opening_tags", length = 200)
+    private String openingTags; // Space-separated opening tags from Lichess
     
     @Column(nullable = false)
     private LocalDateTime fetchedAt;
@@ -49,6 +52,9 @@ public class Puzzle {
     
     public String getThemes() { return themes; }
     public void setThemes(String themes) { this.themes = themes; }
+
+    public String getOpeningTags() { return openingTags; }
+    public void setOpeningTags(String openingTags) { this.openingTags = openingTags; }
     
     public LocalDateTime getFetchedAt() { return fetchedAt; }
     public void setFetchedAt(LocalDateTime fetchedAt) { this.fetchedAt = fetchedAt; }

@@ -91,6 +91,7 @@ CREATE TABLE puzzles (
   rating INTEGER NOT NULL,
   rating_deviation INTEGER,
   themes TEXT, -- Comma-separated theme tags
+  opening_tags TEXT, -- Space-separated opening tags from Lichess
   fetched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   daily_date TIMESTAMP -- NULL for random puzzles, timestamp for daily puzzles
 );
@@ -103,6 +104,20 @@ CREATE TABLE user_puzzle_solutions (
   solved BOOLEAN DEFAULT FALSE,
   penalty_applied BOOLEAN DEFAULT FALSE,
   UNIQUE(user_id, puzzle_id)
+);
+
+-- User Lesson Progress (education tracking)
+CREATE TABLE user_lesson_progress (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  lesson_id VARCHAR(100) NOT NULL,
+  category_id VARCHAR(50) NOT NULL,
+  completed BOOLEAN DEFAULT FALSE,
+  puzzles_solved INTEGER DEFAULT 0,
+  puzzles_total INTEGER NOT NULL,
+  viewed_at TIMESTAMP,
+  completed_at TIMESTAMP,
+  UNIQUE(user_id, lesson_id)
 );
 
 -- Puzzle Rating History
@@ -136,9 +151,14 @@ CREATE INDEX idx_rating_history_created_at ON rating_history(created_at DESC);
 
 CREATE INDEX idx_puzzles_rating ON puzzles(rating);
 CREATE INDEX idx_puzzles_daily_date ON puzzles(daily_date);
+CREATE INDEX idx_puzzles_opening_tags ON puzzles(opening_tags);
 
 CREATE INDEX idx_user_puzzle_solutions_user_id ON user_puzzle_solutions(user_id);
 CREATE INDEX idx_user_puzzle_solutions_puzzle_id ON user_puzzle_solutions(puzzle_id);
+
+CREATE INDEX idx_user_lesson_progress_user_id ON user_lesson_progress(user_id);
+CREATE INDEX idx_user_lesson_progress_category_id ON user_lesson_progress(category_id);
+CREATE INDEX idx_user_lesson_progress_completed ON user_lesson_progress(completed);
 
 CREATE INDEX idx_puzzle_rating_history_user_id ON puzzle_rating_history(user_id);
 CREATE INDEX idx_puzzle_rating_history_created_at ON puzzle_rating_history(created_at DESC);

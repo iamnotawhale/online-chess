@@ -17,6 +17,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -50,6 +53,9 @@ public class PuzzleService {
     private Random random = new Random();
     private volatile boolean initialized = false;
     private final CountDownLatch initLatch = new CountDownLatch(1);
+
+    @PersistenceContext
+    private EntityManager entityManager;
     
     public PuzzleService(UserPuzzleSolutionRepository userPuzzleSolutionRepository,
                          PuzzleRepository puzzleRepository,
@@ -106,6 +112,36 @@ public class PuzzleService {
             throw new RuntimeException("No puzzle available for rating " + min + "-" + max);
         }
         log.info("Random puzzle: {} (rating: {})", puzzle.getId(), puzzle.getRating());
+        return toPuzzleResponse(puzzle, userId);
+    }
+
+    /**
+     * Get random puzzle by opening tag and themes from DB
+     */
+    public PuzzleResponse getLessonPuzzle(
+            String userId,
+            String openingTag,
+            List<String> themes,
+            Integer minRating,
+            Integer maxRating
+    ) {
+        int min = minRating != null ? minRating : 800;
+        int max = maxRating != null ? maxRating : 2500;
+
+        Puzzle puzzle = getRandomPuzzleByOpeningAndThemes(openingTag, themes, min, max);
+        if (puzzle == null && themes != null && !themes.isEmpty()) {
+            log.warn("No puzzles found for openingTag={} themes={} rating {}-{}", openingTag, themes, min, max);
+            puzzle = getRandomPuzzleByOpeningAndThemes(openingTag, Collections.emptyList(), min, max);
+        }
+        if (puzzle == null) {
+            log.warn("No puzzles found for openingTag={} without themes in rating {}-{}, fallback to rating-only", openingTag, min, max);
+            puzzle = getRandomPuzzleByRating(min, max);
+        }
+        if (puzzle == null) {
+            throw new RuntimeException("No puzzle found for specified filters");
+        }
+
+        log.info("Lesson puzzle: {} (openingTag={}, themes={})", puzzle.getId(), openingTag, themes);
         return toPuzzleResponse(puzzle, userId);
     }
     
@@ -442,6 +478,9 @@ public class PuzzleService {
                     if (parts.length > 7 && !parts[7].trim().isEmpty()) {
                         p.setThemes(parts[7].trim());
                     }
+                    if (parts.length > 9 && !parts[9].trim().isEmpty()) {
+                        p.setOpeningTags(parts[9].trim());
+                    }
                     p.setFetchedAt(LocalDateTime.now());
                     puzzles.add(p);
                     
@@ -471,6 +510,60 @@ public class PuzzleService {
         initLatch.countDown();
         
         return puzzles;
+    }
+
+    private Puzzle getRandomPuzzleByOpeningAndThemes(
+            String openingTag,
+            List<String> themes,
+            int minRating,
+            int maxRating
+    ) {
+        if (openingTag == null || openingTag.isBlank()) {
+            return null;
+        }
+
+        StringBuilder sql = new StringBuilder(
+            "SELECT * FROM puzzles WHERE opening_tags ILIKE :openingTag AND rating BETWEEN :minRating AND :maxRating"
+        );
+
+        if (themes != null && !themes.isEmpty()) {
+            int index = 0;
+            StringBuilder themeClause = new StringBuilder();
+            for (String theme : themes) {
+                if (theme == null || theme.isBlank()) {
+                    continue;
+                }
+                if (themeClause.length() > 0) {
+                    themeClause.append(" OR ");
+                }
+                themeClause.append("themes ILIKE :theme").append(index);
+                index++;
+            }
+            if (themeClause.length() > 0) {
+                sql.append(" AND (").append(themeClause).append(")");
+            }
+        }
+
+        sql.append(" ORDER BY RANDOM() LIMIT 1");
+
+        Query query = entityManager.createNativeQuery(sql.toString(), Puzzle.class);
+        query.setParameter("openingTag", openingTag + "%");
+        query.setParameter("minRating", minRating);
+        query.setParameter("maxRating", maxRating);
+
+        if (themes != null && !themes.isEmpty()) {
+            int index = 0;
+            for (String theme : themes) {
+                if (theme == null || theme.isBlank()) {
+                    continue;
+                }
+                query.setParameter("theme" + index, "%" + theme + "%");
+                index++;
+            }
+        }
+
+        List<Puzzle> results = query.getResultList();
+        return results.isEmpty() ? null : results.get(0);
     }
     
     private PuzzleResponse toPuzzleResponse(Puzzle puzzle, String userId) {
