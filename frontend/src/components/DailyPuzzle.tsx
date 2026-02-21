@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { apiService } from '../api';
 import { useTranslation } from '../i18n/LanguageContext';
 import { ChessBoardWrapper } from './common';
@@ -8,7 +8,12 @@ import { usePuzzleGame } from './usePuzzleGame';
 
 export const DailyPuzzle: React.FC = () => {
   const { t } = useTranslation();
-  const getBoardWidth = () => 320;
+  const boardContainerRef = useRef<HTMLDivElement | null>(null);
+  const MAX_DAILY_BOARD_WIDTH = 380;
+  const getBoardWidth = () => {
+    if (typeof window === 'undefined') return 320;
+    return Math.min(Math.max(180, window.innerWidth - 64), MAX_DAILY_BOARD_WIDTH);
+  };
 
   const [puzzle, setPuzzle] = useState<PuzzleData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -37,8 +42,35 @@ export const DailyPuzzle: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    setBoardWidth(getBoardWidth());
-  }, []);
+    if (loading || !puzzle) return;
+
+    const updateBoardWidth = () => {
+      const containerWidth = boardContainerRef.current?.clientWidth ?? 0;
+      if (containerWidth > 0) {
+        const safeWidth = Math.max(160, Math.floor(containerWidth) - 2);
+        setBoardWidth(Math.min(safeWidth, MAX_DAILY_BOARD_WIDTH));
+        return;
+      }
+      setBoardWidth(getBoardWidth());
+    };
+
+    const rafId = requestAnimationFrame(() => {
+      requestAnimationFrame(updateBoardWidth);
+    });
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined' && boardContainerRef.current) {
+      resizeObserver = new ResizeObserver(() => updateBoardWidth());
+      resizeObserver.observe(boardContainerRef.current);
+    }
+
+    window.addEventListener('resize', updateBoardWidth);
+    return () => {
+      cancelAnimationFrame(rafId);
+      resizeObserver?.disconnect();
+      window.removeEventListener('resize', updateBoardWidth);
+    };
+  }, [loading, puzzle]);
 
   const loadDailyPuzzle = async () => {
     try {
@@ -85,13 +117,13 @@ export const DailyPuzzle: React.FC = () => {
     : null;
 
   return (
-    <div className="section">
-      <div className="puzzle-header">
-        <h3>{t('dailyPuzzle')}</h3>
-        <div className="puzzle-rating">⭐ {puzzle.rating}</div>
-      </div>
+    <div className="section daily-puzzle-widget">
+      <h2 className="puzzle-header-title">
+        <span>{t('dailyPuzzle')}</span>
+        <span className="puzzle-rating">⭐ {puzzle.rating}</span>
+      </h2>
 
-      <div className="puzzle-board">
+      <div className="puzzle-board" ref={boardContainerRef}>
         <ChessBoardWrapper
           position={position}
           game={game}

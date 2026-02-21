@@ -2,6 +2,8 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .dashboard-header {
@@ -55,6 +57,10 @@
   gap: 20px;
 }
 
+.dashboard-content > * {
+  min-width: 0;
+}
+
 @media (min-width: 768px) {
   .dashboard-content {
     grid-template-columns: 1fr 1fr;
@@ -89,6 +95,11 @@
 
 .custom-btn {
   width: 100%;
+}
+
+.matchmaking-section {
+  display: flex;
+  flex-direction: column;
 }
 
 .color-buttons {
@@ -175,22 +186,38 @@
   cursor: not-allowed;
 }
 
-.btn-education {
+.btn-education,
+.preset-btn.custom-btn.invite-btn-standalone,
+.preset-btn.custom-btn.bot-btn-standalone {
   width: 100%;
   padding: 14px 12px;
   min-height: 48px;
   background: var(--accent);
-  color: var(--surface);
+  color: var(--accent-contrast);
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-weight: 600;
-  font-size: 16px;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 1.2;
   transition: all 0.2s;
 }
 
-.btn-education:hover {
+.btn-education:hover,
+.preset-btn.custom-btn.invite-btn-standalone:hover:not(:disabled),
+.preset-btn.custom-btn.bot-btn-standalone:hover:not(:disabled) {
   background: var(--text);
+  color: var(--surface);
+  transform: translateY(-1px);
+}
+
+.btn-education:disabled,
+.preset-btn.custom-btn.invite-btn-standalone:disabled,
+.preset-btn.custom-btn.bot-btn-standalone:disabled {
+  background: var(--muted-2);
+  color: var(--surface);
+  cursor: not-allowed;
+  transform: none;
 }
 
 .matchmaking-presets {
@@ -260,13 +287,18 @@
 }
 
 .invite-btn-standalone {
-  width: 100%;
   margin-top: 0;
 }
 
 .bot-btn-standalone {
-  width: 100%;
-  margin-top: 8px;
+  margin-top: 0;
+}
+
+.standalone-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
 }
 
 .preset-label {
@@ -630,9 +662,10 @@
 /* Education Widget */
 .education-widget {
   background: linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%);
-  border: 1px solid var(--accent);
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .education-widget::before {
@@ -668,6 +701,21 @@
   z-index: 1;
 }
 
+.education-highlights {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 0 12px 0;
+  position: relative;
+  z-index: 1;
+}
+
+.education-highlight {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
 .preview-stat {
   flex: 1;
   text-align: center;
@@ -689,6 +737,12 @@
   display: block;
   font-size: 12px;
   color: var(--muted);
+}
+
+.btn-education {
+  margin-top: auto;
+  position: relative;
+  z-index: 1;
 }
 
 /* Mobile adjustments for game history cards */

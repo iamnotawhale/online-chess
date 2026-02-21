@@ -258,7 +258,7 @@ export const translations = {
     puzzleLoadError: 'Failed to load puzzle',
     puzzleNotAvailable: 'No puzzle available',
     puzzleReset: 'Reset',
-    puzzleTrainMore: 'Train more puzzles →',
+    puzzleTrainMore: 'Train more puzzles',
     puzzleElo: 'Puzzle Elo',
     puzzleAlreadySolved: 'Already solved',
     puzzleShowSolution: 'Hint',
@@ -279,8 +279,8 @@ export const translations = {
     puzzles: 'puzzles',
     openingCount: 'openings',
     puzzleCount: 'puzzles',
-    explore: 'Explore →',
-    backToCategories: '← Back to Categories',
+    explore: 'Explore',
+    backToCategories: 'Back to Categories',
     progress: '🎯 Progress',
     puzzlesLabel: 'Puzzles',
     lessonsLabel: 'Lessons',
@@ -303,9 +303,12 @@ export const translations = {
     previewPause: 'Pause',
     
     // Education Widget (Dashboard)
-    educationSectionTitle: '📚 Learning',
+    educationSectionTitle: 'Learning',
     educationSectionDescription: 'Study openings, tactics and strategy with interactive lessons and puzzles.',
-    startEducation: 'Start learning →',
+    educationFeatureStructured: 'Structured opening lessons by themes and difficulty',
+    educationFeaturePractice: 'Puzzle practice directly from each lesson',
+    educationFeatureProgress: 'Track your progress by opening and lesson',
+    startEducation: 'Start learning',
   },
   ru: {
     // Auth
@@ -565,7 +568,7 @@ export const translations = {
     puzzleLoadError: 'Не удалось загрузить пазл',
     puzzleNotAvailable: 'Пазл недоступен',
     puzzleReset: 'Сбросить',
-    puzzleTrainMore: 'Больше пазлов →',
+    puzzleTrainMore: 'Больше пазлов',
     puzzleElo: 'Эло пазлов',
     puzzleAlreadySolved: 'Уже решён',
     puzzleShowSolution: 'Подсказка',
@@ -586,8 +589,8 @@ export const translations = {
     puzzles: 'пазлов',
     openingCount: 'дебютов',
     puzzleCount: 'пазлов',
-    explore: 'Изучить →',
-    backToCategories: '← К категориям',
+    explore: 'Изучить',
+    backToCategories: 'К категориям',
     progress: '🎯 Прогресс',
     puzzlesLabel: 'Пазлов',
     lessonsLabel: 'Уроков',
@@ -610,9 +613,12 @@ export const translations = {
     previewPause: 'Пауза',
     
     // Education Widget (Dashboard)
-    educationSectionTitle: '📚 Обучение',
+    educationSectionTitle: 'Обучение',
     educationSectionDescription: 'Изучайте дебюты, тактику и стратегию с интерактивными уроками и пазлами.',
-    startEducation: 'Начать обучение →',
+    educationFeatureStructured: 'Структурированные уроки по дебютам, темам и уровню',
+    educationFeaturePractice: 'Тренировка пазлов прямо из каждого урока',
+    educationFeatureProgress: 'Отслеживание прогресса по дебютам и урокам',
+    startEducation: 'Начать обучение',
   },
 };
 

@@ -11,7 +11,6 @@
   padding: 30px;
   margin-bottom: 30px;
   border-radius: 4px;
-  border-bottom: 2px solid var(--accent);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -140,8 +139,6 @@
   background: var(--surface);
   padding: 30px;
   margin-bottom: 30px;
-  border-radius: 4px;
-  border-left: 4px solid var(--accent);
 }
 
 .category-header h1 {
@@ -304,8 +301,6 @@
   background: var(--surface);
   padding: 30px;
   margin-bottom: 30px;
-  border-radius: 4px;
-  border-left: 4px solid var(--accent);
 }
 
 .lesson-header h1 {
@@ -345,8 +340,6 @@
 .sidebar-info {
   background: var(--surface);
   padding: 16px;
-  border-radius: 4px;
-  border-left: 3px solid var(--accent);
 }
 
 .sidebar-info h3 {

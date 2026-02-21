@@ -315,7 +315,7 @@ export const Dashboard: React.FC = () => {
         {/* Daily Puzzle Widget */}
         <DailyPuzzle />
 
-        <div className="section">
+        <div className="section matchmaking-section">
           <h2>{t('matchmaking')}</h2>
           <div className="matchmaking-presets">
             {MATCHMAKING_PRESETS.map((preset) => (
@@ -408,23 +408,25 @@ export const Dashboard: React.FC = () => {
             </div>
           )}
           
-          <button
-            type="button"
-            className="preset-btn custom-btn invite-btn-standalone"
-            onClick={() => setIsInviteModalOpen(true)}
-            disabled={matchmakingLoading}
-          >
-            {t('inviteByLink')}
-          </button>
+          <div className="standalone-actions">
+            <button
+              type="button"
+              className="preset-btn custom-btn invite-btn-standalone"
+              onClick={() => setIsInviteModalOpen(true)}
+              disabled={matchmakingLoading}
+            >
+              {t('inviteByLink')}
+            </button>
 
-          <button
-            type="button"
-            className="preset-btn custom-btn bot-btn-standalone"
-            onClick={() => setIsBotGameModalOpen(true)}
-            disabled={matchmakingLoading}
-          >
-            {t('playVsComputer') || 'Play vs Computer'}
-          </button>
+            <button
+              type="button"
+              className="preset-btn custom-btn bot-btn-standalone"
+              onClick={() => setIsBotGameModalOpen(true)}
+              disabled={matchmakingLoading}
+            >
+              {t('playVsComputer') || 'Play vs Computer'}
+            </button>
+          </div>
           
           {isQueued && (
             <div className="queued-info">
@@ -593,6 +595,13 @@ export const Dashboard: React.FC = () => {
         <div className="section education-widget">
           <h2>{t('educationSectionTitle')}</h2>
           <p>{t('educationSectionDescription')}</p>
+
+          <div className="education-highlights">
+            <div className="education-highlight">• {t('educationFeatureStructured')}</div>
+            <div className="education-highlight">• {t('educationFeaturePractice')}</div>
+            <div className="education-highlight">• {t('educationFeatureProgress')}</div>
+          </div>
+
           <div className="education-preview">
             <div className="preview-stat">
               <span className="stat-label">10</span>
