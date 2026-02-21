@@ -128,27 +128,56 @@ public class PuzzleService {
         int min = minRating != null ? minRating : 800;
         int max = maxRating != null ? maxRating : 2500;
 
+        // Step 1: openingTag + themes + rating range
         Puzzle puzzle = getRandomPuzzleByOpeningAndThemes(openingTag, themes, min, max);
-        if (puzzle == null && themes != null && !themes.isEmpty()) {
-            log.warn("No puzzles found for openingTag={} themes={} rating {}-{}", openingTag, themes, min, max);
-            puzzle = getRandomPuzzleByOpeningAndThemes(openingTag, Collections.emptyList(), min, max);
-        }
-        if (puzzle == null) {
-            log.warn("No puzzles found for openingTag={} without themes in rating {}-{}, fallback to rating-only", openingTag, min, max);
-            puzzle = getRandomPuzzleByRating(min, max);
-        }
-        if (puzzle == null) {
-            throw new RuntimeException("No puzzle found for specified filters");
+        if (puzzle != null) {
+            log.info("Lesson puzzle found: {} (openingTag={}, themes={}, rating {}-{})", puzzle.getId(), openingTag, themes, min, max);
+            return toPuzzleResponse(puzzle, userId);
         }
 
-        log.info("Lesson puzzle: {} (openingTag={}, themes={})", puzzle.getId(), openingTag, themes);
-        return toPuzzleResponse(puzzle, userId);
+        // Step 2: openingTag + themes (NO rating range) - if themes were specified
+        if (themes != null && !themes.isEmpty()) {
+            log.warn("No puzzles found for openingTag={} themes={} rating {}-{}, trying without rating", openingTag, themes, min, max);
+            puzzle = getRandomPuzzleByOpeningAndThemes(openingTag, themes, 800, 2500);
+            if (puzzle != null) {
+                log.info("Lesson puzzle found without rating: {} (openingTag={}, themes={})", puzzle.getId(), openingTag, themes);
+                return toPuzzleResponse(puzzle, userId);
+            }
+        }
+
+        // Step 3: openingTag (NO themes) + rating range
+        log.warn("No puzzles found for openingTag={} without rating restriction, trying without themes", openingTag);
+        puzzle = getRandomPuzzleByOpeningAndThemes(openingTag, Collections.emptyList(), min, max);
+        if (puzzle != null) {
+            log.info("Lesson puzzle found without themes: {} (openingTag={}, rating {}-{})", puzzle.getId(), openingTag, min, max);
+            return toPuzzleResponse(puzzle, userId);
+        }
+
+        // Step 4: openingTag (NO themes, NO rating range)
+        log.warn("No puzzles found for openingTag={} with rating range, trying without rating at all", openingTag);
+        puzzle = getRandomPuzzleByOpeningAndThemes(openingTag, Collections.emptyList(), 800, 2500);
+        if (puzzle != null) {
+            log.info("Lesson puzzle found for opening only: {} (openingTag={})", puzzle.getId(), openingTag);
+            return toPuzzleResponse(puzzle, userId);
+        }
+
+        // Step 5: rating range only (any opening) - fallback
+        log.warn("No puzzles found for openingTag={} at all, fallback to rating-only", openingTag);
+        puzzle = getRandomPuzzleByRating(min, max);
+        if (puzzle != null) {
+            log.info("Lesson puzzle found by rating only: {} (rating {}-{})", puzzle.getId(), min, max);
+            return toPuzzleResponse(puzzle, userId);
+        }
+
+        // No puzzle found at all
+        log.error("No puzzle found for any filters: openingTag={}, themes={}", openingTag, themes);
+        throw new RuntimeException("No puzzle found for specified filters");
     }
     
     /**
      * Check user's puzzle solution and save progress to database
      */
-    public Map<String, Object> checkSolution(String userId, String puzzleId, List<String> userMoves, Integer timeSpent) {
+    public Map<String, Object> checkSolution(String userId, String puzzleId, List<String> userMoves, Integer timeSpent, Boolean skipRatingUpdate) {
         try {
             Puzzle puzzle = puzzleCache.get(puzzleId);
             if (puzzle == null) {
@@ -178,6 +207,7 @@ public class PuzzleService {
             
             // Save or update user's puzzle progress
             log.info("checkSolution for userId='{}', puzzleId='{}', isComplete={}", userId, puzzleId, isComplete);
+            boolean skipRating = Boolean.TRUE.equals(skipRatingUpdate);
             Integer puzzleRatingAfter = null;
             Integer puzzleRatingChange = 0;
 
@@ -215,17 +245,19 @@ public class PuzzleService {
                     int puzzleRatingBefore = currentPuzzleRating;
                     puzzleRatingAfter = currentPuzzleRating;
                     boolean shouldRecordHistory = false;
-                    if (!correct && !wasSolved && !wasPenaltyApplied) {
-                        puzzleRatingChange = calculatePuzzleEloChange(currentPuzzleRating, puzzle.getRating(), false);
-                        stats.setPuzzleRating(currentPuzzleRating + puzzleRatingChange);
-                        solution.setPenaltyApplied(true);
-                        puzzleRatingAfter = stats.getPuzzleRating();
-                        shouldRecordHistory = puzzleRatingChange != 0;
-                    } else if (isComplete && !wasSolved && !wasPenaltyApplied) {
-                        puzzleRatingChange = calculatePuzzleEloChange(currentPuzzleRating, puzzle.getRating(), true);
-                        stats.setPuzzleRating(currentPuzzleRating + puzzleRatingChange);
-                        puzzleRatingAfter = stats.getPuzzleRating();
-                        shouldRecordHistory = puzzleRatingChange != 0;
+                    if (!skipRating) {
+                        if (!correct && !wasSolved && !wasPenaltyApplied) {
+                            puzzleRatingChange = calculatePuzzleEloChange(currentPuzzleRating, puzzle.getRating(), false);
+                            stats.setPuzzleRating(currentPuzzleRating + puzzleRatingChange);
+                            solution.setPenaltyApplied(true);
+                            puzzleRatingAfter = stats.getPuzzleRating();
+                            shouldRecordHistory = puzzleRatingChange != 0;
+                        } else if (isComplete && !wasSolved && !wasPenaltyApplied) {
+                            puzzleRatingChange = calculatePuzzleEloChange(currentPuzzleRating, puzzle.getRating(), true);
+                            stats.setPuzzleRating(currentPuzzleRating + puzzleRatingChange);
+                            puzzleRatingAfter = stats.getPuzzleRating();
+                            shouldRecordHistory = puzzleRatingChange != 0;
+                        }
                     }
                     
                     log.info("About to save solution with solved={}", solution.isSolved());
@@ -240,12 +272,14 @@ public class PuzzleService {
                         log.warn("Failed to ensure puzzle in database: {}", e.getMessage());
                     }
 
-                    if (shouldRecordHistory) {
+                    if (!skipRating && shouldRecordHistory) {
                         recordPuzzleRatingHistory(stats.getUser(), puzzle, puzzleRatingBefore, puzzleRatingAfter, puzzleRatingChange);
                     }
                     
                     userPuzzleSolutionRepository.save(solution);
-                    userStatsRepository.save(stats);
+                    if (!skipRating) {
+                        userStatsRepository.save(stats);
+                    }
                     log.info("Saved puzzle progress for user {} on puzzle {}: solved={}", userId, puzzleId, solution.isSolved());
                 } catch (IllegalArgumentException e) {
                     log.error("Invalid user ID format: {}", userId, e);
@@ -263,7 +297,7 @@ public class PuzzleService {
             result.put("complete", isComplete);
             result.put("nextMove", userMoves.size() < correctMoves.size() ? correctMoves.get(userMoves.size()) : null);
             // Don't send full solution to client for security
-            if (puzzleRatingAfter != null) {
+            if (!skipRating && puzzleRatingAfter != null) {
                 result.put("puzzleRating", puzzleRatingAfter);
                 result.put("puzzleRatingChange", puzzleRatingChange);
                 

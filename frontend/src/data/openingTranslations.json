@@ -4,9 +4,41 @@
       "en": "Italian Game",
       "ru": "Итальянская партия"
     },
-    "Spanish_Opening": {
+    "Ruy_Lopez": {
       "en": "Spanish Opening (Ruy Lopez)",
-      "ru": "Испанская партия (Испанская дебютная система)"
+      "ru": "Испанская партия"
+    },
+    "Scotch_Game": {
+      "en": "Scotch Game",
+      "ru": "Шотландская партия"
+    },
+    "Four_Knights_Game": {
+      "en": "Four Knights Game",
+      "ru": "Партия четырёх коней"
+    },
+    "Russian_Game": {
+      "en": "Russian Game",
+      "ru": "Русская партия"
+    },
+    "Vienna_Game": {
+      "en": "Vienna Game",
+      "ru": "Венская партия"
+    },
+    "Kings_Gambit_Accepted": {
+      "en": "King's Gambit Accepted",
+      "ru": "Королевский гамбит принят"
+    },
+    "Kings_Gambit_Declined": {
+      "en": "King's Gambit Declined",
+      "ru": "Королевский гамбит отклонён"
+    },
+    "Bishops_Opening": {
+      "en": "Bishop's Opening",
+      "ru": "Дебют слона"
+    },
+    "Spanish_Opening": {
+      "en": "Spanish Opening",
+      "ru": "Испанская партия"
     },
     "French_Defense": {
       "en": "French Defense",
@@ -20,7 +52,7 @@
       "en": "Scandinavian Defense",
       "ru": "Скандинавская защита"
     },
-    "Caro_Kann_Defense": {
+    "Caro-Kann_Defense": {
       "en": "Caro-Kann Defense",
       "ru": "Защита Каро-Канн"
     },
@@ -36,6 +68,18 @@
       "en": "Modern Defense",
       "ru": "Современная защита"
     },
+    "Philidor_Defense": {
+      "en": "Philidor Defense",
+      "ru": "Защита Филидора"
+    },
+    "Horwitz_Defense": {
+      "en": "Horwitz Defense",
+      "ru": "Защита Хорвица"
+    },
+    "Owen_Defense": {
+      "en": "Owen Defense",
+      "ru": "Защита Оуэна"
+    },
     "English_Opening": {
       "en": "English Opening",
       "ru": "Английское начало"
@@ -44,9 +88,109 @@
       "en": "Réti Opening",
       "ru": "Дебют Рети"
     },
-    "Queens_Gambit": {
-      "en": "Queen's Gambit",
-      "ru": "Гамбит королевы"
+    "Queens_Gambit_Declined": {
+      "en": "Queen's Gambit Declined",
+      "ru": "Отказанный королевский гамбит"
+    },
+    "Queens_Gambit_Accepted": {
+      "en": "Queen's Gambit Accepted",
+      "ru": "Принятый королевский гамбит"
+    },
+    "Slav_Defense": {
+      "en": "Slav Defense",
+      "ru": "Славянская защита"
+    },
+    "Semi-Slav_Defense": {
+      "en": "Semi-Slav Defense",
+      "ru": "Полуславянская защита"
+    },
+    "Indian_Defense": {
+      "en": "Indian Defense",
+      "ru": "Индийская защита"
+    },
+    "Queens_Indian_Defense": {
+      "en": "Queen's Indian Defense",
+      "ru": "Ферзевая индийская защита"
+    },
+    "Kings_Indian_Defense": {
+      "en": "King's Indian Defense",
+      "ru": "Королевская индийская защита"
+    },
+    "Nimzo-Indian_Defense": {
+      "en": "Nimzo-Indian Defense",
+      "ru": "Нимцович-индийская защита"
+    },
+    "Grunfeld_Defense": {
+      "en": "Grunfeld Defense",
+      "ru": "Защита Грюнфельда"
+    },
+    "Gruenfeld_Defense": {
+      "en": "Gruenfeld Defense",
+      "ru": "Защита Гринфельда"
+    },
+    "Benoni_Defense": {
+      "en": "Benoni Defense",
+      "ru": "Защита Бенони"
+    },
+    "Catalan_Opening": {
+      "en": "Catalan Opening",
+      "ru": "Каталонское начало"
+    },
+    "Danish_Gambit": {
+      "en": "Danish Gambit",
+      "ru": "Датский гамбит"
+    },
+    "Danish_Gambit_Accepted": {
+      "en": "Danish Gambit Accepted",
+      "ru": "Датский гамбит принят"
+    },
+    "Englund_Gambit": {
+      "en": "Englund Gambit",
+      "ru": "Гамбит Энглунда"
+    },
+    "Englund_Gambit_Declined": {
+      "en": "Englund Gambit Declined",
+      "ru": "Гамбит Энглунда отклонён"
+    },
+    "Benko_Gambit": {
+      "en": "Benko Gambit",
+      "ru": "Гамбит Бенко"
+    },
+    "Benko_Gambit_Accepted": {
+      "en": "Benko Gambit Accepted",
+      "ru": "Гамбит Бенко принят"
+    },
+    "Elephant_Gambit": {
+      "en": "Elephant Gambit",
+      "ru": "Гамбит слона"
+    },
+    "Blackmar-Diemer_Gambit": {
+      "en": "Blackmar-Diemer Gambit",
+      "ru": "Гамбит Блэкмара-Димера"
+    },
+    "Bird_Opening": {
+      "en": "Bird Opening",
+      "ru": "Дебют Бёрда"
+    },
+    "Grob_Opening": {
+      "en": "Grob Opening",
+      "ru": "Дебют Гроба"
+    },
+    "Nimzo-Larsen_Attack": {
+      "en": "Nimzo-Larsen Attack",
+      "ru": "Атака Нимцовича-Ларсена"
+    },
+    "Polish_Opening": {
+      "en": "Polish Opening",
+      "ru": "Польское начало"
+    },
+    "Trompowsky_Attack": {
+      "en": "Trompowsky Attack",
+      "ru": "Атака Тромповского"
+    },
+    "Van_Geet_Opening": {
+      "en": "Van Geet Opening",
+      "ru": "Дебют ван Гита"
     },
     "Closed_Game": {
       "en": "Closed Game",
@@ -55,56 +199,212 @@
     "Semi_Closed": {
       "en": "Semi-Closed Games",
       "ru": "Полузакрытые системы"
+    },
+    "Zukertort_Opening": {
+      "en": "Zukertort Opening",
+      "ru": "Начало Цукерторта"
+    },
+    "Queens_Gambit": {
+      "en": "Queen's Gambit",
+      "ru": "Гамбит королевы"
     }
   },
   "descriptions": {
     "Italian_Game": {
-      "en": "Study the key ideas and principles of the Italian Game",
-      "ru": "Изучение основных идей и принципов Итальянская партия"
+      "en": "Fast development and pressure on f7 with active piece play.",
+      "ru": "Быстрое развитие фигур и давление на пункт f7."
+    },
+    "Ruy_Lopez": {
+      "en": "Long-term pressure on e5 and flexible strategic plans.",
+      "ru": "Долговременное давление на e5 и гибкая стратегическая игра."
+    },
+    "Scotch_Game": {
+      "en": "Early central break for open lines and initiative.",
+      "ru": "Ранний прорыв в центре для открытой игры и инициативы."
+    },
+    "Four_Knights_Game": {
+      "en": "Solid setup with simple development and tactical motifs.",
+      "ru": "Надёжная схема развития с понятными тактическими идеями."
+    },
+    "Russian_Game": {
+      "en": "Symmetrical structure with precise tactical defense.",
+      "ru": "Симметричная структура с точной тактической обороной."
+    },
+    "Vienna_Game": {
+      "en": "Flexible move order with kingside attacking chances.",
+      "ru": "Гибкий порядок ходов и шансы на атаку короля."
+    },
+    "Kings_Gambit_Accepted": {
+      "en": "Sharp sacrificial play for rapid initiative.",
+      "ru": "Острый гамбит с жертвой пешки ради быстрой инициативы."
+    },
+    "Kings_Gambit_Declined": {
+      "en": "Counterplay against White’s gambit ambitions.",
+      "ru": "Контригра против гамбитных планов белых."
+    },
+    "Bishops_Opening": {
+      "en": "Quiet start that can quickly transpose into attacks.",
+      "ru": "Спокойное начало, которое быстро переходит в активную игру."
     },
     "Spanish_Opening": {
       "en": "Study the key ideas and principles of the Spanish Opening",
       "ru": "Изучение основных идей и принципов Испанская партия"
     },
     "French_Defense": {
-      "en": "Study the key ideas and principles of the French Defense",
-      "ru": "Изучение основных идей и принципов Французская защита"
+      "en": "Solid pawn chain and counterplay against the center.",
+      "ru": "Крепкая пешечная цепь и подрыв центральных пешек белых."
     },
     "Sicilian_Defense": {
-      "en": "Study the key ideas and principles of the Sicilian Defense",
-      "ru": "Изучение основных идей и принципов Сицилианская защита"
+      "en": "Asymmetrical defense with rich counterattacking resources.",
+      "ru": "Асимметричная защита с богатыми возможностями контратаки."
     },
     "Scandinavian_Defense": {
-      "en": "Study the key ideas and principles of the Scandinavian Defense",
-      "ru": "Изучение основных идей и принципов Скандинавская защита"
+      "en": "Immediate challenge to e4 and active queen play.",
+      "ru": "Немедленный вызов пешке e4 и активная игра ферзём."
     },
-    "Caro_Kann_Defense": {
-      "en": "Study the key ideas and principles of the Caro-Kann Defense",
-      "ru": "Изучение основных идей и принципов Защита Каро-Канн"
+    "Caro-Kann_Defense": {
+      "en": "Reliable structure with healthy endgame prospects.",
+      "ru": "Надёжная структура и комфортные эндшпильные позиции."
     },
     "Alekhine_Defense": {
-      "en": "Study the key ideas and principles of Alekhine's Defense",
-      "ru": "Изучение основных идей и принципов Защита Алехина"
+      "en": "Provokes pawn advance to attack the overextended center.",
+      "ru": "Провоцирует продвижение пешек с последующим подрывом центра."
     },
     "Pirc_Defense": {
-      "en": "Study the key ideas and principles of the Pirc Defense",
-      "ru": "Изучение основных идей и принципов Защита Пирца"
+      "en": "Hypermodern setup inviting central overextension.",
+      "ru": "Гипермодерновая схема с провокацией перегиба в центре."
     },
     "Modern_Defense": {
-      "en": "Study the key ideas and principles of the Modern Defense",
-      "ru": "Изучение основных идей и принципов Современная защита"
+      "en": "Flexible fianchetto system with delayed central commitment.",
+      "ru": "Гибкая фианкетто-схема с отложенной борьбой за центр."
+    },
+    "Philidor_Defense": {
+      "en": "Compact setup focused on resilience and counterstrikes.",
+      "ru": "Компактная оборона с упором на стойкость и контрудары."
+    },
+    "Horwitz_Defense": {
+      "en": "Rare setup aiming for active piece pressure.",
+      "ru": "Редкая система с акцентом на активность фигур."
+    },
+    "Owen_Defense": {
+      "en": "Queenside fianchetto and dynamic central breaks.",
+      "ru": "Фианкетто ферзевого фланга и динамичные подрывы центра."
+    },
+    "Queens_Gambit_Declined": {
+      "en": "Classical d4 structure with strategic maneuvering.",
+      "ru": "Классическая структура d4 с позиционным маневрированием."
+    },
+    "Queens_Gambit_Accepted": {
+      "en": "Pawn grab with precise development and simplification ideas.",
+      "ru": "Принятие гамбита с точным развитием и идеями упрощения."
+    },
+    "Slav_Defense": {
+      "en": "Solid d5-c6 chain with reliable piece development.",
+      "ru": "Надёжная цепь d5-c6 и гармоничное развитие фигур."
+    },
+    "Semi-Slav_Defense": {
+      "en": "Rich strategic system mixing solidity and tactics.",
+      "ru": "Глубокая система, сочетающая надёжность и тактику."
+    },
+    "Indian_Defense": {
+      "en": "Flexible answer to d4 with multiple pawn structures.",
+      "ru": "Гибкий ответ на d4 с разными пешечными структурами."
+    },
+    "Queens_Indian_Defense": {
+      "en": "Positional pressure on dark squares and c-file play.",
+      "ru": "Позиционное давление по чёрным полям и игра по линии c."
+    },
+    "Kings_Indian_Defense": {
+      "en": "Kingside attacking plans versus a strong center.",
+      "ru": "Планы атаки на королевском фланге против сильного центра."
+    },
+    "Nimzo-Indian_Defense": {
+      "en": "Pin on c3 and structural pressure in the center.",
+      "ru": "Связка на c3 и давление на пешечную структуру центра."
+    },
+    "Grunfeld_Defense": {
+      "en": "Dynamic pressure against White’s broad pawn center.",
+      "ru": "Динамичное давление на широкий пешечный центр белых."
+    },
+    "Gruenfeld_Defense": {
+      "en": "Study the key ideas and principles of the Gruenfeld Defense",
+      "ru": "Изучение основных идей и принципов Защита Гринфельда"
+    },
+    "Benoni_Defense": {
+      "en": "Imbalanced structure with active queenside counterplay.",
+      "ru": "Несбалансированная структура с активной контригрой на ферзевом фланге."
+    },
+    "Catalan_Opening": {
+      "en": "Long diagonal pressure and strategic queenside play.",
+      "ru": "Давление по большой диагонали и стратегическая игра на ферзевом фланге."
+    },
+    "Danish_Gambit": {
+      "en": "Initiative-driven gambit with rapid development.",
+      "ru": "Инициативный гамбит с быстрым развитием фигур."
+    },
+    "Danish_Gambit_Accepted": {
+      "en": "Open-file attack after rapid pawn sacrifice.",
+      "ru": "Открытые линии и быстрая атака после жертвы пешек."
+    },
+    "Englund_Gambit": {
+      "en": "Provocative gambit seeking immediate tactical play.",
+      "ru": "Провокационный гамбит с расчётом на немедленную тактику."
+    },
+    "Englund_Gambit_Declined": {
+      "en": "Sharper alternatives after White avoids main gambit lines.",
+      "ru": "Острые варианты после ухода белых от главных гамбитных линий."
+    },
+    "Benko_Gambit": {
+      "en": "Long-term queenside compensation for pawn sacrifice.",
+      "ru": "Долговременная компенсация на ферзевом фланге за пожертвованную пешку."
+    },
+    "Benko_Gambit_Accepted": {
+      "en": "Accepted pawn with persistent pressure on open files.",
+      "ru": "Принятый гамбит с постоянным давлением по открытым линиям."
+    },
+    "Elephant_Gambit": {
+      "en": "Unorthodox central strike with tactical complications.",
+      "ru": "Нестандартный удар по центру с тактическими осложнениями."
+    },
+    "Blackmar-Diemer_Gambit": {
+      "en": "Aggressive development and attacking chances for White.",
+      "ru": "Агрессивное развитие и атакующие шансы белых."
+    },
+    "Bird_Opening": {
+      "en": "Flank opening aiming for kingside initiative.",
+      "ru": "Фланговое начало с идеей инициативы на королевском фланге."
+    },
+    "Grob_Opening": {
+      "en": "Very rare flank thrust creating immediate imbalance.",
+      "ru": "Очень редкий фланговый толчок с немедленным дисбалансом."
+    },
+    "Nimzo-Larsen_Attack": {
+      "en": "Unusual b3 setup with fianchetto pressure.",
+      "ru": "Необычная схема с b3 и давлением из фианкетто."
+    },
+    "Polish_Opening": {
+      "en": "Early b-pawn advance to unbalance the game.",
+      "ru": "Раннее продвижение пешки b для вывода игры из равновесия."
+    },
+    "Trompowsky_Attack": {
+      "en": "Early bishop pin to create structural concessions.",
+      "ru": "Ранняя связка слоном ради структурных уступок соперника."
+    },
+    "Van_Geet_Opening": {
+      "en": "Knight-first opening with independent strategic ideas.",
+      "ru": "Начало с ходом коня и самостоятельными стратегическими идеями."
+    },
+    "Zukertort_Opening": {
+      "en": "Flexible setup with transpositions into many systems.",
+      "ru": "Гибкое начало с переходом в разные дебютные системы."
     },
     "English_Opening": {
-      "en": "Study the key ideas and principles of the English Opening",
-      "ru": "Изучение основных идей и принципов Английское начало"
+      "en": "Flank control and gradual central pressure.",
+      "ru": "Контроль фланга и постепенное давление на центр."
     },
     "Reti_Opening": {
-      "en": "Study the key ideas and principles of the Réti Opening",
-      "ru": "Изучение основных идей и принципов Дебют Рети"
-    },
-    "Queens_Gambit": {
-      "en": "Study the key ideas and principles of the Queen's Gambit",
-      "ru": "Изучение основных идей и принципов Гамбит королевы"
+      "en": "Hypermodern development with delayed central occupation.",
+      "ru": "Гипермодерновое развитие с отложенным занятием центра."
     },
     "Closed_Game": {
       "en": "Study the key ideas and principles of Closed Games",
@@ -116,47 +416,47 @@
     }
   },
   "categoryNames": {
-    "открытые-дебюты-1.e4-e5": {
+    "open-games-1e4-e5": {
       "en": "Open Games (1.e4 e5)",
       "ru": "Открытые дебюты (1.e4 e5)"
     },
-    "полуоткрытые-1.e4-c5-c6-d5": {
-      "en": "Semi-Open Games (1.e4 c5/c6/d5)",
-      "ru": "Полуоткрытые дебюты (1.e4 c5/c6/d5)"
+    "semi-open-games-1e4-d6-c5": {
+      "en": "Semi-Open Games (1.e4 d6/c5)",
+      "ru": "Полуоткрытые дебюты (1.e4 d6/c5)"
     },
-    "закрытые-1.d4": {
+    "closed-games-1d4": {
       "en": "Closed Games (1.d4)",
       "ru": "Закрытые дебюты (1.d4)"
     },
-    "полузакрытые-1.d4-нестандартные": {
-      "en": "Semi-Closed and Irregular Games",
-      "ru": "Полузакрытые и нестандартные дебюты"
+    "gambits-material-sacrifice": {
+      "en": "Gambits (Material Sacrifice)",
+      "ru": "Гамбиты (пожертвование материала)"
     },
-    "фланговые-и-редкие": {
-      "en": "Flank and Rare Openings",
-      "ru": "Фланговые и редкие дебюты"
+    "nonstandard-openings": {
+      "en": "Nonstandard Openings",
+      "ru": "Нестандартные начала"
     }
   },
   "categoryDescriptions": {
-    "открытые-дебюты-1.e4-e5": {
+    "open-games-1e4-e5": {
       "en": "Classic tactical openings with an open center",
       "ru": "Классические боевые дебюты с открытым центром"
     },
-    "полуоткрытые-1.e4-c5-c6-d5": {
+    "semi-open-games-1e4-d6-c5": {
       "en": "Asymmetric defenses against e4 with rich tactical possibilities",
       "ru": "Асимметричные защиты против e4 с богатыми тактическими возможностями"
     },
-    "закрытые-1.d4": {
+    "closed-games-1d4": {
       "en": "Strategic games with a closed center and positional battles",
       "ru": "Стратегические игры с закрытым центром и позиционными боями"
     },
-    "полузакрытые-1.d4-нестандартные": {
-      "en": "Flexible systems and flexible responses to d4",
-      "ru": "Гибкие системы и гибкие ответы на d4"
+    "gambits-material-sacrifice": {
+      "en": "Openings with early pawn or piece sacrifice",
+      "ru": "Дебюты с ранним пожертвованием пешки или фигуры"
     },
-    "фланговые-и-редкие": {
-      "en": "Unconventional openings and flank strategies",
-      "ru": "Нетрадиционные начала и фланговые стратегии"
+    "nonstandard-openings": {
+      "en": "Rare and unconventional opening systems",
+      "ru": "Редкие и необычные дебютные системы"
     }
   }
 }

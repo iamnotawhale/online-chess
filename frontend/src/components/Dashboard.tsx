@@ -315,29 +315,6 @@ export const Dashboard: React.FC = () => {
         {/* Daily Puzzle Widget */}
         <DailyPuzzle />
 
-        {/* Education Widget */}
-        <div className="section education-widget">
-          <h2>📚 Обучение</h2>
-          <p>Изучайте дебюты, тактику и стратегию с интерактивными уроками и пазлами.</p>
-          <div className="education-preview">
-            <div className="preview-stat">
-              <span className="stat-label">10</span>
-              <span className="stat-desc">дебютов</span>
-            </div>
-            <div className="preview-stat">
-              <span className="stat-label">658K+</span>
-              <span className="stat-desc">пазлов</span>
-            </div>
-          </div>
-          <button
-            type="button"
-            className="matchmaking-btn"
-            onClick={() => navigate('/education')}
-          >
-            Начать обучение →
-          </button>
-        </div>
-        
         <div className="section">
           <h2>{t('matchmaking')}</h2>
           <div className="matchmaking-presets">
@@ -610,6 +587,37 @@ export const Dashboard: React.FC = () => {
               )}
             </div>
           )}
+        </div>
+
+        {/* Education Widget */}
+        <div className="section education-widget">
+          <h2>{t('educationSectionTitle')}</h2>
+          <p>{t('educationSectionDescription')}</p>
+          <div className="education-preview">
+            <div className="preview-stat">
+              <span className="stat-label">10</span>
+              <span className="stat-desc">{t('openings')}</span>
+            </div>
+            <div className="preview-stat">
+              <span className="stat-label">658K+</span>
+              <span className="stat-desc">{t('puzzles')}</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="btn-education"
+            onClick={() => {
+              // Clear the education state from localStorage so Education loads from categories
+              if (typeof window !== 'undefined') {
+                window.localStorage.removeItem('educationActiveLesson');
+                window.localStorage.removeItem('educationCategory');
+                window.localStorage.removeItem('educationSubtopic');
+              }
+              navigate('/education');
+            }}
+          >
+            {t('startEducation')}
+          </button>
         </div>
       </div>
     </div>

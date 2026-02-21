@@ -272,7 +272,7 @@ export const translations = {
     actions: 'Actions',
 
     // Education
-    educationTitle: 'Learning Section',
+    educationTitle: '📚 Learning Section',
     educationSubtitle: 'Study chess openings organized by type and difficulty',
     categories: 'categories',
     openings: 'openings',
@@ -287,10 +287,25 @@ export const translations = {
     lessons: '📝 Lessons',
     tasksCompleted: 'tasks',
     lessonBasics: 'Basics',
+    lessonTraps: 'Traps and dangers',
+    lessonTactics: 'Tactics in this opening',
+    lessonBasicsDesc: 'Study initial principles and key ideas',
+    lessonTrapsDesc: 'Typical mistakes and tactical blows',
+    lessonTacticsDesc: 'Typical tactical motifs',
     startPuzzleTraining: '▶️ Start puzzle training',
     readMore: '📖 Read in detail',
     eloRangeLabel: 'Rating',
     completedPercent: 'completed',
+    openingLinePreview: 'Opening line preview',
+    mainLinePreview: 'Main line preview',
+    lineComingSoon: 'Line coming soon',
+    previewPlay: 'Play',
+    previewPause: 'Pause',
+    
+    // Education Widget (Dashboard)
+    educationSectionTitle: '📚 Learning',
+    educationSectionDescription: 'Study openings, tactics and strategy with interactive lessons and puzzles.',
+    startEducation: 'Start learning →',
   },
   ru: {
     // Auth
@@ -579,10 +594,25 @@ export const translations = {
     lessons: '📝 Уроки',
     tasksCompleted: 'задач',
     lessonBasics: 'Основы',
+    lessonTraps: 'Ловушки и опасности',
+    lessonTactics: 'Тактика в этом дебюте',
+    lessonBasicsDesc: 'Изучение начальных принципов и ключевых идей',
+    lessonTrapsDesc: 'Типичные ошибки и тактические удары',
+    lessonTacticsDesc: 'Типичные тактические мотивы',
     startPuzzleTraining: '▶️ Начать тренировку пазлов',
     readMore: '📖 Читать детально',
     eloRangeLabel: 'Рейтинг',
     completedPercent: 'пройдено',
+    openingLinePreview: 'Мини-линия дебюта',
+    mainLinePreview: 'Основная линия',
+    lineComingSoon: 'Линия появится скоро',
+    previewPlay: 'Запустить',
+    previewPause: 'Пауза',
+    
+    // Education Widget (Dashboard)
+    educationSectionTitle: '📚 Обучение',
+    educationSectionDescription: 'Изучайте дебюты, тактику и стратегию с интерактивными уроками и пазлами.',
+    startEducation: 'Начать обучение →',
   },
 };
 

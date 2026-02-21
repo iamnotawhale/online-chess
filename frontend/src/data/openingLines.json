@@ -1,0 +1,639 @@
+{
+  "lines": {
+    "Italian_Game": {
+      "moves": [
+        "e4",
+        "e5",
+        "Nf3",
+        "Nc6",
+        "Bc4",
+        "Bc5",
+        "d4",
+        "exd4",
+        "c3"
+      ]
+    },
+    "Ruy_Lopez": {
+      "moves": [
+        "e4",
+        "e5",
+        "Nf3",
+        "Nc6",
+        "Bb5",
+        "a6",
+        "Ba4",
+        "Nf6",
+        "O-O",
+        "Be7",
+        "Re1",
+        "b5"
+      ]
+    },
+    "Scotch_Game": {
+      "moves": [
+        "e4",
+        "e5",
+        "Nf3",
+        "Nc6",
+        "d4",
+        "exd4",
+        "Nxd4",
+        "Bc5",
+        "Nxc6",
+        "bxc6"
+      ]
+    },
+    "Four_Knights_Game": {
+      "moves": [
+        "e4",
+        "e5",
+        "Nf3",
+        "Nc6",
+        "Nc3",
+        "Nf6",
+        "Bc4",
+        "Bc5",
+        "O-O",
+        "O-O"
+      ]
+    },
+    "Russian_Game": {
+      "moves": [
+        "e4",
+        "e5",
+        "Nf3",
+        "Nf6",
+        "Bc4",
+        "Nxe4",
+        "d4",
+        "d5",
+        "exd5",
+        "Bf6"
+      ]
+    },
+    "Vienna_Game": {
+      "moves": [
+        "e4",
+        "e5",
+        "Nc3",
+        "Nf6",
+        "f4",
+        "d5",
+        "fxe5",
+        "Nxe4",
+        "Qf3",
+        "f5"
+      ]
+    },
+    "Kings_Gambit_Accepted": {
+      "moves": [
+        "e4",
+        "e5",
+        "f4",
+        "exf4",
+        "Nf3",
+        "g5",
+        "Bc4",
+        "g4",
+        "Ne5",
+        "Qh4"
+      ]
+    },
+    "Kings_Gambit_Declined": {
+      "moves": [
+        "e4",
+        "e5",
+        "f4",
+        "Bc5",
+        "Nc3",
+        "d6",
+        "Nf3",
+        "Nc6",
+        "Bc4"
+      ]
+    },
+    "Bishops_Opening": {
+      "moves": [
+        "e4",
+        "e5",
+        "Bc4",
+        "Bc5",
+        "d3",
+        "Nf6",
+        "Nf3",
+        "d6",
+        "O-O",
+        "O-O"
+      ]
+    },
+    "Sicilian_Defense": {
+      "moves": [
+        "e4",
+        "c5",
+        "Nf3",
+        "d6",
+        "d4",
+        "cxd4",
+        "Nxd4",
+        "Nf6",
+        "Nc3",
+        "a6"
+      ]
+    },
+    "French_Defense": {
+      "moves": [
+        "e4",
+        "e6",
+        "d4",
+        "d5",
+        "Nc3",
+        "Nf6",
+        "Bg5",
+        "dxe4",
+        "Nxe4",
+        "Be7"
+      ]
+    },
+    "Caro-Kann_Defense": {
+      "moves": [
+        "e4",
+        "c6",
+        "d4",
+        "d5",
+        "Nc3",
+        "dxe4",
+        "Nxe4",
+        "Bf5",
+        "Ng3",
+        "Bg6"
+      ]
+    },
+    "Scandinavian_Defense": {
+      "moves": [
+        "e4",
+        "d5",
+        "exd5",
+        "Qxd5",
+        "Nc3",
+        "Qa5",
+        "d4",
+        "c6",
+        "Nf3",
+        "Bg4"
+      ]
+    },
+    "Pirc_Defense": {
+      "moves": [
+        "e4",
+        "d6",
+        "d4",
+        "Nf6",
+        "Nc3",
+        "g6",
+        "Be3",
+        "Bg7",
+        "f3",
+        "O-O"
+      ]
+    },
+    "Modern_Defense": {
+      "moves": [
+        "e4",
+        "g6",
+        "d4",
+        "Bg7",
+        "Nc3",
+        "d6",
+        "Be3",
+        "a6",
+        "f3",
+        "b5"
+      ]
+    },
+    "Alekhine_Defense": {
+      "moves": [
+        "e4",
+        "Nf6",
+        "e5",
+        "Nd5",
+        "d4",
+        "d6",
+        "c4",
+        "Nb6",
+        "exd6",
+        "exd6"
+      ]
+    },
+    "Philidor_Defense": {
+      "moves": [
+        "e4",
+        "e5",
+        "Nf3",
+        "d6",
+        "d4",
+        "Nf6",
+        "Nc3",
+        "Nbd7",
+        "Bc4",
+        "Be7"
+      ]
+    },
+    "Horwitz_Defense": {
+      "moves": [
+        "e4",
+        "e5",
+        "Nf3",
+        "d6",
+        "d4",
+        "f6",
+        "dxe5",
+        "dxe5",
+        "Qxd8+",
+        "Kxd8"
+      ]
+    },
+    "Owen_Defense": {
+      "moves": [
+        "e4",
+        "b6",
+        "d4",
+        "Bb7",
+        "Bd3",
+        "f5",
+        "exf5",
+        "Bxg2",
+        "Qh5+",
+        "Nf6"
+      ]
+    },
+    "Queens_Gambit_Declined": {
+      "moves": [
+        "d4",
+        "d5",
+        "c4",
+        "e6",
+        "Nc3",
+        "Nf6",
+        "Bg5",
+        "Be7",
+        "Nf3",
+        "O-O"
+      ]
+    },
+    "Queens_Gambit_Accepted": {
+      "moves": [
+        "d4",
+        "d5",
+        "c4",
+        "dxc4",
+        "Nf3",
+        "a6",
+        "e3",
+        "Bg4",
+        "Bxc4",
+        "e6"
+      ]
+    },
+    "Indian_Defense": {
+      "moves": [
+        "d4",
+        "Nf6",
+        "c4",
+        "b6",
+        "Nf3",
+        "Bb7",
+        "g3",
+        "e6",
+        "Bg2",
+        "Be7"
+      ]
+    },
+    "Queens_Indian_Defense": {
+      "moves": [
+        "d4",
+        "Nf6",
+        "c4",
+        "e6",
+        "Nf3",
+        "b6",
+        "g3",
+        "Ba6",
+        "Bg2",
+        "Bb7"
+      ]
+    },
+    "Kings_Indian_Defense": {
+      "moves": [
+        "d4",
+        "Nf6",
+        "c4",
+        "g6",
+        "Nc3",
+        "Bg7",
+        "e4",
+        "d6",
+        "Nf3",
+        "O-O"
+      ]
+    },
+    "Nimzo-Indian_Defense": {
+      "moves": [
+        "d4",
+        "Nf6",
+        "c4",
+        "e6",
+        "Nc3",
+        "Bb4",
+        "Qc2",
+        "d5",
+        "cxd5",
+        "exd5"
+      ]
+    },
+    "Grunfeld_Defense": {
+      "moves": [
+        "d4",
+        "Nf6",
+        "c4",
+        "g6",
+        "Nc3",
+        "d5",
+        "cxd5",
+        "Nxd5",
+        "e4",
+        "Nxc3"
+      ]
+    },
+    "Slav_Defense": {
+      "moves": [
+        "d4",
+        "d5",
+        "c4",
+        "c6",
+        "Nf3",
+        "Nf6",
+        "Nc3",
+        "dxc4",
+        "a4",
+        "Bf5"
+      ]
+    },
+    "Semi-Slav_Defense": {
+      "moves": [
+        "d4",
+        "d5",
+        "c4",
+        "c6",
+        "Nf3",
+        "Nf6",
+        "Nc3",
+        "e6",
+        "Bg5",
+        "dxc4"
+      ]
+    },
+    "Benoni_Defense": {
+      "moves": [
+        "d4",
+        "c5",
+        "d5",
+        "e6",
+        "c4",
+        "exd5",
+        "cxd5",
+        "d6",
+        "Nc3",
+        "Nf6"
+      ]
+    },
+    "Danish_Gambit_Accepted": {
+      "moves": [
+        "e4",
+        "e5",
+        "d4",
+        "exd4",
+        "c3",
+        "dxc3",
+        "Bc4",
+        "cxb2",
+        "Bxb2"
+      ]
+    },
+    "Danish_Gambit": {
+      "moves": [
+        "e4",
+        "e5",
+        "d4",
+        "exd4",
+        "c3",
+        "dxc3",
+        "Bc4",
+        "cxb2",
+        "Bxb2"
+      ]
+    },
+    "Englund_Gambit": {
+      "moves": [
+        "d4",
+        "e5",
+        "dxe5",
+        "Nc6",
+        "Nf3",
+        "Qe7",
+        "Qd4",
+        "f6",
+        "exf6",
+        "Qxe4"
+      ]
+    },
+    "Englund_Gambit_Declined": {
+      "moves": [
+        "d4",
+        "e5",
+        "dxe5",
+        "Nc6",
+        "Nf3",
+        "Qe7",
+        "Qd4"
+      ]
+    },
+    "Benko_Gambit": {
+      "moves": [
+        "d4",
+        "Nf6",
+        "c4",
+        "c5",
+        "d5",
+        "b5",
+        "cxb5",
+        "a6",
+        "bxa6",
+        "Bxa6"
+      ]
+    },
+    "Benko_Gambit_Accepted": {
+      "moves": [
+        "d4",
+        "Nf6",
+        "c4",
+        "c5",
+        "d5",
+        "b5",
+        "cxb5",
+        "a6",
+        "bxa6",
+        "Bxa6"
+      ]
+    },
+    "Elephant_Gambit": {
+      "moves": [
+        "e4",
+        "e5",
+        "Nf3",
+        "Nc6",
+        "Bc4",
+        "d5",
+        "exd5",
+        "f5"
+      ]
+    },
+    "Blackmar-Diemer_Gambit": {
+      "moves": [
+        "d4",
+        "d5",
+        "e4",
+        "dxe4",
+        "f3",
+        "exf3",
+        "Qxf3"
+      ]
+    },
+    "Zukertort_Opening": {
+      "moves": [
+        "Nf3",
+        "d5",
+        "c4",
+        "e6",
+        "g3",
+        "Nf6",
+        "Bg2",
+        "Be7",
+        "O-O",
+        "O-O"
+      ]
+    },
+    "English_Opening": {
+      "moves": [
+        "c4",
+        "e5",
+        "Nc3",
+        "Nf6",
+        "Nf3",
+        "Nc6",
+        "d4",
+        "exd4",
+        "Nxd4"
+      ]
+    },
+    "Trompowsky_Attack": {
+      "moves": [
+        "d4",
+        "Nf6",
+        "Bg5",
+        "Ne4",
+        "Bh4",
+        "c5",
+        "f3",
+        "cxd4",
+        "Qxd4"
+      ]
+    },
+    "Bird_Opening": {
+      "moves": [
+        "f4",
+        "d5",
+        "e4",
+        "dxe4",
+        "Nf3",
+        "Qd8",
+        "Nc3",
+        "Nf6",
+        "Bc4"
+      ]
+    },
+    "Reti_Opening": {
+      "moves": [
+        "Nf3",
+        "d5",
+        "c4",
+        "dxc4",
+        "e4",
+        "e5",
+        "Bxc4",
+        "exf4"
+      ]
+    },
+    "Catalan_Opening": {
+      "moves": [
+        "d4",
+        "Nf6",
+        "c4",
+        "e6",
+        "g3",
+        "Be7",
+        "Bg2",
+        "O-O",
+        "Nf3",
+        "d5"
+      ]
+    },
+    "Nimzo-Larsen_Attack": {
+      "moves": [
+        "b3",
+        "e5",
+        "Bb2",
+        "Nc6",
+        "e3",
+        "d5",
+        "f4",
+        "exf4"
+      ]
+    },
+    "Polish_Opening": {
+      "moves": [
+        "b4",
+        "e5",
+        "Bb2",
+        "Nc6",
+        "b5",
+        "Ne7",
+        "e3",
+        "d6",
+        "f4"
+      ]
+    },
+    "Grob_Opening": {
+      "moves": [
+        "g4",
+        "d5",
+        "Bg2",
+        "dxg4",
+        "c4",
+        "c6",
+        "Qa4",
+        "Nf6"
+      ]
+    },
+    "Van_Geet_Opening": {
+      "moves": [
+        "Nc3",
+        "d5",
+        "e4",
+        "dxe4",
+        "Qe2",
+        "Bf5",
+        "d3"
+      ]
+    }
+  }
+}

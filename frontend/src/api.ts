@@ -328,11 +328,12 @@ class ApiService {
     return this.client.get(`/puzzles/lesson?${params.toString()}`).then(res => res.data);
   }
 
-  checkPuzzleSolution(puzzleId: string, moves: string[], timeSpentSeconds: number): Promise<any> {
+  checkPuzzleSolution(puzzleId: string, moves: string[], timeSpentSeconds: number, skipRatingUpdate = false): Promise<any> {
     return this.client.post('/puzzles/check', {
       puzzleId,
       moves,
-      timeSpentSeconds
+      timeSpentSeconds,
+      skipRatingUpdate
     }).then(res => res.data);
   }
 

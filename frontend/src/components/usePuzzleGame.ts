@@ -16,6 +16,7 @@ type UsePuzzleGameOptions = {
   loading?: boolean;
   disableMoves?: boolean;
   skipAutoFirstMove?: boolean;
+  skipRatingUpdate?: boolean;
   autoFirstMoveDelayMs?: number;
   onComplete?: (gameCopy: Chess) => void;
   onCorrect?: (gameCopy: Chess, nextMove?: string | null) => void;
@@ -47,6 +48,7 @@ export const usePuzzleGame = ({
   loading = false,
   disableMoves = false,
   skipAutoFirstMove = false,
+  skipRatingUpdate = false,
   autoFirstMoveDelayMs = 400,
   onComplete,
   onCorrect,
@@ -145,14 +147,16 @@ export const usePuzzleGame = ({
 
   const checkSolution = async (puzzleId: string, moves: string[], gameCopy: Chess, prevFen: string) => {
     try {
-      const response = await apiService.checkPuzzleSolution(puzzleId, moves, 0);
+      const response = await apiService.checkPuzzleSolution(puzzleId, moves, 0, skipRatingUpdate);
 
-      if (typeof response?.puzzleRating === 'number' && typeof response?.puzzleRatingChange === 'number') {
-        onRatingChange?.(response.puzzleRating, response.puzzleRatingChange);
-      }
+      if (!skipRatingUpdate) {
+        if (typeof response?.puzzleRating === 'number' && typeof response?.puzzleRatingChange === 'number') {
+          onRatingChange?.(response.puzzleRating, response.puzzleRatingChange);
+        }
 
-      if (Array.isArray(response?.puzzleRatingHistory)) {
-        onHistoryUpdate?.(response.puzzleRatingHistory);
+        if (Array.isArray(response?.puzzleRatingHistory)) {
+          onHistoryUpdate?.(response.puzzleRatingHistory);
+        }
       }
 
       if (response.complete) {

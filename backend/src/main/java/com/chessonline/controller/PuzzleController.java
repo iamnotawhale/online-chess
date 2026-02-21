@@ -96,7 +96,8 @@ public class PuzzleController {
             userId, 
             request.getPuzzleId(), 
             request.getMoves(),
-            request.getTimeSpentSeconds()
+            request.getTimeSpentSeconds(),
+            request.getSkipRatingUpdate()
         );
         
         return ResponseEntity.ok(result);

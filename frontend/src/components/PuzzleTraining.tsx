@@ -60,6 +60,9 @@ export const PuzzleTraining: React.FC = () => {
   const [puzzleElo, setPuzzleElo] = useState<number | null>(null);
   const [puzzleEloDelta, setPuzzleEloDelta] = useState(0);
   const [ratingHistory, setRatingHistory] = useState<number[]>([]);
+  const [userPuzzleRating, setUserPuzzleRating] = useState<number | null>(null);
+  const [lessonRatingRange, setLessonRatingRange] = useState<{ min: number; max: number } | null>(null);
+  const [isLessonMode, setIsLessonMode] = useState(false);
   
   // Lesson completion states
   const [lessonProgress, setLessonProgress] = useState<{ puzzlesSolved: number; puzzlesTotal: number } | null>(null);
@@ -87,6 +90,7 @@ export const PuzzleTraining: React.FC = () => {
     puzzle,
     loading,
     autoFirstMoveDelayMs: 400,
+    skipRatingUpdate: isLessonMode,
     onComplete: () => {
       updateLessonProgressAfterSolve();
       setStreak(prev => prev + 1);
@@ -114,6 +118,7 @@ export const PuzzleTraining: React.FC = () => {
 
   useEffect(() => {
     const loadRatingHistory = async () => {
+      if (readActiveLesson()) return;
       try {
         const history = await apiService.getPuzzleRatingHistory();
         const deltas = Array.isArray(history)
@@ -131,8 +136,10 @@ export const PuzzleTraining: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    writeRatingFilter(ratingFilter);
-  }, [ratingFilter]);
+    if (!isLessonMode) {
+      writeRatingFilter(ratingFilter);
+    }
+  }, [ratingFilter, isLessonMode]);
 
   // Update display position based on history navigation
   useEffect(() => {
@@ -239,6 +246,29 @@ export const PuzzleTraining: React.FC = () => {
     }
   };
 
+  const getLessonRatingRange = async (): Promise<{ min: number; max: number }> => {
+    if (lessonRatingRange) return lessonRatingRange;
+
+    let rating = userPuzzleRating;
+    if (!Number.isFinite(rating ?? null)) {
+      try {
+        const ratingResponse = await apiService.getPuzzleRating();
+        if (typeof ratingResponse?.rating === 'number') {
+          rating = ratingResponse.rating;
+        }
+      } catch {
+        // Ignore rating fetch errors.
+      }
+    }
+
+    const baseRating = Number.isFinite(rating ?? null) ? (rating as number) : 1200;
+    const range = normalizeRatingFilter({ min: baseRating - 200, max: baseRating + 200 });
+    setUserPuzzleRating(baseRating);
+    setLessonRatingRange(range);
+    setRatingFilter(range);
+    return range;
+  };
+
   const updateLessonProgressAfterSolve = async () => {
     const activeLesson = readActiveLesson();
     if (!activeLesson) return;
@@ -269,6 +299,8 @@ export const PuzzleTraining: React.FC = () => {
   };
 
   useEffect(() => {
+    const activeLesson = readActiveLesson();
+    setIsLessonMode(Boolean(activeLesson));
     loadRandomPuzzle(false);
     // Initialize lesson progress on component mount
     const initLessonProgress = async () => {
@@ -309,6 +341,7 @@ export const PuzzleTraining: React.FC = () => {
   const loadRandomPuzzle = async (forceNew: boolean) => {
     setLoading(true);
     const activeLesson = readActiveLesson();
+    setIsLessonMode(Boolean(activeLesson));
     if (activeLesson) {
       // Try to restore from localStorage first if not forcing new
       if (!forceNew) {
@@ -326,11 +359,12 @@ export const PuzzleTraining: React.FC = () => {
       }
 
       try {
+        const lessonRange = await getLessonRatingRange();
         const data = await apiService.getLessonPuzzle(
           activeLesson.openingTag,
           activeLesson.themes,
-          ratingFilter.min,
-          ratingFilter.max
+          lessonRange.min,
+          lessonRange.max
         );
         setPuzzle(data);
         setPuzzleElo(typeof data.userPuzzleRating === 'number' ? data.userPuzzleRating : null);
@@ -361,6 +395,7 @@ export const PuzzleTraining: React.FC = () => {
           const ratingResponse = await apiService.getPuzzleRating();
           if (typeof ratingResponse?.rating === 'number') {
             setPuzzleElo(ratingResponse.rating);
+            setUserPuzzleRating(ratingResponse.rating);
           }
         } catch {
           // Ignore rating fetch errors.
@@ -584,6 +619,7 @@ export const PuzzleTraining: React.FC = () => {
                     if (typeof window !== 'undefined') {
                       window.localStorage.removeItem(ACTIVE_LESSON_STORAGE_KEY);
                     }
+                    setIsLessonMode(false);
                     setLessonProgress(null);
                     loadRandomPuzzle(true);
                   }}
@@ -762,71 +798,74 @@ export const PuzzleTraining: React.FC = () => {
               </div>
             </div>
           )}
+          {!isLessonMode && (
+            <div className="puzzle-container puzzle-stats">
+              <div className="stats-row">
+                <div className="stat">
+                  <span className="stat-value">{puzzleElo ?? '-'}</span>
+                  <span className="stat-label">{t('puzzleElo')}</span>
+                  {puzzleEloDelta !== 0 && (
+                    <span className={`puzzle-elo-change ${puzzleEloDelta > 0 ? 'positive' : 'negative'}`}>
+                      {puzzleEloDelta > 0 ? `+${puzzleEloDelta}` : puzzleEloDelta}
+                    </span>
+                  )}
+                </div>
+              </div>
+              {ratingHistory.length > 0 && (
+                <div className="puzzle-elo-history">
+                  {ratingHistory.map((delta, idx) => (
+                    <span key={`${delta}-${idx}`} className={`puzzle-elo-pill ${getDeltaTone(delta)}`}>
+                      {delta > 0 ? `+${delta}` : delta}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
-          <div className="puzzle-container puzzle-stats">
-            <div className="stats-row">
-              <div className="stat">
-                <span className="stat-value">{puzzleElo ?? '-'}</span>
-                <span className="stat-label">{t('puzzleElo')}</span>
-                {puzzleEloDelta !== 0 && (
-                  <span className={`puzzle-elo-change ${puzzleEloDelta > 0 ? 'positive' : 'negative'}`}>
-                    {puzzleEloDelta > 0 ? `+${puzzleEloDelta}` : puzzleEloDelta}
-                  </span>
-                )}
+          {!isLessonMode && (
+            <div className="puzzle-container puzzle-difficulty">
+              <div className="filter-group">
+                <label>
+                  {t('puzzleMinRating')}: <strong>{ratingFilter.min}</strong>
+                </label>
+                <input 
+                  type="range" 
+                  min="800" 
+                  max="2500" 
+                  step="100"
+                  value={ratingFilter.min}
+                  onChange={(e) =>
+                    setRatingFilter(
+                      normalizeRatingFilter({
+                        ...ratingFilter,
+                        min: parseInt(e.target.value)
+                      })
+                    )
+                  }
+                />
+                
+                <label>
+                  {t('puzzleMaxRating')}: <strong>{ratingFilter.max}</strong>
+                </label>
+                <input 
+                  type="range" 
+                  min="800" 
+                  max="2500" 
+                  step="100"
+                  value={ratingFilter.max}
+                  onChange={(e) =>
+                    setRatingFilter(
+                      normalizeRatingFilter({
+                        ...ratingFilter,
+                        max: parseInt(e.target.value)
+                      })
+                    )
+                  }
+                />
               </div>
             </div>
-            {ratingHistory.length > 0 && (
-              <div className="puzzle-elo-history">
-                {ratingHistory.map((delta, idx) => (
-                  <span key={`${delta}-${idx}`} className={`puzzle-elo-pill ${getDeltaTone(delta)}`}>
-                    {delta > 0 ? `+${delta}` : delta}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="puzzle-container puzzle-difficulty">
-            <div className="filter-group">
-              <label>
-                {t('puzzleMinRating')}: <strong>{ratingFilter.min}</strong>
-              </label>
-              <input 
-                type="range" 
-                min="800" 
-                max="2500" 
-                step="100"
-                value={ratingFilter.min}
-                onChange={(e) =>
-                  setRatingFilter(
-                    normalizeRatingFilter({
-                      ...ratingFilter,
-                      min: parseInt(e.target.value)
-                    })
-                  )
-                }
-              />
-              
-              <label>
-                {t('puzzleMaxRating')}: <strong>{ratingFilter.max}</strong>
-              </label>
-              <input 
-                type="range" 
-                min="800" 
-                max="2500" 
-                step="100"
-                value={ratingFilter.max}
-                onChange={(e) =>
-                  setRatingFilter(
-                    normalizeRatingFilter({
-                      ...ratingFilter,
-                      max: parseInt(e.target.value)
-                    })
-                  )
-                }
-              />
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
