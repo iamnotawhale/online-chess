@@ -598,17 +598,17 @@ export const PuzzleTraining: React.FC = () => {
             </div>
             
             <div className="completion-content">
-              <h2 className="completion-title">🎉 Поздравляем!</h2>
-              <p className="completion-subtitle">Вы завершили урок</p>
+              <h2 className="completion-title">{t('lessonCongratulations')}</h2>
+              <p className="completion-subtitle">{t('lessonCompletedMessage')}</p>
               
               <div className="completion-stats">
                 <div className="stat-box">
                   <div className="stat-value">{lessonProgress.puzzlesSolved}</div>
-                  <div className="stat-label">Пазлов решено</div>
+                  <div className="stat-label">{t('lessonPuzzlesSolved')}</div>
                 </div>
                 <div className="stat-box">
                   <div className="stat-value">✓</div>
-                  <div className="stat-label">Урок завершен</div>
+                  <div className="stat-label">{t('lessonFinished')}</div>
                 </div>
               </div>
               
@@ -624,15 +624,20 @@ export const PuzzleTraining: React.FC = () => {
                     loadRandomPuzzle(true);
                   }}
                 >
-                  ← Решить ещё пазлы
+                  {t('lessonSolveMore')}
                 </button>
                 <button 
                   className="btn btn-secondary"
                   onClick={() => {
-                    navigate('/education');
+                    const activeLesson = readActiveLesson();
+                    if (activeLesson?.categoryId && activeLesson?.subtopicId) {
+                      navigate(`/education?category=${activeLesson.categoryId}&subtopic=${activeLesson.subtopicId}`);
+                    } else {
+                      navigate('/education');
+                    }
                   }}
                 >
-                  Закончить урок →
+                  {t('lessonFinish')}
                 </button>
               </div>
             </div>

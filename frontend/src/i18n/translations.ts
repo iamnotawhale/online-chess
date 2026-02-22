@@ -271,6 +271,14 @@ export const translations = {
     puzzleInfo: 'Puzzle Info',
     actions: 'Actions',
 
+    // Lesson completion
+    lessonCongratulations: '🎉 Congratulations!',
+    lessonCompletedMessage: 'You have completed the lesson',
+    lessonPuzzlesSolved: 'Puzzles solved',
+    lessonFinished: 'Lesson completed',
+    lessonSolveMore: '← Solve more puzzles',
+    lessonFinish: 'Finish lesson →',
+
     // Education
     educationTitle: '📚 Learning Section',
     educationSubtitle: 'Study chess openings organized by type and difficulty',
@@ -580,6 +588,14 @@ export const translations = {
     puzzleMaxRating: 'Макс. рейтинг',
     puzzleInfo: 'Информация о пазле',
     actions: 'Действия',
+
+    // Завершение урока
+    lessonCongratulations: '🎉 Поздравляем!',
+    lessonCompletedMessage: 'Вы завершили урок',
+    lessonPuzzlesSolved: 'Пазлов решено',
+    lessonFinished: 'Урок завершен',
+    lessonSolveMore: '← Решить ещё пазлы',
+    lessonFinish: 'Закончить урок →',
 
     // Обучение
     educationTitle: '📚 Раздел обучения',
