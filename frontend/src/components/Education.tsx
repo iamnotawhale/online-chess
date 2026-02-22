@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Chess } from 'chess.js';
 import { useTranslation } from '../i18n/LanguageContext';
 import { apiService, LessonProgress } from '../api';
@@ -46,6 +46,7 @@ interface Category {
 export const Education: React.FC = () => {
   const { t, language } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedSubtopic, setSelectedSubtopic] = useState<Subtopic | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
@@ -107,7 +108,27 @@ export const Education: React.FC = () => {
 
   const getOpeningLineMoves = (openingTag: string): string[] => {
     const lines = openingLines.lines as Record<string, { moves: string[] }>;
-    return lines[openingTag]?.moves || [];
+    
+    // Try direct match
+    if (lines[openingTag]) {
+      return lines[openingTag].moves || [];
+    }
+    
+    // Try with underscore to CamelCase conversion
+    const camelCase = openingTag
+      .split('_')
+      .map((word, idx) => {
+        if (idx === 0) return word;
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      })
+      .join('_');
+    
+    if (lines[camelCase]) {
+      return lines[camelCase].moves || [];
+    }
+    
+    console.warn(`Opening "${openingTag}" not found in openingLines`);
+    return [];
   };
 
   const getLessonTitle = (lesson: Lesson): string => {
@@ -216,6 +237,29 @@ export const Education: React.FC = () => {
     }
   }, [selectedSubtopic?.id, selectedCategory?.id]);
 
+
+  // Sync state with URL parameters
+  useEffect(() => {
+    const categoryId = searchParams.get('category');
+    const subtopicId = searchParams.get('subtopic');
+
+    let newCategory = null;
+    let newSubtopic = null;
+
+    if (categoryId) {
+      newCategory = categories.find(c => c.id === categoryId) || null;
+      if (newCategory && subtopicId) {
+        newSubtopic = newCategory.subtopics.find(s => s.id === subtopicId) || null;
+      }
+      if (newCategory && !subtopicId) {
+        newSubtopic = null;
+      }
+    }
+
+    setSelectedCategory(newCategory);
+    setSelectedSubtopic(newSubtopic);
+  }, [searchParams, categories]);
+
   useEffect(() => {
     // Auto-select first lesson when subtopic is selected (but not initially)
     if (selectedSubtopic && selectedSubtopic.lessons.length > 0) {
@@ -231,25 +275,36 @@ export const Education: React.FC = () => {
   useEffect(() => {
     if (!selectedSubtopic) return;
 
-    const moves = getOpeningLineMoves(selectedSubtopic.opening);
-    const chess = new Chess();
-    const fens = [chess.fen()];
-    const lineMoves: string[] = [];
-    const lastMoves: Array<{ from: string; to: string }> = [];
+    try {
+      const moves = getOpeningLineMoves(selectedSubtopic.opening);
+      const chess = new Chess();
+      const fens = [chess.fen()];
+      const lineMoves: string[] = [];
+      const lastMoves: Array<{ from: string; to: string }> = [];
 
-    moves.forEach((move) => {
-      const result = chess.move(move, { strict: false });
-      if (!result) return;
-      lineMoves.push(result.san);
-      lastMoves.push({ from: result.from, to: result.to });
-      fens.push(chess.fen());
-    });
+      moves.forEach((move) => {
+        try {
+          const result = chess.move(move, { strict: false });
+          if (!result) return;
+          lineMoves.push(result.san);
+          lastMoves.push({ from: result.from, to: result.to });
+          fens.push(chess.fen());
+        } catch (e) {
+          console.warn(`Invalid move "${move}" for opening ${selectedSubtopic.opening}:`, e);
+        }
+      });
 
-    setMiniLineFens(fens);
-    setMiniLineMoves(lineMoves);
-    setMiniLineLastMoves(lastMoves);
-    setMiniLineIndex(0);
-    setMiniAutoPlay(false);
+      setMiniLineFens(fens);
+      setMiniLineMoves(lineMoves);
+      setMiniLineLastMoves(lastMoves);
+      setMiniLineIndex(0);
+      setMiniAutoPlay(false);
+    } catch (e) {
+      console.error('Error processing opening lines:', e);
+      setMiniLineFens([new Chess().fen()]);
+      setMiniLineMoves([]);
+      setMiniLineLastMoves([]);
+    }
   }, [selectedSubtopic?.opening]);
 
   useEffect(() => {
@@ -413,7 +468,7 @@ export const Education: React.FC = () => {
             <div
               key={category.id}
               className="category-card"
-              onClick={() => setSelectedCategory(category)}
+              onClick={() => setSearchParams({category: category.id})}
             >
               <div className="category-icon">{category.icon}</div>
               <h3>{getCategoryName(category)}</h3>
@@ -434,13 +489,6 @@ export const Education: React.FC = () => {
   if (!selectedSubtopic) {
     return (
       <div className="education-container">
-        <button
-          className="back-btn"
-          onClick={() => setSelectedCategory(null)}
-        >
-          {t('backToCategories')}
-        </button>
-
         <div className="category-header">
           <h1>
             <span className="icon">{selectedCategory.icon}</span>
@@ -454,7 +502,7 @@ export const Education: React.FC = () => {
             <div
               key={subtopic.id}
               className="subtopic-card"
-              onClick={() => setSelectedSubtopic(subtopic)}
+              onClick={() => setSearchParams({category: searchParams.get('category') || '', subtopic: subtopic.id})}
             >
               <div className="card-header">
                 <span className="icon">{subtopic.icon}</span>
@@ -491,13 +539,6 @@ export const Education: React.FC = () => {
   // Вид: Страница урока
   return (
     <div className="education-container">
-      <button
-        className="back-btn"
-        onClick={() => setSelectedSubtopic(null)}
-      >
-        {t('back')}
-      </button>
-
       <div className="lesson-header">
         <h1>
           <span className="icon">{selectedSubtopic.icon}</span>

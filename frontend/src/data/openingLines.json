@@ -54,7 +54,7 @@
         "Bc4",
         "Bc5",
         "O-O",
-        "O-O"
+        "Nxe4"
       ]
     },
     "Russian_Game": {
@@ -65,10 +65,7 @@
         "Nf6",
         "Bc4",
         "Nxe4",
-        "d4",
-        "d5",
-        "exd5",
-        "Bf6"
+        "d4"
       ]
     },
     "Vienna_Game": {
@@ -123,7 +120,7 @@
         "Nf3",
         "d6",
         "O-O",
-        "O-O"
+        "Nxe4"
       ]
     },
     "Sicilian_Defense": {
@@ -220,8 +217,8 @@
         "d6",
         "c4",
         "Nb6",
-        "exd6",
-        "exd6"
+        "Nf3",
+        "Bf5"
       ]
     },
     "Philidor_Defense": {
@@ -245,7 +242,7 @@
         "Nf3",
         "d6",
         "d4",
-        "f6",
+        "Nf6",
         "dxe5",
         "dxe5",
         "Qxd8+",
@@ -254,16 +251,13 @@
     },
     "Owen_Defense": {
       "moves": [
-        "e4",
-        "b6",
-        "d4",
-        "Bb7",
-        "Bd3",
-        "f5",
-        "exf5",
-        "Bxg2",
-        "Qh5+",
-        "Nf6"
+        "b3",
+        "e5",
+        "Bb2",
+        "Nc6",
+        "f4",
+        "d5",
+        "fxe5"
       ]
     },
     "Queens_Gambit_Declined": {
@@ -416,7 +410,8 @@
         "dxc3",
         "Bc4",
         "cxb2",
-        "Bxb2"
+        "Bxb2",
+        "f6"
       ]
     },
     "Danish_Gambit": {
@@ -439,11 +434,11 @@
         "dxe5",
         "Nc6",
         "Nf3",
-        "Qe7",
-        "Qd4",
-        "f6",
-        "exf6",
-        "Qxe4"
+        "d6",
+        "exd6",
+        "Qxd6",
+        "Nc3",
+        "Nf6"
       ]
     },
     "Englund_Gambit_Declined": {
@@ -482,7 +477,8 @@
         "cxb5",
         "a6",
         "bxa6",
-        "Bxa6"
+        "Bxa6",
+        "Nc3"
       ]
     },
     "Elephant_Gambit": {
@@ -519,7 +515,7 @@
         "Bg2",
         "Be7",
         "O-O",
-        "O-O"
+        "dxc4"
       ]
     },
     "English_Opening": {
@@ -551,26 +547,25 @@
     "Bird_Opening": {
       "moves": [
         "f4",
-        "d5",
-        "e4",
-        "dxe4",
+        "e5",
+        "fxe5",
+        "c5",
         "Nf3",
-        "Qd8",
-        "Nc3",
-        "Nf6",
-        "Bc4"
+        "Nc6",
+        "d4",
+        "cxd4",
+        "Qxd4"
       ]
     },
     "Reti_Opening": {
       "moves": [
         "Nf3",
-        "d5",
-        "c4",
-        "dxc4",
-        "e4",
-        "e5",
-        "Bxc4",
-        "exf4"
+        "c5",
+        "g3",
+        "g6",
+        "Bg2",
+        "Bg7",
+        "d4"
       ]
     },
     "Catalan_Opening": {
@@ -605,11 +600,10 @@
         "e5",
         "Bb2",
         "Nc6",
-        "b5",
-        "Ne7",
-        "e3",
-        "d6",
-        "f4"
+        "f4",
+        "exf4",
+        "Nf3",
+        "Nf6"
       ]
     },
     "Grob_Opening": {
@@ -617,11 +611,11 @@
         "g4",
         "d5",
         "Bg2",
-        "dxg4",
+        "Bxg4",
         "c4",
-        "c6",
-        "Qa4",
-        "Nf6"
+        "e5",
+        "cxd5",
+        "Qxd5"
       ]
     },
     "Van_Geet_Opening": {
