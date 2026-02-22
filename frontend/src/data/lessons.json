@@ -51,7 +51,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "white"
         },
         {
           "id": "ruy_lopez",
@@ -97,7 +98,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "white"
         },
         {
           "id": "scotch_game",
@@ -143,7 +145,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "white"
         },
         {
           "id": "four_knights_game",
@@ -189,7 +192,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "white"
         },
         {
           "id": "russian_game",
@@ -235,7 +239,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "white"
         },
         {
           "id": "vienna_game",
@@ -281,7 +286,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "white"
         },
         {
           "id": "kings_gambit_accepted",
@@ -327,7 +333,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "white"
         },
         {
           "id": "kings_gambit_declined",
@@ -373,7 +380,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "black"
         },
         {
           "id": "bishops_opening",
@@ -419,7 +427,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "white"
         }
       ]
     },
@@ -473,7 +482,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "black"
         },
         {
           "id": "french_defense",
@@ -519,7 +529,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "black"
         },
         {
           "id": "caro-kann_defense",
@@ -565,7 +576,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "black"
         },
         {
           "id": "scandinavian_defense",
@@ -611,7 +623,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "black"
         },
         {
           "id": "pirc_defense",
@@ -657,7 +670,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "black"
         },
         {
           "id": "modern_defense",
@@ -703,7 +717,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "black"
         },
         {
           "id": "alekhine_defense",
@@ -749,7 +764,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "black"
         },
         {
           "id": "philidor_defense",
@@ -795,7 +811,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "black"
         },
         {
           "id": "horwitz_defense",
@@ -841,7 +858,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "black"
         },
         {
           "id": "owen_defense",
@@ -887,7 +905,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "black"
         }
       ]
     },
@@ -941,7 +960,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "black"
         },
         {
           "id": "queens_gambit_accepted",
@@ -987,7 +1007,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "white"
         },
         {
           "id": "indian_defense",
@@ -1033,7 +1054,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "black"
         },
         {
           "id": "queens_indian_defense",
@@ -1079,7 +1101,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "black"
         },
         {
           "id": "kings_indian_defense",
@@ -1125,7 +1148,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "black"
         },
         {
           "id": "nimzo-indian_defense",
@@ -1171,7 +1195,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "black"
         },
         {
           "id": "grunfeld_defense",
@@ -1217,7 +1242,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "black"
         },
         {
           "id": "slav_defense",
@@ -1263,7 +1289,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "black"
         },
         {
           "id": "semi-slav_defense",
@@ -1309,7 +1336,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "black"
         },
         {
           "id": "benoni_defense",
@@ -1355,7 +1383,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "black"
         }
       ]
     },
@@ -1409,7 +1438,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "white"
         },
         {
           "id": "kings_gambit_declined",
@@ -1455,7 +1485,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "black"
         },
         {
           "id": "danish_gambit_accepted",
@@ -1501,7 +1532,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "white"
         },
         {
           "id": "danish_gambit",
@@ -1547,7 +1579,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "white"
         },
         {
           "id": "englund_gambit",
@@ -1593,7 +1626,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "white"
         },
         {
           "id": "englund_gambit_declined",
@@ -1639,7 +1673,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "black"
         },
         {
           "id": "benko_gambit",
@@ -1685,7 +1720,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "white"
         },
         {
           "id": "benko_gambit_accepted",
@@ -1731,7 +1767,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "white"
         },
         {
           "id": "elephant_gambit",
@@ -1777,7 +1814,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "white"
         },
         {
           "id": "blackmar-diemer_gambit",
@@ -1823,7 +1861,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "white"
         }
       ]
     },
@@ -1877,7 +1916,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "white"
         },
         {
           "id": "english_opening",
@@ -1923,7 +1963,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "white"
         },
         {
           "id": "trompowsky_attack",
@@ -1969,7 +2010,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "white"
         },
         {
           "id": "bird_opening",
@@ -2015,7 +2057,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "white"
         },
         {
           "id": "reti_opening",
@@ -2061,7 +2104,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "white"
         },
         {
           "id": "catalan_opening",
@@ -2107,7 +2151,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "white"
         },
         {
           "id": "nimzo-larsen_attack",
@@ -2153,7 +2198,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "white"
         },
         {
           "id": "polish_opening",
@@ -2199,7 +2245,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "white"
         },
         {
           "id": "grob_opening",
@@ -2245,7 +2292,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "white"
         },
         {
           "id": "van_geet_opening",
@@ -2291,7 +2339,8 @@
               ],
               "puzzle_limit": 5
             }
-          ]
+          ],
+          "color": "white"
         }
       ]
     }

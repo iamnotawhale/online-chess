@@ -11,7 +11,8 @@
         "d4",
         "exd4",
         "c3"
-      ]
+      ],
+      "color": "white"
     },
     "Ruy_Lopez": {
       "moves": [
@@ -27,7 +28,8 @@
         "Be7",
         "Re1",
         "b5"
-      ]
+      ],
+      "color": "white"
     },
     "Scotch_Game": {
       "moves": [
@@ -41,7 +43,8 @@
         "Bc5",
         "Nxc6",
         "bxc6"
-      ]
+      ],
+      "color": "white"
     },
     "Four_Knights_Game": {
       "moves": [
@@ -55,7 +58,8 @@
         "Bc5",
         "O-O",
         "Nxe4"
-      ]
+      ],
+      "color": "white"
     },
     "Russian_Game": {
       "moves": [
@@ -66,7 +70,8 @@
         "Bc4",
         "Nxe4",
         "d4"
-      ]
+      ],
+      "color": "white"
     },
     "Vienna_Game": {
       "moves": [
@@ -80,7 +85,8 @@
         "Nxe4",
         "Qf3",
         "f5"
-      ]
+      ],
+      "color": "white"
     },
     "Kings_Gambit_Accepted": {
       "moves": [
@@ -94,7 +100,8 @@
         "g4",
         "Ne5",
         "Qh4"
-      ]
+      ],
+      "color": "white"
     },
     "Kings_Gambit_Declined": {
       "moves": [
@@ -107,7 +114,8 @@
         "Nf3",
         "Nc6",
         "Bc4"
-      ]
+      ],
+      "color": "black"
     },
     "Bishops_Opening": {
       "moves": [
@@ -121,7 +129,8 @@
         "d6",
         "O-O",
         "Nxe4"
-      ]
+      ],
+      "color": "white"
     },
     "Sicilian_Defense": {
       "moves": [
@@ -135,7 +144,8 @@
         "Nf6",
         "Nc3",
         "a6"
-      ]
+      ],
+      "color": "black"
     },
     "French_Defense": {
       "moves": [
@@ -149,7 +159,8 @@
         "dxe4",
         "Nxe4",
         "Be7"
-      ]
+      ],
+      "color": "black"
     },
     "Caro-Kann_Defense": {
       "moves": [
@@ -163,7 +174,8 @@
         "Bf5",
         "Ng3",
         "Bg6"
-      ]
+      ],
+      "color": "black"
     },
     "Scandinavian_Defense": {
       "moves": [
@@ -177,7 +189,8 @@
         "c6",
         "Nf3",
         "Bg4"
-      ]
+      ],
+      "color": "black"
     },
     "Pirc_Defense": {
       "moves": [
@@ -191,7 +204,8 @@
         "Bg7",
         "f3",
         "O-O"
-      ]
+      ],
+      "color": "black"
     },
     "Modern_Defense": {
       "moves": [
@@ -205,7 +219,8 @@
         "a6",
         "f3",
         "b5"
-      ]
+      ],
+      "color": "black"
     },
     "Alekhine_Defense": {
       "moves": [
@@ -219,7 +234,8 @@
         "Nb6",
         "Nf3",
         "Bf5"
-      ]
+      ],
+      "color": "black"
     },
     "Philidor_Defense": {
       "moves": [
@@ -233,7 +249,8 @@
         "Nbd7",
         "Bc4",
         "Be7"
-      ]
+      ],
+      "color": "black"
     },
     "Horwitz_Defense": {
       "moves": [
@@ -247,7 +264,8 @@
         "dxe5",
         "Qxd8+",
         "Kxd8"
-      ]
+      ],
+      "color": "black"
     },
     "Owen_Defense": {
       "moves": [
@@ -258,7 +276,8 @@
         "f4",
         "d5",
         "fxe5"
-      ]
+      ],
+      "color": "black"
     },
     "Queens_Gambit_Declined": {
       "moves": [
@@ -272,7 +291,8 @@
         "Be7",
         "Nf3",
         "O-O"
-      ]
+      ],
+      "color": "black"
     },
     "Queens_Gambit_Accepted": {
       "moves": [
@@ -286,7 +306,8 @@
         "Bg4",
         "Bxc4",
         "e6"
-      ]
+      ],
+      "color": "white"
     },
     "Indian_Defense": {
       "moves": [
@@ -300,7 +321,8 @@
         "e6",
         "Bg2",
         "Be7"
-      ]
+      ],
+      "color": "black"
     },
     "Queens_Indian_Defense": {
       "moves": [
@@ -314,7 +336,8 @@
         "Ba6",
         "Bg2",
         "Bb7"
-      ]
+      ],
+      "color": "black"
     },
     "Kings_Indian_Defense": {
       "moves": [
@@ -328,7 +351,8 @@
         "d6",
         "Nf3",
         "O-O"
-      ]
+      ],
+      "color": "black"
     },
     "Nimzo-Indian_Defense": {
       "moves": [
@@ -342,7 +366,8 @@
         "d5",
         "cxd5",
         "exd5"
-      ]
+      ],
+      "color": "black"
     },
     "Grunfeld_Defense": {
       "moves": [
@@ -356,7 +381,8 @@
         "Nxd5",
         "e4",
         "Nxc3"
-      ]
+      ],
+      "color": "black"
     },
     "Slav_Defense": {
       "moves": [
@@ -370,7 +396,8 @@
         "dxc4",
         "a4",
         "Bf5"
-      ]
+      ],
+      "color": "black"
     },
     "Semi-Slav_Defense": {
       "moves": [
@@ -384,7 +411,8 @@
         "e6",
         "Bg5",
         "dxc4"
-      ]
+      ],
+      "color": "black"
     },
     "Benoni_Defense": {
       "moves": [
@@ -398,7 +426,8 @@
         "d6",
         "Nc3",
         "Nf6"
-      ]
+      ],
+      "color": "black"
     },
     "Danish_Gambit_Accepted": {
       "moves": [
@@ -412,7 +441,8 @@
         "cxb2",
         "Bxb2",
         "f6"
-      ]
+      ],
+      "color": "white"
     },
     "Danish_Gambit": {
       "moves": [
@@ -425,7 +455,8 @@
         "Bc4",
         "cxb2",
         "Bxb2"
-      ]
+      ],
+      "color": "white"
     },
     "Englund_Gambit": {
       "moves": [
@@ -439,7 +470,8 @@
         "Qxd6",
         "Nc3",
         "Nf6"
-      ]
+      ],
+      "color": "white"
     },
     "Englund_Gambit_Declined": {
       "moves": [
@@ -450,7 +482,8 @@
         "Nf3",
         "Qe7",
         "Qd4"
-      ]
+      ],
+      "color": "black"
     },
     "Benko_Gambit": {
       "moves": [
@@ -464,7 +497,8 @@
         "a6",
         "bxa6",
         "Bxa6"
-      ]
+      ],
+      "color": "white"
     },
     "Benko_Gambit_Accepted": {
       "moves": [
@@ -479,7 +513,8 @@
         "bxa6",
         "Bxa6",
         "Nc3"
-      ]
+      ],
+      "color": "white"
     },
     "Elephant_Gambit": {
       "moves": [
@@ -491,7 +526,8 @@
         "d5",
         "exd5",
         "f5"
-      ]
+      ],
+      "color": "white"
     },
     "Blackmar-Diemer_Gambit": {
       "moves": [
@@ -502,7 +538,8 @@
         "f3",
         "exf3",
         "Qxf3"
-      ]
+      ],
+      "color": "white"
     },
     "Zukertort_Opening": {
       "moves": [
@@ -516,7 +553,8 @@
         "Be7",
         "O-O",
         "dxc4"
-      ]
+      ],
+      "color": "white"
     },
     "English_Opening": {
       "moves": [
@@ -529,7 +567,8 @@
         "d4",
         "exd4",
         "Nxd4"
-      ]
+      ],
+      "color": "white"
     },
     "Trompowsky_Attack": {
       "moves": [
@@ -542,7 +581,8 @@
         "f3",
         "cxd4",
         "Qxd4"
-      ]
+      ],
+      "color": "white"
     },
     "Bird_Opening": {
       "moves": [
@@ -555,7 +595,8 @@
         "d4",
         "cxd4",
         "Qxd4"
-      ]
+      ],
+      "color": "white"
     },
     "Reti_Opening": {
       "moves": [
@@ -566,7 +607,8 @@
         "Bg2",
         "Bg7",
         "d4"
-      ]
+      ],
+      "color": "white"
     },
     "Catalan_Opening": {
       "moves": [
@@ -580,7 +622,8 @@
         "O-O",
         "Nf3",
         "d5"
-      ]
+      ],
+      "color": "white"
     },
     "Nimzo-Larsen_Attack": {
       "moves": [
@@ -592,7 +635,8 @@
         "d5",
         "f4",
         "exf4"
-      ]
+      ],
+      "color": "white"
     },
     "Polish_Opening": {
       "moves": [
@@ -604,7 +648,8 @@
         "exf4",
         "Nf3",
         "Nf6"
-      ]
+      ],
+      "color": "white"
     },
     "Grob_Opening": {
       "moves": [
@@ -616,7 +661,8 @@
         "e5",
         "cxd5",
         "Qxd5"
-      ]
+      ],
+      "color": "white"
     },
     "Van_Geet_Opening": {
       "moves": [
@@ -627,7 +673,8 @@
         "Qe2",
         "Bf5",
         "d3"
-      ]
+      ],
+      "color": "white"
     }
   }
 }
