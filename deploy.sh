@@ -66,6 +66,10 @@ sleep 10
 echo "🏥 Checking service health..."
 docker-compose -f docker-compose.prod.yml ps
 
+# Start Telegram log bot if configured
+echo "🤖 Starting Telegram log watcher (if configured)..."
+./scripts/start-telegram-log-bot.sh || true
+
 echo "✅ Deployment complete!"
 echo "📱 Frontend: https://$DOMAIN"
 echo "🔧 Backend: https://$DOMAIN/api"

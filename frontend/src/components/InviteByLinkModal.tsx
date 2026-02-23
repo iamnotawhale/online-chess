@@ -68,7 +68,6 @@ export const InviteByLinkModal: React.FC<InviteByLinkModalProps> = ({ onClose })
     if (!inviteLink) return;
     try {
       await navigator.clipboard.writeText(inviteLink);
-      alert(t('linkCopied'));
     } catch (err) {
       console.error('Failed to copy link', err);
     }
