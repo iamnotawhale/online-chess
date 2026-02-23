@@ -149,14 +149,14 @@ class ApiService {
       },
     });
 
-    // Загрузить токен из localStorage если существует
+    // Load token from localStorage if it exists
     const savedToken = localStorage.getItem('authToken');
     if (savedToken) {
       this.token = savedToken;
       this.client.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
     }
 
-    // Интерцептор для обновления заголовков при изменении токена
+    // Interceptor to handle token changes and unauthorized responses
     this.client.interceptors.response.use(
       response => response,
       error => {

@@ -73,7 +73,7 @@ export const GameAnalysis: React.FC = () => {
       const isMobile = window.innerWidth <= 768;
       // For mobile, use almost full width; for desktop, cap at 800px
       const maxBoardWidth = isMobile 
-        ? window.innerWidth  // полная ширина
+        ? window.innerWidth  // full width
         : Math.min(800, Math.max(280, window.innerWidth - 40));
       setAnalysisBoardWidth(maxBoardWidth);
     };

@@ -380,7 +380,7 @@ export const Education: React.FC = () => {
       const saved = await apiService.updateLessonProgress(payload);
       setLessonProgress(prev => ({ ...prev, [saved.lessonId]: saved }));
     } catch {
-      // Игнорируем ошибки обновления прогресса, чтобы не ломать UI.
+      // Ignore progress update errors to avoid breaking the UI.
     }
   };
 
@@ -406,7 +406,7 @@ export const Education: React.FC = () => {
         })
       );
     } catch {
-      // Игнорируем ошибки localStorage.
+      // Ignore localStorage errors.
     }
   };
 
@@ -438,7 +438,7 @@ export const Education: React.FC = () => {
     return Math.min(100, Math.round((totals.solved / totals.total) * 100));
   };
 
-  // Вид: Выбор категории
+  // View: Category selection
   if (!selectedCategory) {
     return (
       <div className="education-container">
@@ -485,7 +485,7 @@ export const Education: React.FC = () => {
     );
   }
 
-  // Вид: Выбор дебюта в категории
+  // View: Opening selection within category
   if (!selectedSubtopic) {
     return (
       <div className="education-container">
@@ -536,7 +536,7 @@ export const Education: React.FC = () => {
     );
   }
 
-  // Вид: Страница урока
+  // View: Lesson page
   return (
     <div className="education-container">
       <div className="lesson-header">

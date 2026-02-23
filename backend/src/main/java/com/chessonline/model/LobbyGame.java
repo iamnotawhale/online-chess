@@ -25,7 +25,7 @@ public class LobbyGame {
     private String preferredColor; // "white", "black", "random"
 
     @Column(nullable = false)
-    private boolean rated; // рейтинговая игра или нет
+    private boolean rated; // whether the game is rated
 
     @Column(nullable = false)
     private LocalDateTime createdAt;

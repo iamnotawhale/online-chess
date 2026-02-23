@@ -24,9 +24,9 @@ public class GameWebSocketController {
     private SimpMessagingTemplate messagingTemplate;
 
     /**
-     * Сделать ход через WebSocket
-     * Клиент отправляет: /app/game/{gameId}/move
-     * Сервер отправляет обоим игрокам: /topic/game/{gameId}/updates
+     * Make a move via WebSocket
+     * Client sends: /app/game/{gameId}/move
+     * Server broadcasts to both players: /topic/game/{gameId}/updates
      */
     @MessageMapping("/game/{gameId}/move")
     public void makeMove(
@@ -41,12 +41,12 @@ public class GameWebSocketController {
             
             System.out.println("🎮 Received move: " + request.getMove() + " from user: " + userId + " in game: " + gameId);
             
-            // Делаем ход - метод makeMove() уже отправляет WebSocket уведомление внутри
+            // Execute move - makeMove() already sends WebSocket update internally
             gameService.makeMove(gameId, userId, request.getMove());
             
         } catch (Exception e) {
             System.err.println("❌ Error processing move: " + e.getMessage());
-            // Отправляем ошибку конкретному пользователю
+            // Send error only to current user
             if (principal != null && principal.getName() != null) {
                 messagingTemplate.convertAndSendToUser(
                     principal.getName(),
@@ -58,7 +58,7 @@ public class GameWebSocketController {
     }
 
     /**
-     * Подписка на игру (клиент автоматически подписывается на /topic/game/{gameId}/updates)
+     * Game subscription (client subscribes automatically to /topic/game/{gameId}/updates)
      */
     public void notifyGameUpdate(String gameId, Game game) {
         GameResponse response = mapGameToResponse(game);

@@ -107,7 +107,7 @@ public class LobbyService {
         // Notify both players that game has started via WebSocket
         Map<String, Object> gameStartedMessage = Map.of(
             "gameId", game.getId(),
-            "message", "Игра началась"
+            "message", "Game started"
         );
         
         // Send to creator

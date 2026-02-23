@@ -15,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.imageio.ImageIO;
@@ -28,7 +27,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.apache.batik.transcoder.TranscoderInput;
@@ -53,23 +51,8 @@ public class MetaPreviewController {
     @Autowired
     private MoveRepository moveRepository;
 
-    private String getText(String lang, String ruText, String enText) {
-        return "ru".equals(lang) ? ruText : enText;
-    }
-
-    private String resolveLang(String langParam, HttpServletRequest request) {
-        if ("ru".equalsIgnoreCase(langParam)) return "ru";
-        if ("en".equalsIgnoreCase(langParam)) return "en";
-
-        // Telegram/Discord bots often send English Accept-Language, which does not
-        // reflect user's selected language in app header. Keep deterministic default.
-        return "ru";
-    }
-
     @GetMapping(value = "/invite/{inviteId}", produces = "text/html;charset=UTF-8")
-    public ResponseEntity<String> inviteMeta(@PathVariable String inviteId, HttpServletRequest request, 
-                                              @RequestParam(required = false) String lang) {
-        lang = resolveLang(lang, request);
+    public ResponseEntity<String> inviteMeta(@PathVariable String inviteId, HttpServletRequest request) {
         String normalizedId = inviteId.toUpperCase();
         String baseUrl = getBaseUrl(request);
         Optional<Invite> inviteOpt = inviteRepository.findByIdWithUsers(normalizedId);
@@ -81,35 +64,25 @@ public class MetaPreviewController {
             Invite invite = inviteOpt.get();
             String creatorName = safe(invite.getCreator().getUsername(), "Player");
             int rating = invite.getCreator().getRating() != null ? invite.getCreator().getRating() : 1200;
-            String mode = humanGameMode(invite.getGameMode(), lang);
+            String mode = humanGameMode(invite.getGameMode());
             String tc = safe(invite.getTimeControl(), "10+0");
-            String ratedLabel = invite.isRated() ? 
-                getText(lang, "рейтинговую", "rated") : 
-                getText(lang, "нерейтинговую", "casual");
+            String ratedLabel = invite.isRated() ? "rated" : "casual";
 
-            title = getText(lang, 
-                "♟️ Вызов в шахматы от " + creatorName,
-                    "♟️ Chess challenge from " + creatorName);
-            description = getText(lang,
-                creatorName + " (" + rating + ") приглашает тебя в " + ratedLabel + " " + mode + " (" + tc + ") партию. Прими вызов!",
-                    creatorName + " (" + rating + ") invites you to a " + ratedLabel + " " + mode + " (" + tc + ") game. Accept the challenge!");
+            title = "♟️ Chess challenge from " + creatorName;
+            description = creatorName + " (" + rating + ") invites you to a " + ratedLabel + " " + mode + " (" + tc + ") game. Accept the challenge!";
         } else {
-            title = getText(lang, "♟️ Приглашение в шахматы", "♟️ Chess invitation");
-            description = getText(lang, 
-                    "Перейди по ссылке, чтобы принять вызов и начать игру.",
-                    "Follow the link to accept the challenge and play a game.");
+            title = "♟️ Chess invitation";
+            description = "Follow the link to accept the challenge and play a game.";
         }
 
-        String imageUrl = baseUrl + "/api/meta/image/invite/" + encodePath(normalizedId) + ".png?lang=" + encodePath(lang);
+        String imageUrl = baseUrl + "/api/meta/image/invite/" + encodePath(normalizedId) + ".png";
         String targetUrl = baseUrl + "/invite/" + encodePath(normalizedId);
 
         return htmlResponse(buildMetaHtml(title, description, imageUrl, targetUrl));
     }
 
     @GetMapping(value = "/game/{gameId}", produces = "text/html;charset=UTF-8")
-    public ResponseEntity<String> gameMeta(@PathVariable String gameId, HttpServletRequest request,
-                                            @RequestParam(required = false) String lang) {
-        lang = resolveLang(lang, request);
+    public ResponseEntity<String> gameMeta(@PathVariable String gameId, HttpServletRequest request) {
         String baseUrl = getBaseUrl(request);
         Optional<Game> gameOpt = gameRepository.findById(gameId);
 
@@ -122,74 +95,51 @@ public class MetaPreviewController {
             String black = safe(game.getPlayerBlack().getUsername(), "Black");
             int whiteRating = game.getPlayerWhite().getRating() != null ? game.getPlayerWhite().getRating() : 1200;
             int blackRating = game.getPlayerBlack().getRating() != null ? game.getPlayerBlack().getRating() : 1200;
-            String speed = inferSpeed(game.getTimeControl(), lang);
+            String speed = inferSpeed(game.getTimeControl());
             String tc = safe(game.getTimeControl(), "10+0");
-            String ratedLabel = game.isRated() ? 
-                    getText(lang, "рейтинговую", "rated") : 
-                    getText(lang, "нерейтинговую", "casual");
+            String ratedLabel = game.isRated() ? "rated" : "casual";
             int plies = moveRepository.findByGameIdOrderByMoveNumber(game.getId()).size();
             int moves = (plies + 1) / 2;
             String result = safe(game.getResult(), "*");
-            String reason = humanResultReason(game.getResultReason(), lang);
+            String reason = humanResultReason(game.getResultReason());
 
             if ("active".equalsIgnoreCase(game.getStatus())) {
-                title = getText(lang,
-                    "♟️ " + speed + ": " + white + " vs " + black,
-                    "♟️ " + speed + ": " + white + " vs " + black);
-                description = getText(lang,
-                        white + " (" + whiteRating + ") играет против " + black + " (" + blackRating + ") в " + ratedLabel + " " + speed + " (" + tc + "). Смотрите игру вживую!",
-                        white + " (" + whiteRating + ") is playing " + black + " (" + blackRating + ") in a " + ratedLabel + " " + speed + " (" + tc + "). Watch live!");
+                title = "♟️ " + speed + ": " + white + " vs " + black;
+                description = white + " (" + whiteRating + ") is playing " + black + " (" + blackRating + ") in a " + ratedLabel + " " + speed + " (" + tc + "). Watch live!";
             } else {
-                title = getText(lang,
-                        "♟️ Завершено: " + white + " vs " + black,
-                        "♟️ Finished: " + white + " vs " + black);
-                String reasonText = reason.isBlank() ? "" : " " + getText(lang, "по", "by") + " " + reason;
-                description = getText(lang,
-                        white + " (" + whiteRating + ") сыграл против " + black + " (" + blackRating + ") в " + ratedLabel + " " + speed + " (" + tc + "). Результат: " + result + reasonText + (moves > 0 ? " после " + moves + " ходов." : ".") + " Смотрите и анализируйте партию!",
-                        white + " (" + whiteRating + ") played " + black + " (" + blackRating + ") in a " + ratedLabel + " " + speed + " (" + tc + "). Result: " + result + reasonText + (moves > 0 ? " after " + moves + " moves." : ".") + " Watch and analyze!");
+                title = "♟️ Finished: " + white + " vs " + black;
+                String reasonText = reason.isBlank() ? "" : " by " + reason;
+                description = white + " (" + whiteRating + ") played " + black + " (" + blackRating + ") in a " + ratedLabel + " " + speed + " (" + tc + "). Result: " + result + reasonText + (moves > 0 ? " after " + moves + " moves." : ".") + " Watch and analyze!";
             }
         } else {
-            title = getText(lang, "♟️ Шахматная партия", "♟️ Chess game");
-            description = getText(lang, 
-                    "Откройте ссылку, чтобы смотреть, анализировать и обсуждать партию.",
-                    "Open the link to watch, analyze, and discuss the game.");
+            title = "♟️ Chess game";
+            description = "Open the link to watch, analyze, and discuss the game.";
         }
 
-        String imageUrl = baseUrl + "/api/meta/image/game/" + encodePath(gameId) + ".png?lang=" + encodePath(lang);
+        String imageUrl = baseUrl + "/api/meta/image/game/" + encodePath(gameId) + ".png";
         String targetUrl = baseUrl + "/game/" + encodePath(gameId);
 
         return htmlResponse(buildMetaHtml(title, description, imageUrl, targetUrl));
     }
 
     @GetMapping(value = "/puzzle/{puzzleId}", produces = "text/html;charset=UTF-8")
-    public ResponseEntity<String> puzzleMeta(@PathVariable String puzzleId, HttpServletRequest request,
-                                              @RequestParam(required = false) String lang) {
-        lang = resolveLang(lang, request);
+    public ResponseEntity<String> puzzleMeta(@PathVariable String puzzleId, HttpServletRequest request) {
         String baseUrl = getBaseUrl(request);
-        Optional<Puzzle> puzzleOpt = puzzleRepository.findById(puzzleId);
-        if (puzzleOpt.isEmpty()) {
-            puzzleOpt = puzzleRepository.findByIdIgnoreCase(puzzleId);
-        }
 
         String title;
         String description;
 
-        title = getText(lang, "🧩 Шахматный пазл", "🧩 Chess puzzle");
-        description = getText(lang,
-            "Решите эту тактическую задачу и проверьте свой расчет.",
-            "Solve this tactical puzzle and test your calculation.");
+        title = "🧩 Chess puzzle";
+        description = "Solve this tactical puzzle and test your calculation.";
 
-        String imageUrl = baseUrl + "/api/meta/image/puzzle/" + encodePath(puzzleId) + ".png?lang=" + encodePath(lang);
+        String imageUrl = baseUrl + "/api/meta/image/puzzle/" + encodePath(puzzleId) + ".png";
         String targetUrl = baseUrl + "/puzzle/" + encodePath(puzzleId);
 
         return htmlResponse(buildMetaHtml(title, description, imageUrl, targetUrl));
     }
 
     @GetMapping(value = "/image/invite/{inviteId}.png", produces = "image/png")
-    public ResponseEntity<byte[]> inviteImagePng(@PathVariable String inviteId, 
-                                                  @RequestParam(required = false) String lang,
-                                                  HttpServletRequest request) {
-        lang = resolveLang(lang, request);
+    public ResponseEntity<byte[]> inviteImagePng(@PathVariable String inviteId) {
         Optional<Invite> inviteOpt = inviteRepository.findByIdWithUsers(inviteId.toUpperCase());
         String title;
         String subtitle;
@@ -197,22 +147,19 @@ public class MetaPreviewController {
             Invite invite = inviteOpt.get();
             String creator = safe(invite.getCreator().getUsername(), "Player");
             int rating = invite.getCreator().getRating() != null ? invite.getCreator().getRating() : 1200;
-            String ratedLabel = invite.isRated() ? getText(lang, "Рейтинговая", "Rated") : getText(lang, "Нерейтинговая", "Casual");
+            String ratedLabel = invite.isRated() ? "Rated" : "Casual";
             title = creator;
-            subtitle = "Elo " + rating + " • " + ratedLabel + " " + humanGameMode(invite.getGameMode(), lang)
+            subtitle = "Elo " + rating + " • " + ratedLabel + " " + humanGameMode(invite.getGameMode())
                     + " • " + safe(invite.getTimeControl(), "10+0");
         } else {
-            title = getText(lang, "Приглашение", "Invite");
-            subtitle = getText(lang, "Начальная позиция", "Start position");
+            title = "Invite";
+            subtitle = "Start position";
         }
         return pngResponse(ChessPngRenderer.renderBoard(START_FEN, title, subtitle));
     }
 
     @GetMapping(value = "/image/game/{gameId}.png", produces = "image/png")
-    public ResponseEntity<byte[]> gameImagePng(@PathVariable String gameId,
-                                                @RequestParam(required = false) String lang,
-                                                HttpServletRequest request) {
-        lang = resolveLang(lang, request);
+    public ResponseEntity<byte[]> gameImagePng(@PathVariable String gameId) {
         Optional<Game> gameOpt = gameRepository.findById(gameId);
         
         String title;
@@ -225,28 +172,23 @@ public class MetaPreviewController {
             String black = safe(game.getPlayerBlack().getUsername(), "Black");
             int whiteRating = game.getPlayerWhite().getRating() != null ? game.getPlayerWhite().getRating() : 1200;
             int blackRating = game.getPlayerBlack().getRating() != null ? game.getPlayerBlack().getRating() : 1200;
-            String speed = inferSpeed(game.getTimeControl(), lang);
+            String speed = inferSpeed(game.getTimeControl());
             String tc = safe(game.getTimeControl(), "10+0");
-            String ratedLabel = game.isRated() ? getText(lang, "Рейтинговая", "Rated") : getText(lang, "Нерейтинговая", "Casual");
-            String eloLabel = getText(lang, "Эло", "Elo");
-            String versus = getText(lang, "против", "vs");
+            String ratedLabel = game.isRated() ? "Rated" : "Casual";
             
-            title = white + " (" + eloLabel + " " + whiteRating + ") " + versus + " " + black + " (" + eloLabel + " " + blackRating + ")";
+            title = white + " (" + whiteRating + ") vs\n" + black + " (" + blackRating + ")";
             subtitle = ratedLabel + " " + speed + " • " + tc;
             fen = safe(game.getFenCurrent(), START_FEN);
         } else {
-            title = getText(lang, "Шахматная партия", "Chess game");
-            subtitle = getText(lang, "Смотрите партию", "Watch the game");
+            title = "Chess game";
+            subtitle = "Watch the game";
         }
         
         return pngResponse(ChessPngRenderer.renderBoard(fen, title, subtitle));
     }
 
     @GetMapping(value = "/image/puzzle/{puzzleId}.png", produces = "image/png")
-    public ResponseEntity<byte[]> puzzleImagePng(@PathVariable String puzzleId,
-                                                  @RequestParam(required = false) String lang,
-                                                  HttpServletRequest request) {
-        lang = resolveLang(lang, request);
+    public ResponseEntity<byte[]> puzzleImagePng(@PathVariable String puzzleId) {
         Optional<Puzzle> puzzleOpt = puzzleRepository.findById(puzzleId);
         if (puzzleOpt.isEmpty()) {
             puzzleOpt = puzzleRepository.findByIdIgnoreCase(puzzleId);
@@ -259,17 +201,21 @@ public class MetaPreviewController {
             Puzzle puzzle = puzzleOpt.get();
             String themes = normalizeList(safe(puzzle.getThemes(), ""), ",", 2);
             boolean hasKnownThemes = !themes.isBlank() && !"unknown".equalsIgnoreCase(themes) && !"unknown themes".equalsIgnoreCase(themes);
-            String sideToMove = safe(puzzle.getFen(), START_FEN).contains(" w ")
-                    ? getText(lang, "ход белых", "white to move")
-                    : getText(lang, "ход черных", "black to move");
-            title = getText(lang, "Пазл " + puzzle.getId(), "Puzzle " + puzzle.getId());
-            subtitle = getText(lang, "Elo ", "Elo ") + puzzle.getRating()
+            String puzzleFen = safe(puzzle.getFen(), START_FEN);
+            boolean whiteToMoveInFen = puzzleFen.contains(" w ");
+            boolean hasFirstOpponentMove = puzzle.getMoves() != null && !puzzle.getMoves().isBlank();
+            boolean whiteToMoveForPlayer = hasFirstOpponentMove ? !whiteToMoveInFen : whiteToMoveInFen;
+            String sideToMove = whiteToMoveForPlayer
+                ? "white to move"
+                : "black to move";
+            title = "Puzzle " + puzzle.getId();
+            subtitle = "Elo " + puzzle.getRating()
                     + (hasKnownThemes ? " • " + themes : "")
                     + " • " + sideToMove;
-            fen = safe(puzzle.getFen(), START_FEN);
+            fen = puzzleFen;
         } else {
-            title = getText(lang, "Пазл", "Puzzle");
-            subtitle = getText(lang, "Решите задачу", "Solve the puzzle");
+            title = "Puzzle";
+            subtitle = "Solve the puzzle";
         }
         
         return pngResponse(ChessPngRenderer.renderBoard(fen, title, subtitle));
@@ -295,7 +241,7 @@ public class MetaPreviewController {
         String escapedImage = esc(imageUrl);
         String escapedTarget = esc(targetUrl);
 
-        return "<!doctype html><html lang=\"en\"><head>"
+        return "<!doctype html><html><head>"
                 + "<meta charset=\"UTF-8\"/>"
                 + "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>"
                 + "<title>" + escapedTitle + "</title>"
@@ -350,52 +296,35 @@ public class MetaPreviewController {
         return URLEncoder.encode(value, StandardCharsets.UTF_8).replace("+", "%20");
     }
 
-    private String humanGameMode(String mode, String lang) {
-        Map<String, String> map = "ru".equals(lang) ?
-                Map.of(
-                        "bullet", "Молния",
-                        "blitz", "Блиц",
-                        "rapid", "Рапид",
-                        "classic", "Классика",
-                        "custom", "Пользовательская"
-                ) :
-                Map.of(
-                        "bullet", "Bullet",
-                        "blitz", "Blitz",
-                        "rapid", "Rapid",
-                        "classic", "Classical",
-                        "custom", "Custom"
-                );
-        if (mode == null || mode.isBlank()) return getText(lang, "Рапид", "Rapid");
+        private String humanGameMode(String mode) {
+        Map<String, String> map = Map.of(
+            "bullet", "Bullet",
+            "blitz", "Blitz",
+            "rapid", "Rapid",
+            "classic", "Classical",
+            "custom", "Custom"
+        );
+        if (mode == null || mode.isBlank()) return "Rapid";
         String normalized = mode.toLowerCase();
         return map.getOrDefault(normalized, capitalize(normalized));
     }
 
-    private String humanResultReason(String reason, String lang) {
+        private String humanResultReason(String reason) {
         if (reason == null || reason.isBlank()) return "";
-        Map<String, String> map = "ru".equals(lang) ?
-                Map.of(
-                        "checkmate", "мат",
-                        "resignation", "сдача",
-                        "timeout", "время вышло",
-                        "stalemate", "пат",
-                        "agreement", "согласие на ничью",
-                        "abandonment", "отказ"
-                ) :
-                Map.of(
-                        "checkmate", "checkmate",
-                        "resignation", "resignation",
-                        "timeout", "timeout",
-                        "stalemate", "stalemate",
-                        "agreement", "draw agreement",
-                        "abandonment", "abandonment"
-                );
+        Map<String, String> map = Map.of(
+            "checkmate", "checkmate",
+            "resignation", "resignation",
+            "timeout", "timeout",
+            "stalemate", "stalemate",
+            "agreement", "draw agreement",
+            "abandonment", "abandonment"
+        );
         return map.getOrDefault(reason.toLowerCase(), reason);
     }
 
-    private String inferSpeed(String timeControl, String lang) {
+        private String inferSpeed(String timeControl) {
         if (timeControl == null || !timeControl.contains("+")) {
-            return getText(lang, "Рапид", "Rapid");
+            return "Rapid";
         }
 
         String[] parts = timeControl.split("\\+");
@@ -405,13 +334,12 @@ public class MetaPreviewController {
             minutes = Integer.parseInt(parts[0]);
             increment = Integer.parseInt(parts[1]);
         } catch (Exception e) {
-            return getText(lang, "Рапид", "Rapid");
+            return "Rapid";
         }
 
         int estimatedSeconds = minutes * 60 + increment * 40;
-        String[] speedsRu = {"Молния", "Блиц", "Рапид", "Классика"};
         String[] speedsEn = {"Bullet", "Blitz", "Rapid", "Classical"};
-        String[] speeds = "ru".equals(lang) ? speedsRu : speedsEn;
+        String[] speeds = speedsEn;
         
         if (estimatedSeconds <= 179) return speeds[0];
         if (estimatedSeconds <= 479) return speeds[1];
@@ -528,14 +456,15 @@ public class MetaPreviewController {
 
                 // Draw text on right side
                 g.setColor(TEXT_PRIMARY);
-                g.setFont(new Font("SansSerif", Font.BOLD, 54));
-                int subtitleStartY = drawWrappedText(g, trim(title, 120), 650, 165, 520, 3, 62);
+                int titleFontSize = 42;
+                g.setFont(new Font("SansSerif", Font.BOLD, titleFontSize));
+                int subtitleStartY = drawWrappedText(g, trim(title, 120), 650, 165, 520, 3, 52);
 
                 g.setColor(TEXT_SECONDARY);
-                g.setFont(new Font("SansSerif", Font.PLAIN, 34));
-                drawWrappedText(g, trim(subtitle, 180), 650, subtitleStartY + 12, 520, 5, 44);
+                g.setFont(new Font("SansSerif", Font.PLAIN, 28));
+                drawWrappedText(g, trim(subtitle, 180), 650, subtitleStartY + 10, 520, 5, 36);
 
-                g.setFont(new Font("SansSerif", Font.PLAIN, 24));
+                g.setFont(new Font("SansSerif", Font.PLAIN, 20));
                 g.setColor(TEXT_MUTED);
                 g.drawString("onchess.online", 650, 560);
 
@@ -577,32 +506,45 @@ public class MetaPreviewController {
                 return y;
             }
             FontMetrics fm = g.getFontMetrics();
-            String[] words = text.split("\\s+");
-            StringBuilder line = new StringBuilder();
             int drawnLines = 0;
             int currentY = y;
             int lastBaseline = y;
-            for (String word : words) {
-                String candidate = line.isEmpty() ? word : line + " " + word;
-                if (fm.stringWidth(candidate) <= maxWidth) {
-                    line = new StringBuilder(candidate);
-                    continue;
+
+            String[] paragraphs = text.split("\\R", -1);
+            for (String paragraph : paragraphs) {
+                String[] words = paragraph.trim().isEmpty() ? new String[]{""} : paragraph.trim().split("\\s+");
+                StringBuilder line = new StringBuilder();
+
+                for (String word : words) {
+                    String candidate = line.isEmpty() ? word : line + " " + word;
+                    if (fm.stringWidth(candidate) <= maxWidth) {
+                        line = new StringBuilder(candidate);
+                        continue;
+                    }
+
+                    g.drawString(trim(line.toString(), 200), x, currentY);
+                    drawnLines++;
+                    lastBaseline = currentY;
+                    if (drawnLines >= maxLines) {
+                        return lastBaseline + lineHeight;
+                    }
+                    currentY += lineHeight;
+                    line = new StringBuilder(word);
+                }
+
+                if (drawnLines >= maxLines) {
+                    return lastBaseline + lineHeight;
                 }
 
                 g.drawString(trim(line.toString(), 200), x, currentY);
                 drawnLines++;
-                 lastBaseline = currentY;
+                lastBaseline = currentY;
                 if (drawnLines >= maxLines) {
                     return lastBaseline + lineHeight;
                 }
                 currentY += lineHeight;
-                line = new StringBuilder(word);
             }
 
-            if (!line.isEmpty() && drawnLines < maxLines) {
-                g.drawString(trim(line.toString(), 200), x, currentY);
-                lastBaseline = currentY;
-            }
             return lastBaseline + lineHeight;
         }
 

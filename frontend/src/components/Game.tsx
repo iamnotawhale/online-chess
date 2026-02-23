@@ -27,9 +27,9 @@ interface GameData {
 }
 
 export const GameView: React.FC = () => {
-    // Таймер для плавного уменьшения времени
+    // Timer for smooth countdown
     const timerRef = useRef<number | null>(null);
-    // Для диалога promotion
+    // Promotion dialog state
     const [promotionDialogOpen, setPromotionDialogOpen] = useState(false);
     const [promotionData, setPromotionData] = useState<{ from: string; to: string } | null>(null);
 
@@ -69,7 +69,7 @@ export const GameView: React.FC = () => {
   });
   const moveRowRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  // Очистить таймер при размонтировании
+  // Cleanup timer on unmount
   useEffect(() => {
     return () => {
       if (timerRef.current) {
@@ -79,12 +79,12 @@ export const GameView: React.FC = () => {
     };
   }, []);
 
-  // Отслеживать состояние просмотра истории в ref
+  // Mirror history-view state in ref
   useEffect(() => {
     isViewingHistoryRef.current = isViewingHistory;
   }, [isViewingHistory]);
 
-  // Запустить таймер, если партия активна (со второго хода белых)
+  // Start timer if game is active (after initial move sequence)
   useEffect(() => {
     if (!game || !chessInstance || !wsConnected || game.status !== 'active' || lastMoveAt === null) {
       if (timerRef.current) {
@@ -94,7 +94,7 @@ export const GameView: React.FC = () => {
       return;
     }
     
-    // Таймер запускается только после двух полуходов (1 ход белых + 1 ход черных)
+    // Start timer only after two plies (white move + black move)
     const moveCount = chessInstance.history().length;
     if (moveCount < 2) {
       if (timerRef.current) {
@@ -108,7 +108,7 @@ export const GameView: React.FC = () => {
       if (game.status !== 'active') return;
       
       const turn = chessInstance.turn();
-      // Считаем время от момента получения последнего обновления от сервера
+      // Count elapsed time from the last server update moment
       const elapsedMs = Date.now() - timeUpdateReceivedAt;
       
       if (turn === 'w') {
@@ -259,16 +259,16 @@ export const GameView: React.FC = () => {
       let message = '';
       if (update.resultReason === 'checkmate') {
         if (update.result === '1-0') {
-          message = '♔ Мат! Белые победили!';
+          message = '♔ Checkmate! White wins!';
         } else if (update.result === '0-1') {
-          message = '♔ Мат! Черные победили!';
+          message = '♔ Checkmate! Black wins!';
         }
       } else if (update.resultReason === 'stalemate') {
-        message = '♔ Пат! Ничья!';
+        message = '♔ Stalemate! Draw!';
       } else if (update.resultReason === 'timeout') {
-        message = '⏰ Время вышло!';
+        message = '⏰ Time out!';
       } else if (update.resultReason === 'resignation') {
-        message = '🏳️ Сдались!';
+        message = '🏳️ Resignation!';
       }
       
       if (message) {
@@ -298,14 +298,14 @@ export const GameView: React.FC = () => {
         setBlackTimeLeftMs(update.blackTimeLeftMs);
         setBlackTimeBase(update.blackTimeLeftMs);
       }
-      // Фиксируем момент получения обновления времени
+      // Save timestamp when time update is received
       if (update.whiteTimeLeftMs !== undefined || update.blackTimeLeftMs !== undefined) {
         setTimeUpdateReceivedAt(Date.now());
       }
       if (update.lastMoveAt) {
         setLastMoveAt(new Date(update.lastMoveAt).getTime());
       } else if (update.whiteTimeLeftMs !== undefined || update.blackTimeLeftMs !== undefined) {
-        // Если получили обновление времени, но нет lastMoveAt, обновляем текущее время
+        // If time update arrived without lastMoveAt, use current timestamp
         setLastMoveAt(Date.now());
       }
       if (update.drawOfferedById !== undefined) {
@@ -380,11 +380,11 @@ export const GameView: React.FC = () => {
       setBlackTimeLeftMs(gameData.blackTimeLeftMs || 0);
       setWhiteTimeBase(gameData.whiteTimeLeftMs || 0);
       setBlackTimeBase(gameData.blackTimeLeftMs || 0);
-      setTimeUpdateReceivedAt(Date.now()); // Запомнить момент получения времени
+      setTimeUpdateReceivedAt(Date.now()); // Remember time update moment
       if (gameData.lastMoveAt) {
         setLastMoveAt(new Date(gameData.lastMoveAt).getTime());
       } else {
-        setLastMoveAt(Date.now()); // Если нет lastMoveAt, считаем что ход только что произошёл
+        setLastMoveAt(Date.now()); // Fallback when lastMoveAt is missing
       }
       
       // Check if this is a bot game
@@ -400,7 +400,7 @@ export const GameView: React.FC = () => {
       // Load move history
       await loadMoveHistory();
     } catch (err: any) {
-      setError('Ошибка загрузки игры');
+      setError(t('errorLoadingGame'));
       console.error(err);
     } finally {
       setLoading(false);
@@ -434,7 +434,7 @@ export const GameView: React.FC = () => {
       setMoveHistory(moveNotations);
       setMoveFens(movePositions);
       
-      // Только обновляем currentMoveIndex если пользователь НЕ просматривает историю
+      // Update currentMoveIndex only when user is not viewing history
       if (!isViewingHistoryRef.current) {
         setCurrentMoveIndex(moveNotations.length - 1);
       }
@@ -733,7 +733,7 @@ export const GameView: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="game-container"><p>Загрузка игры...</p></div>;
+    return <div className="game-container"><p>{t('loadingGame')}</p></div>;
   }
 
   if (error) {
@@ -741,7 +741,7 @@ export const GameView: React.FC = () => {
   }
 
   if (!game || !chessInstance) {
-    return <div className="game-container"><p>Игра не найдена</p></div>;
+    return <div className="game-container"><p>{t('gameNotFound')}</p></div>;
   }
 
   const isGameActive = game.status === 'active';

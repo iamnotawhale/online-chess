@@ -110,7 +110,7 @@ export const InviteByLinkModal: React.FC<InviteByLinkModalProps> = ({ onClose })
                   disabled={loading}
                 >
                   {preset.timeControl === 'custom' ? (
-                    <div className="preset-label">Custom</div>
+                    <div className="preset-label">{t('custom')}</div>
                   ) : (
                     <>
                       <div className="preset-time">{preset.timeControl}</div>
@@ -210,7 +210,7 @@ export const InviteByLinkModal: React.FC<InviteByLinkModalProps> = ({ onClose })
               <div className="qr-section">
                 <img
                   src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(inviteLink)}`}
-                  alt="QR Code"
+                  alt={t('qrCode')}
                   className="qr-code"
                 />
               </div>

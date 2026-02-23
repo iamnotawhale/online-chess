@@ -307,7 +307,7 @@ export const PuzzleTraining: React.FC = () => {
         puzzlesTotal: puzzlesTotal || puzzlesSolved,
       });
     } catch {
-      // Игнорируем ошибки обновления прогресса, чтобы не мешать решению.
+      // Ignore progress update errors to avoid interrupting solving flow.
     }
   };
 

@@ -70,7 +70,7 @@ public class GameService {
         if (messagingTemplate != null) {
             java.util.Map<String, Object> gameStartedMessage = java.util.Map.of(
                 "gameId", savedGame.getId(),
-                "message", "Игра началась"
+                "message", "Game started"
             );
             
             // Send to white player

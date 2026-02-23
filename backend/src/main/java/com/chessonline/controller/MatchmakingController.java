@@ -39,7 +39,7 @@ public class MatchmakingController {
             response.setGameId(result.getGameId());
             response.setGameMode(result.getGameMode());
             response.setTimeControl(result.getTimeControl());
-            response.setMessage(result.isMatched() ? "Матч найден" : "Вы в очереди");
+            response.setMessage(result.isMatched() ? "Match found" : "You are in queue");
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -52,7 +52,7 @@ public class MatchmakingController {
     public ResponseEntity<?> leave(Authentication authentication) {
         UUID userId = UUID.fromString(authentication.getName());
         matchmakingService.leave(userId);
-        return ResponseEntity.ok(Map.of("message", "Вы вышли из очереди"));
+        return ResponseEntity.ok(Map.of("message", "Left the queue"));
     }
 
     @GetMapping("/status")

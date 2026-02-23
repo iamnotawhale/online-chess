@@ -84,13 +84,13 @@ export const Dashboard: React.FC = () => {
       setGames(gamesData);
       setIsQueued(matchmakingStatus.queued);
       
-      // Восстанавливаем параметры матчмейкинга если пользователь в очереди
+      // Restore matchmaking params if user is already in queue
       if (matchmakingStatus.queued && matchmakingStatus.gameMode && matchmakingStatus.timeControl) {
         setQueuedMode(matchmakingStatus.gameMode);
         setQueuedTimeControl(matchmakingStatus.timeControl);
       }
       
-      // Сортируем завершенные игры по времени окончания (новые сверху)
+      // Sort finished games by finish time (newest first)
       const sortedFinishedGames = [...finishedGamesData].sort((a, b) => {
         const dateA = new Date(a.finishedAt || a.createdAt || 0).getTime();
         const dateB = new Date(b.finishedAt || b.createdAt || 0).getTime();
@@ -98,7 +98,7 @@ export const Dashboard: React.FC = () => {
       });
       setFinishedGames(sortedFinishedGames);
     } catch (err: any) {
-      setError('Ошибка загрузки данных');
+      setError(t('errorLoadingData'));
       console.error(err);
     } finally {
       setLoading(false);
@@ -139,7 +139,7 @@ export const Dashboard: React.FC = () => {
         }
         setIsQueued(status.queued);
       } catch (err) {
-        console.error('Ошибка проверки матчмейкинга', err);
+        console.error('Matchmaking status check failed', err);
       }
     }, 3000);
 
@@ -178,7 +178,7 @@ export const Dashboard: React.FC = () => {
     };
   }, []);
 
-  // Вспомогательная функция для установки сообщения с автоматическим таймаутом
+  // Helper to set a message with auto-timeout
   const setMessageWithTimeout = (message: string, timeout: number = 3000) => {
     setMatchmakingMessage(message);
     if (message) {
@@ -211,9 +211,9 @@ export const Dashboard: React.FC = () => {
       setIsQueued(true);
       setQueuedMode(gameMode);
       setQueuedTimeControl(timeControl);
-      setMessageWithTimeout(response.message || 'Вы в очереди на матч');
+      setMessageWithTimeout(response.message || t('inQueue'));
     } catch (err: any) {
-      setMessageWithTimeout(err.response?.data?.error || 'Ошибка матчмейкинга');
+      setMessageWithTimeout(err.response?.data?.error || t('matchmakingError'));
     } finally {
       setMatchmakingLoading(false);
     }
@@ -239,9 +239,9 @@ export const Dashboard: React.FC = () => {
       setIsQueued(true);
       setQueuedMode('custom');
       setQueuedTimeControl(timeControl);
-      setMessageWithTimeout(response.message || 'Вы в очереди на матч');
+      setMessageWithTimeout(response.message || t('inQueue'));
     } catch (err: any) {
-      setMessageWithTimeout(err.response?.data?.error || 'Ошибка матчмейкинга');
+      setMessageWithTimeout(err.response?.data?.error || t('matchmakingError'));
     } finally {
       setMatchmakingLoading(false);
     }
@@ -260,7 +260,7 @@ export const Dashboard: React.FC = () => {
       setQueuedTimeControl('');
       setMatchmakingMessage('');
     } catch (err: any) {
-      setMessageWithTimeout(err.response?.data?.error || 'Ошибка выхода из очереди');
+      setMessageWithTimeout(err.response?.data?.error || t('errorLeaveQueue'));
     } finally {
       setMatchmakingLoading(false);
     }
@@ -502,21 +502,21 @@ export const Dashboard: React.FC = () => {
                       const isWhite = game.whitePlayerId === user?.id;
                       const opponentName = isWhite ? game.blackUsername : game.whiteUsername;
                       
-                      // Определяем результат игры для пользователя
+                      // Determine game result from current user's perspective
                       const getGameResult = (): 'won' | 'lost' | 'draw' => {
                         if (!game.result) return 'lost';
                         
-                        // Ничья
+                        // Draw
                         if (game.result === '1/2-1/2') {
                           return 'draw';
                         }
                         
-                        // Победа белых
+                        // White won
                         if (game.result === '1-0') {
                           return isWhite ? 'won' : 'lost';
                         }
                         
-                        // Победа черных
+                        // Black won
                         if (game.result === '0-1') {
                           return isWhite ? 'lost' : 'won';
                         }

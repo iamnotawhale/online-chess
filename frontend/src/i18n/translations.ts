@@ -66,6 +66,9 @@ export const translations = {
     inviteError: 'Error creating invite',
     inviteLinkCreated: 'Invite link created!',
     createAnother: 'Create another',
+    qrCode: 'QR code',
+    errorLoadingData: 'Error loading data',
+    errorLeaveQueue: 'Error leaving queue',
     
     // Game
     youAre: 'You are',
@@ -99,6 +102,9 @@ export const translations = {
     analysisLoadingGame: 'Loading game...',
     analysisGameNotFound: 'Game not found',
     analysisLoadError: 'Failed to load game',
+    loadingGame: 'Loading game...',
+    gameNotFound: 'Game not found',
+    errorLoadingGame: 'Error loading game',
     analysisInsufficientData: 'Not enough data for analysis',
     analysisErrorPrefix: 'Analysis error: ',
     analysisUnknownError: 'Unknown error',
@@ -123,6 +129,10 @@ export const translations = {
     analysisPhaseOpening: 'Opening',
     analysisPhaseMiddlegame: 'Middlegame',
     analysisPhaseEndgame: 'Endgame',
+    ratingChartLoading: 'Loading rating chart...',
+    ratingHistoryEmpty: 'No rating history data',
+    ratingHistoryTitle: 'Rating history',
+    ratingHistoryLoadError: 'Error loading rating history',
     
     // Result reasons
     checkmate: 'Checkmate',
@@ -412,6 +422,9 @@ export const translations = {
     inviteError: 'Ошибка создания ссылки',
     inviteLinkCreated: 'Ссылка приглашения создана!',
     createAnother: 'Создать ещё одну',
+    qrCode: 'QR-код',
+    errorLoadingData: 'Ошибка загрузки данных',
+    errorLeaveQueue: 'Ошибка выхода из очереди',
     
     // Game
     youAre: 'Вы играете',
@@ -445,6 +458,9 @@ export const translations = {
     analysisLoadingGame: 'Загрузка партии...',
     analysisGameNotFound: 'Партия не найдена',
     analysisLoadError: 'Ошибка загрузки партии',
+    loadingGame: 'Загрузка игры...',
+    gameNotFound: 'Игра не найдена',
+    errorLoadingGame: 'Ошибка загрузки игры',
     analysisInsufficientData: 'Недостаточно данных для анализа',
     analysisErrorPrefix: 'Ошибка при анализе: ',
     analysisUnknownError: 'Неизвестная ошибка',
@@ -469,6 +485,10 @@ export const translations = {
     analysisPhaseOpening: 'Дебют',
     analysisPhaseMiddlegame: 'Миттельшпиль',
     analysisPhaseEndgame: 'Эндшпиль',
+    ratingChartLoading: 'Загрузка графика рейтинга...',
+    ratingHistoryEmpty: 'Нет данных об истории рейтинга',
+    ratingHistoryTitle: 'История рейтинга',
+    ratingHistoryLoadError: 'Ошибка загрузки истории рейтинга',
     
     // Result reasons
     checkmate: 'Мат',

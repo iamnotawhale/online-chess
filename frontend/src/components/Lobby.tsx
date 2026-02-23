@@ -40,7 +40,7 @@ export const Lobby: React.FC<LobbyProps> = ({ onGameStart, onGameCancelled }) =>
       const user = await apiService.getMe();
       setCurrentUserId(user.id);
     } catch (err) {
-      console.error('Ошибка загрузки пользователя', err);
+      console.error('Failed to load user', err);
     }
   };
 
@@ -98,18 +98,18 @@ export const Lobby: React.FC<LobbyProps> = ({ onGameStart, onGameCancelled }) =>
   };
 
   const getDisplayColor = (game: LobbyGame): string => {
-    // Если текущий пользователь - создатель, показываем его выбранный цвет
+    // If current user is the creator, show creator-selected color
     if (currentUserId === game.creatorId) {
       return game.preferredColor;
     }
     
-    // Для других игроков показываем противоположный цвет
+    // For other players show opposite color
     if (game.preferredColor === 'white') {
       return 'black';
     } else if (game.preferredColor === 'black') {
       return 'white';
     } else {
-      // Если random, остаётся random
+      // If random, keep random
       return 'random';
     }
   };

@@ -52,7 +52,7 @@ public class LobbyController {
         try {
             UUID opponentId = UUID.fromString(authentication.getName());
             String createdGameId = lobbyService.joinLobbyGame(gameId, opponentId);
-            return ResponseEntity.ok(Map.of("gameId", createdGameId, "message", "Присоединились к игре"));
+            return ResponseEntity.ok(Map.of("gameId", createdGameId, "message", "Joined the game"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", e.getMessage()));
@@ -66,7 +66,7 @@ public class LobbyController {
         try {
             UUID userId = UUID.fromString(authentication.getName());
             lobbyService.cancelLobbyGame(gameId, userId);
-            return ResponseEntity.ok(Map.of("message", "Игра отменена"));
+            return ResponseEntity.ok(Map.of("message", "Game canceled"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", e.getMessage()));
