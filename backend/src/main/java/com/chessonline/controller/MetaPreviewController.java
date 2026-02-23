@@ -1,5 +1,6 @@
 package com.chessonline.controller;
 
+import com.chessonline.dto.PuzzleResponse;
 import com.chessonline.model.Game;
 import com.chessonline.model.Invite;
 import com.chessonline.model.Puzzle;
@@ -7,6 +8,7 @@ import com.chessonline.repository.GameRepository;
 import com.chessonline.repository.InviteRepository;
 import com.chessonline.repository.MoveRepository;
 import com.chessonline.repository.PuzzleRepository;
+import com.chessonline.service.PuzzleService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -27,6 +29,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
 import org.apache.batik.transcoder.TranscoderInput;
@@ -38,6 +41,7 @@ import org.apache.batik.transcoder.image.PNGTranscoder;
 public class MetaPreviewController {
 
     private static final String START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    private static final String ANONYMOUS_USER_ID = "00000000-0000-0000-0000-000000000000";
 
     @Autowired
     private InviteRepository inviteRepository;
@@ -47,6 +51,9 @@ public class MetaPreviewController {
 
     @Autowired
     private PuzzleRepository puzzleRepository;
+
+    @Autowired
+    private PuzzleService puzzleService;
 
     @Autowired
     private MoveRepository moveRepository;
@@ -168,8 +175,8 @@ public class MetaPreviewController {
         
         if (gameOpt.isPresent()) {
             Game game = gameOpt.get();
-            String white = safe(game.getPlayerWhite().getUsername(), "White");
-            String black = safe(game.getPlayerBlack().getUsername(), "Black");
+            String white = shortenNameForPreview(safe(game.getPlayerWhite().getUsername(), "White"), 15);
+            String black = shortenNameForPreview(safe(game.getPlayerBlack().getUsername(), "Black"), 15);
             int whiteRating = game.getPlayerWhite().getRating() != null ? game.getPlayerWhite().getRating() : 1200;
             int blackRating = game.getPlayerBlack().getRating() != null ? game.getPlayerBlack().getRating() : 1200;
             String speed = inferSpeed(game.getTimeControl());
@@ -184,41 +191,133 @@ public class MetaPreviewController {
             subtitle = "Watch the game";
         }
         
-        return pngResponse(ChessPngRenderer.renderBoard(fen, title, subtitle));
+        return pngResponse(ChessPngRenderer.renderBoard(fen, title, subtitle, 34));
     }
 
     @GetMapping(value = "/image/puzzle/{puzzleId}.png", produces = "image/png")
     public ResponseEntity<byte[]> puzzleImagePng(@PathVariable String puzzleId) {
-        Optional<Puzzle> puzzleOpt = puzzleRepository.findById(puzzleId);
-        if (puzzleOpt.isEmpty()) {
-            puzzleOpt = puzzleRepository.findByIdIgnoreCase(puzzleId);
-        }
         String title;
         String subtitle;
         String fen = START_FEN;
+        boolean puzzleFound = false;
+        String puzzleSource = "none";
         
+        Optional<PuzzlePreviewData> puzzleOpt = loadPuzzlePreviewData(puzzleId);
         if (puzzleOpt.isPresent()) {
-            Puzzle puzzle = puzzleOpt.get();
-            String themes = normalizeList(safe(puzzle.getThemes(), ""), ",", 2);
+            PuzzlePreviewData puzzle = puzzleOpt.get();
+            String themes = normalizeList(safe(puzzle.themes, ""), ",", 2);
             boolean hasKnownThemes = !themes.isBlank() && !"unknown".equalsIgnoreCase(themes) && !"unknown themes".equalsIgnoreCase(themes);
-            String puzzleFen = safe(puzzle.getFen(), START_FEN);
+            String puzzleFen = safe(puzzle.fen, START_FEN);
             boolean whiteToMoveInFen = puzzleFen.contains(" w ");
-            boolean hasFirstOpponentMove = puzzle.getMoves() != null && !puzzle.getMoves().isBlank();
+            boolean hasFirstOpponentMove = puzzle.hasFirstOpponentMove;
             boolean whiteToMoveForPlayer = hasFirstOpponentMove ? !whiteToMoveInFen : whiteToMoveInFen;
             String sideToMove = whiteToMoveForPlayer
                 ? "white to move"
                 : "black to move";
-            title = "Puzzle " + puzzle.getId();
-            subtitle = "Elo " + puzzle.getRating()
+            title = "Puzzle " + safe(puzzle.id, puzzleId);
+            subtitle = "Elo " + puzzle.rating
                     + (hasKnownThemes ? " • " + themes : "")
                     + " • " + sideToMove;
             fen = puzzleFen;
+            puzzleFound = true;
+            puzzleSource = puzzle.source;
         } else {
             title = "Puzzle";
             subtitle = "Solve the puzzle";
         }
-        
-        return pngResponse(ChessPngRenderer.renderBoard(fen, title, subtitle));
+
+        byte[] pngData = ChessPngRenderer.renderBoard(fen, title, subtitle);
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_PNG)
+                .header(HttpHeaders.CACHE_CONTROL, "public, max-age=300")
+                .header("X-Preview-Puzzle-Found", Boolean.toString(puzzleFound))
+                .header("X-Preview-Puzzle-Source", puzzleSource)
+                .header("X-Preview-Puzzle-Id", safe(puzzleId, "unknown"))
+                .body(pngData);
+    }
+
+    private Optional<PuzzlePreviewData> loadPuzzlePreviewData(String puzzleId) {
+        String normalizedId = safe(puzzleId, "").trim();
+        if (normalizedId.isEmpty()) {
+            return Optional.empty();
+        }
+
+        LinkedHashSet<String> candidates = new LinkedHashSet<>();
+        candidates.add(normalizedId);
+        candidates.add(normalizedId.toUpperCase());
+        candidates.add(normalizedId.toLowerCase());
+
+        for (String candidate : candidates) {
+            Optional<Puzzle> byId = puzzleRepository.findById(candidate);
+            if (byId.isPresent()) {
+                Puzzle puzzle = byId.get();
+                return Optional.of(PuzzlePreviewData.fromRepository(puzzle));
+            }
+
+            Optional<Puzzle> byIgnoreCase = puzzleRepository.findByIdIgnoreCase(candidate);
+            if (byIgnoreCase.isPresent()) {
+                Puzzle puzzle = byIgnoreCase.get();
+                return Optional.of(PuzzlePreviewData.fromRepository(puzzle));
+            }
+        }
+
+        for (String candidate : candidates) {
+            try {
+                PuzzleResponse response = puzzleService.getPuzzleById(candidate, ANONYMOUS_USER_ID);
+                if (response != null) {
+                    return Optional.of(PuzzlePreviewData.fromService(response, candidate));
+                }
+            } catch (Exception ignored) {
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    private static class PuzzlePreviewData {
+        private final String id;
+        private final String fen;
+        private final int rating;
+        private final String themes;
+        private final boolean hasFirstOpponentMove;
+        private final String source;
+
+        private PuzzlePreviewData(String id,
+                                  String fen,
+                                  int rating,
+                                  String themes,
+                                  boolean hasFirstOpponentMove,
+                                  String source) {
+            this.id = id;
+            this.fen = fen;
+            this.rating = rating;
+            this.themes = themes;
+            this.hasFirstOpponentMove = hasFirstOpponentMove;
+            this.source = source;
+        }
+
+        private static PuzzlePreviewData fromRepository(Puzzle puzzle) {
+            return new PuzzlePreviewData(
+                    puzzle.getId(),
+                    puzzle.getFen(),
+                    puzzle.getRating(),
+                    puzzle.getThemes(),
+                    puzzle.getMoves() != null && !puzzle.getMoves().isBlank(),
+                    "repository"
+            );
+        }
+
+        private static PuzzlePreviewData fromService(PuzzleResponse response, String fallbackId) {
+            String joinedThemes = response.getThemes() == null ? "" : String.join(", ", response.getThemes());
+            return new PuzzlePreviewData(
+                    response.getId() != null ? response.getId() : fallbackId,
+                    response.getFen(),
+                    response.getRating(),
+                    joinedThemes,
+                    response.getFirstMove() != null && !response.getFirstMove().isBlank(),
+                    "service"
+            );
+        }
     }
 
     private ResponseEntity<String> htmlResponse(String html) {
@@ -282,6 +381,16 @@ public class MetaPreviewController {
             if (count >= maxItems) break;
         }
         return count == 0 ? "unknown" : result.toString();
+    }
+
+    private String shortenNameForPreview(String name, int maxLength) {
+        if (name == null || name.isBlank()) {
+            return "Player";
+        }
+        if (maxLength <= 3 || name.length() <= maxLength) {
+            return name;
+        }
+        return name.substring(0, maxLength - 3) + "...";
     }
 
     private String getBaseUrl(HttpServletRequest request) {
@@ -393,6 +502,10 @@ public class MetaPreviewController {
         );
 
         static byte[] renderBoard(String fen, String title, String subtitle) {
+            return renderBoard(fen, title, subtitle, 34);
+        }
+
+        static byte[] renderBoard(String fen, String title, String subtitle, int titleFontSize) {
             try {
                 BufferedImage image = new BufferedImage(W, H, BufferedImage.TYPE_INT_ARGB);
                 Graphics2D g = image.createGraphics();
@@ -456,7 +569,6 @@ public class MetaPreviewController {
 
                 // Draw text on right side
                 g.setColor(TEXT_PRIMARY);
-                int titleFontSize = 42;
                 g.setFont(new Font("SansSerif", Font.BOLD, titleFontSize));
                 int subtitleStartY = drawWrappedText(g, trim(title, 120), 650, 165, 520, 3, 52);
 

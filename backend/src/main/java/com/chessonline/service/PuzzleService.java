@@ -38,7 +38,7 @@ public class PuzzleService {
     @Value("${puzzle.csv.path:puzzles/lichess_db_puzzle.csv.zst}")
     private String puzzleCsvPath;
     
-    @Value("${puzzle.max.load:100000}")
+    @Value("${puzzle.max.load:250000}")
     private int maxPuzzlesToLoad;
     
     private final UserPuzzleSolutionRepository userPuzzleSolutionRepository;
@@ -371,13 +371,17 @@ public class PuzzleService {
     // Helper methods
     
     public PuzzleResponse getPuzzleById(String puzzleId, String userId) {
-        Puzzle puzzle = puzzleCache.get(puzzleId);
+        String normalizedId = puzzleId == null ? "" : puzzleId.trim();
+        Puzzle puzzle = puzzleCache.get(normalizedId);
         if (puzzle == null) {
-            puzzle = findPuzzleById(puzzleId);
+            puzzle = findPuzzleById(normalizedId);
+        }
+        if (puzzle == null) {
+            puzzle = findPuzzleInDatabase(normalizedId);
         }
 
         if (puzzle == null) {
-            throw new RuntimeException("Puzzle not found: " + puzzleId);
+            throw new RuntimeException("Puzzle not found: " + normalizedId);
         }
 
         return toPuzzleResponse(puzzle, userId);
@@ -413,6 +417,34 @@ public class PuzzleService {
         } catch (Exception e) {
             log.error("Failed to find puzzle {}", puzzleId, e);
         }
+        return null;
+    }
+
+    private Puzzle findPuzzleInDatabase(String puzzleId) {
+        if (puzzleId == null || puzzleId.isBlank()) {
+            return null;
+        }
+
+        try {
+            Optional<Puzzle> exact = puzzleRepository.findById(puzzleId);
+            if (exact.isPresent()) {
+                Puzzle puzzle = exact.get();
+                puzzleCache.put(puzzleId, puzzle);
+                puzzleCache.put(puzzle.getId(), puzzle);
+                return puzzle;
+            }
+
+            Optional<Puzzle> ignoreCase = puzzleRepository.findByIdIgnoreCase(puzzleId);
+            if (ignoreCase.isPresent()) {
+                Puzzle puzzle = ignoreCase.get();
+                puzzleCache.put(puzzleId, puzzle);
+                puzzleCache.put(puzzle.getId(), puzzle);
+                return puzzle;
+            }
+        } catch (Exception e) {
+            log.error("Failed to find puzzle {} in database", puzzleId, e);
+        }
+
         return null;
     }
     
