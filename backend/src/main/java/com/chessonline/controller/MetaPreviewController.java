@@ -21,12 +21,19 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.apache.batik.transcoder.TranscoderInput;
+import org.apache.batik.transcoder.TranscoderOutput;
+import org.apache.batik.transcoder.image.PNGTranscoder;
 
 @RestController
 @RequestMapping("/api/meta")
@@ -50,9 +57,19 @@ public class MetaPreviewController {
         return "ru".equals(lang) ? ruText : enText;
     }
 
+    private String resolveLang(String langParam, HttpServletRequest request) {
+        if ("ru".equalsIgnoreCase(langParam)) return "ru";
+        if ("en".equalsIgnoreCase(langParam)) return "en";
+
+        // Telegram/Discord bots often send English Accept-Language, which does not
+        // reflect user's selected language in app header. Keep deterministic default.
+        return "ru";
+    }
+
     @GetMapping(value = "/invite/{inviteId}", produces = "text/html;charset=UTF-8")
     public ResponseEntity<String> inviteMeta(@PathVariable String inviteId, HttpServletRequest request, 
-                                              @RequestParam(defaultValue = "en") String lang) {
+                                              @RequestParam(required = false) String lang) {
+        lang = resolveLang(lang, request);
         String normalizedId = inviteId.toUpperCase();
         String baseUrl = getBaseUrl(request);
         Optional<Invite> inviteOpt = inviteRepository.findByIdWithUsers(normalizedId);
@@ -67,14 +84,14 @@ public class MetaPreviewController {
             String mode = humanGameMode(invite.getGameMode(), lang);
             String tc = safe(invite.getTimeControl(), "10+0");
             String ratedLabel = invite.isRated() ? 
-                    getText(lang, "рейтинговую", "rated") : 
-                    getText(lang, "нерейтинговую", "casual");
+                getText(lang, "рейтинговую", "rated") : 
+                getText(lang, "нерейтинговую", "casual");
 
             title = getText(lang, 
-                    "⚔️ Вызов на доске: " + creatorName,
+                "♟️ Вызов в шахматы от " + creatorName,
                     "♟️ Chess challenge from " + creatorName);
             description = getText(lang,
-                    creatorName + " (" + rating + ") зовёт тебя в " + ratedLabel + " " + mode + " " + tc + ". Прими вызов и начни игру.",
+                creatorName + " (" + rating + ") приглашает тебя в " + ratedLabel + " " + mode + " (" + tc + ") партию. Прими вызов!",
                     creatorName + " (" + rating + ") invites you to a " + ratedLabel + " " + mode + " (" + tc + ") game. Accept the challenge!");
         } else {
             title = getText(lang, "♟️ Приглашение в шахматы", "♟️ Chess invitation");
@@ -83,7 +100,7 @@ public class MetaPreviewController {
                     "Follow the link to accept the challenge and play a game.");
         }
 
-        String imageUrl = baseUrl + "/api/meta/image/invite/" + encodePath(normalizedId) + ".png";
+        String imageUrl = baseUrl + "/api/meta/image/invite/" + encodePath(normalizedId) + ".png?lang=" + encodePath(lang);
         String targetUrl = baseUrl + "/invite/" + encodePath(normalizedId);
 
         return htmlResponse(buildMetaHtml(title, description, imageUrl, targetUrl));
@@ -91,7 +108,8 @@ public class MetaPreviewController {
 
     @GetMapping(value = "/game/{gameId}", produces = "text/html;charset=UTF-8")
     public ResponseEntity<String> gameMeta(@PathVariable String gameId, HttpServletRequest request,
-                                            @RequestParam(defaultValue = "en") String lang) {
+                                            @RequestParam(required = false) String lang) {
+        lang = resolveLang(lang, request);
         String baseUrl = getBaseUrl(request);
         Optional<Game> gameOpt = gameRepository.findById(gameId);
 
@@ -116,8 +134,8 @@ public class MetaPreviewController {
 
             if ("active".equalsIgnoreCase(game.getStatus())) {
                 title = getText(lang,
-                        "♟️ " + speed + " • " + white + " vs " + black,
-                        "♟️ " + speed + ": " + white + " vs " + black);
+                    "♟️ " + speed + ": " + white + " vs " + black,
+                    "♟️ " + speed + ": " + white + " vs " + black);
                 description = getText(lang,
                         white + " (" + whiteRating + ") играет против " + black + " (" + blackRating + ") в " + ratedLabel + " " + speed + " (" + tc + "). Смотрите игру вживую!",
                         white + " (" + whiteRating + ") is playing " + black + " (" + blackRating + ") in a " + ratedLabel + " " + speed + " (" + tc + "). Watch live!");
@@ -137,7 +155,7 @@ public class MetaPreviewController {
                     "Open the link to watch, analyze, and discuss the game.");
         }
 
-        String imageUrl = baseUrl + "/api/meta/image/game/" + encodePath(gameId) + ".png";
+        String imageUrl = baseUrl + "/api/meta/image/game/" + encodePath(gameId) + ".png?lang=" + encodePath(lang);
         String targetUrl = baseUrl + "/game/" + encodePath(gameId);
 
         return htmlResponse(buildMetaHtml(title, description, imageUrl, targetUrl));
@@ -145,40 +163,23 @@ public class MetaPreviewController {
 
     @GetMapping(value = "/puzzle/{puzzleId}", produces = "text/html;charset=UTF-8")
     public ResponseEntity<String> puzzleMeta(@PathVariable String puzzleId, HttpServletRequest request,
-                                              @RequestParam(defaultValue = "en") String lang) {
+                                              @RequestParam(required = false) String lang) {
+        lang = resolveLang(lang, request);
         String baseUrl = getBaseUrl(request);
         Optional<Puzzle> puzzleOpt = puzzleRepository.findById(puzzleId);
+        if (puzzleOpt.isEmpty()) {
+            puzzleOpt = puzzleRepository.findByIdIgnoreCase(puzzleId);
+        }
 
         String title;
         String description;
 
-        if (puzzleOpt.isPresent()) {
-            Puzzle puzzle = puzzleOpt.get();
-            String themes = normalizeList(safe(puzzle.getThemes(), "tactics"), ",", 4);
-            String openings = normalizeList(safe(puzzle.getOpeningTags(), ""), " ", 3);
-            boolean hasKnownThemes = !themes.isBlank() && !"unknown".equalsIgnoreCase(themes) && !"unknown themes".equalsIgnoreCase(themes);
-            boolean hasKnownOpenings = !openings.isBlank() && !"unknown".equalsIgnoreCase(openings) && !"unknown opening".equalsIgnoreCase(openings);
-            
-            title = getText(lang,
-                    "🧩 Пазл " + puzzle.getId() + " • Elo " + puzzle.getRating(),
-                    "🧩 Puzzle " + puzzle.getId() + " • Elo " + puzzle.getRating());
-            description = getText(lang,
-                    "Найди лучший ход в этой позиции. Пазл рейтинг " + puzzle.getRating() + 
-                    (hasKnownThemes ? ". Темы: " + themes : "") +
-                (hasKnownOpenings ? ". Дебюты: " + openings : "") +
-                    ". Сможешь решить без подсказок?",
-                    "Find the best move in this position. Puzzle rating " + puzzle.getRating() +
-                    (hasKnownThemes ? ". Themes: " + themes : "") +
-                (hasKnownOpenings ? ". Openings: " + openings : "") +
-                    ". Can you solve it?");
-        } else {
-            title = getText(lang, "🧩 Шахматный пазл", "🧩 Chess puzzle");
-            description = getText(lang, 
-                    "Решите этот тактический пазл и проверьте свой расчет.",
-                    "Solve this tactical puzzle and test your calculation.");
-        }
+        title = getText(lang, "🧩 Шахматный пазл", "🧩 Chess puzzle");
+        description = getText(lang,
+            "Решите эту тактическую задачу и проверьте свой расчет.",
+            "Solve this tactical puzzle and test your calculation.");
 
-        String imageUrl = baseUrl + "/api/meta/image/puzzle/" + encodePath(puzzleId) + ".png";
+        String imageUrl = baseUrl + "/api/meta/image/puzzle/" + encodePath(puzzleId) + ".png?lang=" + encodePath(lang);
         String targetUrl = baseUrl + "/puzzle/" + encodePath(puzzleId);
 
         return htmlResponse(buildMetaHtml(title, description, imageUrl, targetUrl));
@@ -186,7 +187,9 @@ public class MetaPreviewController {
 
     @GetMapping(value = "/image/invite/{inviteId}.png", produces = "image/png")
     public ResponseEntity<byte[]> inviteImagePng(@PathVariable String inviteId, 
-                                                  @RequestParam(defaultValue = "en") String lang) {
+                                                  @RequestParam(required = false) String lang,
+                                                  HttpServletRequest request) {
+        lang = resolveLang(lang, request);
         Optional<Invite> inviteOpt = inviteRepository.findByIdWithUsers(inviteId.toUpperCase());
         String title;
         String subtitle;
@@ -194,9 +197,10 @@ public class MetaPreviewController {
             Invite invite = inviteOpt.get();
             String creator = safe(invite.getCreator().getUsername(), "Player");
             int rating = invite.getCreator().getRating() != null ? invite.getCreator().getRating() : 1200;
-            String creatorFormatted = creator + " ●" + rating;
-            subtitle = humanGameMode(invite.getGameMode(), lang) + " • " + safe(invite.getTimeControl(), "10+0");
-            title = creatorFormatted;
+            String ratedLabel = invite.isRated() ? getText(lang, "Рейтинговая", "Rated") : getText(lang, "Нерейтинговая", "Casual");
+            title = creator;
+            subtitle = "Elo " + rating + " • " + ratedLabel + " " + humanGameMode(invite.getGameMode(), lang)
+                    + " • " + safe(invite.getTimeControl(), "10+0");
         } else {
             title = getText(lang, "Приглашение", "Invite");
             subtitle = getText(lang, "Начальная позиция", "Start position");
@@ -206,7 +210,9 @@ public class MetaPreviewController {
 
     @GetMapping(value = "/image/game/{gameId}.png", produces = "image/png")
     public ResponseEntity<byte[]> gameImagePng(@PathVariable String gameId,
-                                                @RequestParam(defaultValue = "en") String lang) {
+                                                @RequestParam(required = false) String lang,
+                                                HttpServletRequest request) {
+        lang = resolveLang(lang, request);
         Optional<Game> gameOpt = gameRepository.findById(gameId);
         
         String title;
@@ -221,9 +227,12 @@ public class MetaPreviewController {
             int blackRating = game.getPlayerBlack().getRating() != null ? game.getPlayerBlack().getRating() : 1200;
             String speed = inferSpeed(game.getTimeControl(), lang);
             String tc = safe(game.getTimeControl(), "10+0");
+            String ratedLabel = game.isRated() ? getText(lang, "Рейтинговая", "Rated") : getText(lang, "Нерейтинговая", "Casual");
+            String eloLabel = getText(lang, "Эло", "Elo");
+            String versus = getText(lang, "против", "vs");
             
-            title = white + " ●" + whiteRating + " vs " + black + " ●" + blackRating;
-            subtitle = speed + " • " + tc;
+            title = white + " (" + eloLabel + " " + whiteRating + ") " + versus + " " + black + " (" + eloLabel + " " + blackRating + ")";
+            subtitle = ratedLabel + " " + speed + " • " + tc;
             fen = safe(game.getFenCurrent(), START_FEN);
         } else {
             title = getText(lang, "Шахматная партия", "Chess game");
@@ -235,16 +244,28 @@ public class MetaPreviewController {
 
     @GetMapping(value = "/image/puzzle/{puzzleId}.png", produces = "image/png")
     public ResponseEntity<byte[]> puzzleImagePng(@PathVariable String puzzleId,
-                                                  @RequestParam(defaultValue = "en") String lang) {
+                                                  @RequestParam(required = false) String lang,
+                                                  HttpServletRequest request) {
+        lang = resolveLang(lang, request);
         Optional<Puzzle> puzzleOpt = puzzleRepository.findById(puzzleId);
+        if (puzzleOpt.isEmpty()) {
+            puzzleOpt = puzzleRepository.findByIdIgnoreCase(puzzleId);
+        }
         String title;
         String subtitle;
         String fen = START_FEN;
         
         if (puzzleOpt.isPresent()) {
             Puzzle puzzle = puzzleOpt.get();
-            subtitle = getText(lang, "Пазл • Elo ", "Puzzle • Elo ") + puzzle.getRating();
-            title = getText(lang, "Найди лучший ход", "Find the best move");
+            String themes = normalizeList(safe(puzzle.getThemes(), ""), ",", 2);
+            boolean hasKnownThemes = !themes.isBlank() && !"unknown".equalsIgnoreCase(themes) && !"unknown themes".equalsIgnoreCase(themes);
+            String sideToMove = safe(puzzle.getFen(), START_FEN).contains(" w ")
+                    ? getText(lang, "ход белых", "white to move")
+                    : getText(lang, "ход черных", "black to move");
+            title = getText(lang, "Пазл " + puzzle.getId(), "Puzzle " + puzzle.getId());
+            subtitle = getText(lang, "Elo ", "Elo ") + puzzle.getRating()
+                    + (hasKnownThemes ? " • " + themes : "")
+                    + " • " + sideToMove;
             fen = safe(puzzle.getFen(), START_FEN);
         } else {
             title = getText(lang, "Пазл", "Puzzle");
@@ -434,8 +455,9 @@ public class MetaPreviewController {
 
         private static final int W = 1200;
         private static final int H = 630;
+        private static final String PIECE_FONT_FAMILY = pickPieceFontFamily();
+        private static final Map<Character, BufferedImage> PIECE_IMAGES = loadPieceImages();
 
-        // Unicode chess piece symbols
         private static final Map<Character, String> PIECE_SYMBOLS = Map.ofEntries(
             Map.entry('P', "♙"), Map.entry('N', "♘"), Map.entry('B', "♗"), Map.entry('R', "♖"),
             Map.entry('Q', "♕"), Map.entry('K', "♔"), Map.entry('p', "♟"), Map.entry('n', "♞"),
@@ -473,7 +495,7 @@ public class MetaPreviewController {
                     placement = START_FEN.split(" ")[0];
                 }
 
-                g.setFont(new Font("SansSerif", Font.BOLD, 40));
+                g.setFont(new Font(PIECE_FONT_FAMILY, Font.PLAIN, 44));
                 String[] rows = placement.split("/");
                 for (int rank = 0; rank < Math.min(8, rows.length); rank++) {
                     int file = 0;
@@ -483,14 +505,21 @@ public class MetaPreviewController {
                         } else {
                             int cx = bx + file * cell + cell / 2;
                             int cy = by + rank * cell + cell / 2;
-                            boolean whitePiece = Character.isUpperCase(c);
-                            
-                            g.setColor(whitePiece ? WHITE_PIECE : BLACK_PIECE);
-                            String symbol = PIECE_SYMBOLS.getOrDefault(c, String.valueOf(c));
-                            FontMetrics fm = g.getFontMetrics();
-                            int tx = cx - fm.stringWidth(symbol) / 2;
-                            int ty = cy + (fm.getAscent() - fm.getDescent()) / 2;
-                            g.drawString(symbol, tx, ty);
+                            BufferedImage pieceImage = PIECE_IMAGES.get(c);
+                            if (pieceImage != null) {
+                                int size = Math.min(cell - 6, 60);
+                                int x = cx - size / 2;
+                                int y = cy - size / 2;
+                                g.drawImage(pieceImage, x, y, size, size, null);
+                            } else {
+                                boolean whitePiece = Character.isUpperCase(c);
+                                g.setColor(whitePiece ? WHITE_PIECE : BLACK_PIECE);
+                                String symbol = PIECE_SYMBOLS.getOrDefault(c, String.valueOf(c));
+                                FontMetrics fm = g.getFontMetrics();
+                                int tx = cx - fm.stringWidth(symbol) / 2;
+                                int ty = cy + (fm.getAscent() - fm.getDescent()) / 2;
+                                g.drawString(symbol, tx, ty);
+                            }
                             file++;
                         }
                         if (file >= 8) break;
@@ -498,13 +527,13 @@ public class MetaPreviewController {
                 }
 
                 // Draw text on right side
-                g.setFont(new Font("SansSerif", Font.BOLD, 50));
                 g.setColor(TEXT_PRIMARY);
-                g.drawString(trim(title, 30), 650, 190);
+                g.setFont(new Font("SansSerif", Font.BOLD, 54));
+                int subtitleStartY = drawWrappedText(g, trim(title, 120), 650, 165, 520, 3, 62);
 
-                g.setFont(new Font("SansSerif", Font.PLAIN, 30));
                 g.setColor(TEXT_SECONDARY);
-                g.drawString(trim(subtitle, 48), 650, 245);
+                g.setFont(new Font("SansSerif", Font.PLAIN, 34));
+                drawWrappedText(g, trim(subtitle, 180), 650, subtitleStartY + 12, 520, 5, 44);
 
                 g.setFont(new Font("SansSerif", Font.PLAIN, 24));
                 g.setColor(TEXT_MUTED);
@@ -519,10 +548,96 @@ public class MetaPreviewController {
             }
         }
 
+        private static String pickPieceFontFamily() {
+            String[] preferred = {
+                    "Noto Sans Symbols2",
+                    "Noto Sans Symbols",
+                    "DejaVu Sans",
+                    "Segoe UI Symbol",
+                    "Arial Unicode MS",
+                    "SansSerif"
+            };
+            String[] available = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+            for (String family : preferred) {
+                if (Arrays.stream(available).anyMatch(name -> name.equalsIgnoreCase(family))) {
+                    return family;
+                }
+            }
+            return "SansSerif";
+        }
+
         private static String trim(String value, int maxLen) {
             if (value == null) return "";
             if (value.length() <= maxLen) return value;
             return value.substring(0, Math.max(0, maxLen - 1)) + "…";
+        }
+
+        private static int drawWrappedText(Graphics2D g, String text, int x, int y, int maxWidth, int maxLines, int lineHeight) {
+            if (text == null || text.isBlank()) {
+                return y;
+            }
+            FontMetrics fm = g.getFontMetrics();
+            String[] words = text.split("\\s+");
+            StringBuilder line = new StringBuilder();
+            int drawnLines = 0;
+            int currentY = y;
+            int lastBaseline = y;
+            for (String word : words) {
+                String candidate = line.isEmpty() ? word : line + " " + word;
+                if (fm.stringWidth(candidate) <= maxWidth) {
+                    line = new StringBuilder(candidate);
+                    continue;
+                }
+
+                g.drawString(trim(line.toString(), 200), x, currentY);
+                drawnLines++;
+                 lastBaseline = currentY;
+                if (drawnLines >= maxLines) {
+                    return lastBaseline + lineHeight;
+                }
+                currentY += lineHeight;
+                line = new StringBuilder(word);
+            }
+
+            if (!line.isEmpty() && drawnLines < maxLines) {
+                g.drawString(trim(line.toString(), 200), x, currentY);
+                lastBaseline = currentY;
+            }
+            return lastBaseline + lineHeight;
+        }
+
+        private static Map<Character, BufferedImage> loadPieceImages() {
+            Map<Character, BufferedImage> map = new HashMap<>();
+            map.put('P', loadPieceSvg("wP"));
+            map.put('N', loadPieceSvg("wN"));
+            map.put('B', loadPieceSvg("wB"));
+            map.put('R', loadPieceSvg("wR"));
+            map.put('Q', loadPieceSvg("wQ"));
+            map.put('K', loadPieceSvg("wK"));
+            map.put('p', loadPieceSvg("bP"));
+            map.put('n', loadPieceSvg("bN"));
+            map.put('b', loadPieceSvg("bB"));
+            map.put('r', loadPieceSvg("bR"));
+            map.put('q', loadPieceSvg("bQ"));
+            map.put('k', loadPieceSvg("bK"));
+            return map;
+        }
+
+        private static BufferedImage loadPieceSvg(String code) {
+            try (InputStream inputStream = ChessPngRenderer.class.getResourceAsStream("/chess/pieces/" + code + ".svg")) {
+                if (inputStream == null) {
+                    return null;
+                }
+                PNGTranscoder transcoder = new PNGTranscoder();
+                transcoder.addTranscodingHint(PNGTranscoder.KEY_WIDTH, 64f);
+                transcoder.addTranscodingHint(PNGTranscoder.KEY_HEIGHT, 64f);
+
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                transcoder.transcode(new TranscoderInput(inputStream), new TranscoderOutput(baos));
+                return ImageIO.read(new ByteArrayInputStream(baos.toByteArray()));
+            } catch (Exception e) {
+                return null;
+            }
         }
     }
 }
