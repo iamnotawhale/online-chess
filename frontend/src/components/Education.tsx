@@ -414,7 +414,7 @@ export const Education: React.FC = () => {
     setSelectedLesson(lesson);
     setActiveLesson(lesson);
     await updateProgressForLesson(lesson, { total: lesson.puzzle_limit });
-    navigate('/puzzles');
+    navigate('/puzzles?mode=lesson');
   };
 
   const getSubtopicProgress = (subtopic: Subtopic) => {

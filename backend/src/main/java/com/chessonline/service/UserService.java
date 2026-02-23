@@ -65,6 +65,11 @@ public class UserService {
         return toUserResponse(user, false);
     }
 
+    public User getUserEntity(UUID userId) {
+        return userRepository.findById(userId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    }
+
     public UserResponse updateProfile(UpdateProfileRequest request) {
         User user = getCurrentUserEntity();
         

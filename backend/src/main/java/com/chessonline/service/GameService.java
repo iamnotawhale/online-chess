@@ -92,16 +92,24 @@ public class GameService {
     }
 
     /**
-     * Get game by ID (ensures user is participant)
+     * Get game by ID (public for finished and active games)
      */
     @Transactional(readOnly = true)
     public Optional<Game> getGame(String gameId, UUID userId) {
         Optional<Game> game = gameRepository.findById(gameId);
-        
-        if (game.isPresent() && game.get().isPlayerInGame(userId)) {
-            return game;
+
+        if (game.isPresent()) {
+            Game g = game.get();
+            if (g.isPlayerInGame(userId)) {
+                return game;
+            }
+
+            String status = g.getStatus();
+            if (status != null && (status.equals("finished") || status.equals("active"))) {
+                return game;
+            }
         }
-        
+
         return Optional.empty();
     }
 

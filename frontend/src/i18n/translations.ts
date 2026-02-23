@@ -187,6 +187,7 @@ export const translations = {
     errorOfferDraw: 'Error offering draw',
     errorRespondDraw: 'Error responding to draw offer',
     drawDeclined: 'Draw offer declined',
+    spectatorView: 'Spectator view',
     promotionTitle: 'Choose piece for promotion',
     promotionQueen: 'Queen',
     promotionRook: 'Rook',
@@ -317,6 +318,32 @@ export const translations = {
     educationFeaturePractice: 'Puzzle practice directly from each lesson',
     educationFeatureProgress: 'Track your progress by opening and lesson',
     startEducation: 'Start learning',
+
+    // Friends
+    friends: 'Friends',
+    addFriend: 'Add friend',
+    removeFriend: 'Remove friend',
+    sendFriendRequest: 'Send friend request',
+    friendRequestSent: 'Friend request sent',
+    cancelFriendRequest: 'Cancel friend request',
+    friendRequests: 'Friend requests',
+    noFriends: 'No friends yet',
+    noFriendRequests: 'No pending requests',
+    acceptRequest: 'Accept',
+    declineRequest: 'Decline',
+    friendRequestAccepted: 'Friend request accepted',
+    friendRequestAlreadyExists: 'Friend request already sent',
+    confirmRemoveFriend: 'Are you sure you want to remove this friend?',
+
+    // Games/Profile
+    gameHistory: 'Game History',
+    currentGames: 'Current Games',
+    playedGames: 'Games played',
+    joinedDate: 'Joined',
+    watchGame: 'Watch game',
+    noCurrentGames: 'No active games',
+    against_me: 'Against me',
+
   },
   ru: {
     // Auth
@@ -506,6 +533,7 @@ export const translations = {
     errorOfferDraw: 'Ошибка при предложении ничьи',
     errorRespondDraw: 'Ошибка при ответе на предложение',
     drawDeclined: 'Предложение ничьи отклонено',
+    spectatorView: 'Режим наблюдателя',
     promotionTitle: 'Выберите фигуру для превращения',
     promotionQueen: 'Королева',
     promotionRook: 'Ладья',
@@ -635,6 +663,32 @@ export const translations = {
     educationFeaturePractice: 'Тренировка пазлов прямо из каждого урока',
     educationFeatureProgress: 'Отслеживание прогресса по дебютам и урокам',
     startEducation: 'Начать обучение',
+
+    // Друзья
+    friends: 'Друзья',
+    addFriend: 'Добавить в друзья',
+    removeFriend: 'Удалить из друзей',
+    sendFriendRequest: 'Отправить запрос в друзья',
+    friendRequestSent: 'Запрос отправлен',
+    cancelFriendRequest: 'Отменить запрос',
+    friendRequests: 'Запросы в друзья',
+    noFriends: 'Ещё нет друзей',
+    noFriendRequests: 'Нет входящих запросов',
+    acceptRequest: 'Принять',
+    declineRequest: 'Отклонить',
+    friendRequestAccepted: 'Запрос принят',
+    friendRequestAlreadyExists: 'Запрос уже отправлен',
+    confirmRemoveFriend: 'Вы уверены, что хотите удалить этого друга?',
+
+    // Игры/Профиль
+    gameHistory: 'История игр',
+    currentGames: 'Текущие игры',
+    playedGames: 'Сыграно игр',
+    joinedDate: 'Присоединился',
+    watchGame: 'Смотреть игру',
+    noCurrentGames: 'Нет активных игр',
+    against_me: 'Против меня',
+
   },
 };
 

@@ -40,6 +40,42 @@
   flex-shrink: 0;
 }
 
+.puzzle-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.puzzle-share-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.puzzle-share-btn:hover {
+  background: var(--surface-3);
+}
+
+.share-copied-label {
+  font-size: 12px;
+  color: var(--success-text);
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
 .lesson-progress-indicator {
   display: flex;
   flex-direction: column;

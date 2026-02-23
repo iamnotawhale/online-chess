@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiService } from '../api';
+import { apiService, User } from '../api';
 import { Lobby } from './Lobby';
 import { DailyPuzzle } from './DailyPuzzle';
 import { BotGameModal } from './BotGameModal';
@@ -8,14 +8,6 @@ import { useTranslation } from '../i18n/LanguageContext';
 import { wsService } from '../websocket';
 import { InviteByLinkModal } from './InviteByLinkModal.tsx';
 import './Dashboard.css';
-
-interface User {
-  id: string;
-  email: string;
-  username: string;
-  rating: number;
-  country?: string;
-}
 
 interface Game {
   id: string;

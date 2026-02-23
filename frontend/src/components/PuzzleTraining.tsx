@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Chess } from 'chess.js';
 import { apiService } from '../api';
 import { useTranslation } from '../i18n/LanguageContext';
@@ -49,6 +49,8 @@ function normalizeRatingFilter(filter: { min: number; max: number }) {
 export const PuzzleTraining: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { puzzleId: puzzleIdFromPath } = useParams<{ puzzleId?: string }>();
   const puzzleStorageKey = 'puzzleTrainingActive';
   const hintStorageKey = 'puzzleTrainingHintUsed';
   const [boardWidth, setBoardWidth] = useState(800);
@@ -63,6 +65,9 @@ export const PuzzleTraining: React.FC = () => {
   const [userPuzzleRating, setUserPuzzleRating] = useState<number | null>(null);
   const [lessonRatingRange, setLessonRatingRange] = useState<{ min: number; max: number } | null>(null);
   const [isLessonMode, setIsLessonMode] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
+  const shareTimeoutRef = useRef<number | null>(null);
+  const isLessonRequested = new URLSearchParams(location.search).get('mode') === 'lesson';
   
   // Lesson completion states
   const [lessonProgress, setLessonProgress] = useState<{ puzzlesSolved: number; puzzlesTotal: number } | null>(null);
@@ -140,6 +145,14 @@ export const PuzzleTraining: React.FC = () => {
       writeRatingFilter(ratingFilter);
     }
   }, [ratingFilter, isLessonMode]);
+
+  useEffect(() => {
+    return () => {
+      if (shareTimeoutRef.current) {
+        window.clearTimeout(shareTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Update display position based on history navigation
   useEffect(() => {
@@ -299,12 +312,12 @@ export const PuzzleTraining: React.FC = () => {
   };
 
   useEffect(() => {
-    const activeLesson = readActiveLesson();
+    const activeLesson = isLessonRequested ? readActiveLesson() : null;
     setIsLessonMode(Boolean(activeLesson));
     loadRandomPuzzle(false);
     // Initialize lesson progress on component mount
     const initLessonProgress = async () => {
-      const activeLesson = readActiveLesson();
+      const activeLesson = isLessonRequested ? readActiveLesson() : null;
       if (activeLesson) {
         try {
           const progressList = await apiService.getLessonProgress();
@@ -321,7 +334,7 @@ export const PuzzleTraining: React.FC = () => {
       }
     };
     initLessonProgress();
-  }, []);
+  }, [isLessonRequested]);
 
   useEffect(() => {
     const updateBoardWidth = () => {
@@ -340,8 +353,31 @@ export const PuzzleTraining: React.FC = () => {
 
   const loadRandomPuzzle = async (forceNew: boolean) => {
     setLoading(true);
-    const activeLesson = readActiveLesson();
+    const activeLesson = isLessonRequested ? readActiveLesson() : null;
     setIsLessonMode(Boolean(activeLesson));
+
+    const sharedPuzzleId = puzzleIdFromPath
+      || (typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search).get('pid')
+        : null);
+
+    if (sharedPuzzleId) {
+      try {
+        const data = await apiService.getPuzzleById(sharedPuzzleId);
+        setPuzzle(data);
+        setPuzzleElo(typeof data.userPuzzleRating === 'number' ? data.userPuzzleRating : null);
+        setPuzzleEloDelta(0);
+        writeStoredPuzzle(data);
+        setHintUsed(readHintUsed(data.id));
+        setStatus(data.alreadySolved ? 'complete' : 'playing');
+        setMessageKey(data.alreadySolved ? 'puzzleAlreadySolved' : '');
+        setLoading(false);
+        return;
+      } catch (error) {
+        console.error('Failed to load shared puzzle:', error);
+      }
+    }
+
     if (activeLesson) {
       // Try to restore from localStorage first if not forcing new
       if (!forceNew) {
@@ -585,6 +621,35 @@ export const PuzzleTraining: React.FC = () => {
     return delta > 0 ? 'positive' : 'negative';
   };
 
+  const handleSharePuzzle = async () => {
+    if (typeof window === 'undefined' || !puzzle) return;
+    const url = `${window.location.origin}/puzzle/${encodeURIComponent(puzzle.id)}`;
+
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = url;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-9999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+
+      setShareCopied(true);
+      if (shareTimeoutRef.current) {
+        window.clearTimeout(shareTimeoutRef.current);
+      }
+      shareTimeoutRef.current = window.setTimeout(() => setShareCopied(false), 1500);
+    } catch {
+      setShareCopied(false);
+    }
+  };
+
   // Show congratulations screen if lesson is completed
   if (isLessonCompleted) {
     return (
@@ -666,9 +731,21 @@ export const PuzzleTraining: React.FC = () => {
             </div>
           </div>
         )}
-        <span className="puzzle-streak-badge">
-          🔥 {streak}
-        </span>
+        <div className="puzzle-header-actions">
+          {shareCopied && <span className="share-copied-label">{t('linkCopied')}</span>}
+          <button
+            type="button"
+            className="puzzle-share-btn"
+            onClick={handleSharePuzzle}
+            title={t('copy')}
+            aria-label={t('copy')}
+          >
+            🔗
+          </button>
+          <span className="puzzle-streak-badge">
+            🔥 {streak}
+          </span>
+        </div>
       </div>
 
       <div className="puzzle-training-grid">

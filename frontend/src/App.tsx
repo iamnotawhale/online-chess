@@ -4,10 +4,12 @@ import { apiService } from './api';
 import { Login } from './components/Login';
 import { Register } from './components/Register';
 import { Dashboard } from './components/Dashboard';
-import { GameView } from './components/Game';
+import GameView from './components/Game';
 import { GameAnalysis } from './components/GameAnalysis';
 import { InviteAccept } from './components/InviteAccept';
 import { Profile } from './components/Profile';
+import { PublicProfile } from './components/PublicProfile';
+import { Friends } from './components/Friends';
 import { PuzzleTraining } from './components/PuzzleTraining';
 import { Education } from './components/Education';
 import { useTranslation } from './i18n/LanguageContext';
@@ -178,7 +180,7 @@ const Header: React.FC<HeaderProps> = ({ themeMode, onToggleTheme }) => {
                   <button 
                     className="dropdown-item"
                     onClick={() => {
-                      navigate(`/profile/${username}`);
+                      navigate(`/profile`);
                       setShowProfileMenu(false);
                     }}
                   >
@@ -187,6 +189,21 @@ const Header: React.FC<HeaderProps> = ({ themeMode, onToggleTheme }) => {
                       <path d="M2 14C2 11.5817 4.68629 10 8 10C11.3137 10 14 11.5817 14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                     </svg>
                     <span>{t('profile')}</span>
+                  </button>
+                  <button 
+                    className="dropdown-item"
+                    onClick={() => {
+                      navigate(`/friends`);
+                      setShowProfileMenu(false);
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="6" cy="5" r="2.5" stroke="currentColor" strokeWidth="1.5"/>
+                      <circle cx="10" cy="5" r="2.5" stroke="currentColor" strokeWidth="1.5"/>
+                      <path d="M1 14C1 12.1667 3.4 11 6 11C8.6 11 11 12.1667 11 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                      <path d="M11 14C11 12.8 12.5 11.8 14 11.8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                    <span>{t('friends')}</span>
                   </button>
                   <div className="dropdown-divider"></div>
                   <button 
@@ -262,10 +279,18 @@ function App() {
           />
           <Route path="/invite/:code" element={<InviteAccept />} />
           <Route
-            path="/profile/:username"
+            path="/profile"
             element={
               <ProtectedRoute>
                 <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/user/:username"
+            element={
+              <ProtectedRoute>
+                <PublicProfile />
               </ProtectedRoute>
             }
           />
@@ -278,10 +303,26 @@ function App() {
             }
           />
           <Route
+            path="/puzzle/:puzzleId"
+            element={
+              <ProtectedRoute>
+                <PuzzleTraining />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/education"
             element={
               <ProtectedRoute>
                 <Education />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/friends"
+            element={
+              <ProtectedRoute>
+                <Friends />
               </ProtectedRoute>
             }
           />

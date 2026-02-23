@@ -181,7 +181,7 @@ public class PuzzleService {
         try {
             Puzzle puzzle = puzzleCache.get(puzzleId);
             if (puzzle == null) {
-                puzzle = getPuzzleById(puzzleId);
+                puzzle = findPuzzleById(puzzleId);
             }
             if (puzzle == null) {
                 log.error("Puzzle not found: {}", puzzleId);
@@ -328,7 +328,7 @@ public class PuzzleService {
         try {
             Puzzle puzzle = puzzleCache.get(puzzleId);
             if (puzzle == null) {
-                puzzle = getPuzzleById(puzzleId);
+                puzzle = findPuzzleById(puzzleId);
             }
             if (puzzle == null) {
                 log.error("Puzzle not found: {}", puzzleId);
@@ -370,7 +370,20 @@ public class PuzzleService {
     
     // Helper methods
     
-    private Puzzle getPuzzleById(String puzzleId) {
+    public PuzzleResponse getPuzzleById(String puzzleId, String userId) {
+        Puzzle puzzle = puzzleCache.get(puzzleId);
+        if (puzzle == null) {
+            puzzle = findPuzzleById(puzzleId);
+        }
+
+        if (puzzle == null) {
+            throw new RuntimeException("Puzzle not found: " + puzzleId);
+        }
+
+        return toPuzzleResponse(puzzle, userId);
+    }
+
+    private Puzzle findPuzzleById(String puzzleId) {
         try {
             // Wait for initialization if in progress
             if (!initialized) {

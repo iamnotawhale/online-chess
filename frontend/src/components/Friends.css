@@ -1,0 +1,204 @@
+.friends-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  background: var(--surface);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.friends-container h1 {
+  font-size: 28px;
+  font-weight: 600;
+  margin: 0 0 30px 0;
+  color: var(--text);
+}
+
+.friends-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+  border-bottom: 1px solid var(--border-2);
+}
+
+.tab-btn {
+  padding: 12px 20px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: none;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  color: var(--text);
+}
+
+.tab-btn.active {
+  color: var(--surface);
+  border-bottom-color: var(--accent);
+}
+
+.friends-content {
+  min-height: 200px;
+}
+
+.pending-requests,
+.friends-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.request-item,
+.friend-item {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.request-header,
+.friend-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.username {
+  font-weight: 600;
+  color: var(--text);
+  font-size: 15px;
+}
+
+.rating {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.date {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.request-actions,
+.friend-actions {
+  display: flex;
+  gap: 10px;
+
+}
+
+.btn {
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex: 3;
+}
+
+.btn:hover {
+  background: var(--surface-2);
+  border-color: var(--border-2);
+}
+
+.btn-accept {
+  border-color: var(--surface);
+  color: var(--success-text, #28a745);
+  background: var(--surface);
+}
+
+.btn-accept:hover {
+  border-color: var(--success-text, #28a745);
+  background: var(--success-text, #28a745);
+  color: white;
+}
+
+.btn-decline,
+.btn-remove {
+  border-color: var(--danger, #dc3545);
+  color: var(--danger, #dc3545);
+  background: var(--surface);
+}
+
+.btn-decline:hover,
+.btn-remove:hover {
+  background: var(--danger, #dc3545);
+  color: white;
+}
+
+.btn-profile {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-profile:hover {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.empty-message {
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+  padding: 40px 20px;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--muted);
+}
+
+@media (max-width: 600px) {
+  .friends-container {
+    padding: 20px 10px;
+  }
+
+  .friends-container h1 {
+    font-size: 22px;
+    margin-bottom: 20px;
+  }
+
+  .request-item,
+  .friend-item {
+    padding: 15px;
+  }
+
+  .request-header,
+  .friend-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .request-actions,
+  .friend-actions {
+    width: 100%;
+  }
+
+  .btn {
+    flex: 3;
+    min-width: 80px;
+  }
+}

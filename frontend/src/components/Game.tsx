@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Chess } from 'chess.js';
 import { ChessBoardWrapper, Modal } from './common';
-import { apiService } from '../api';
+import { apiService, User } from '../api';
 import { wsService, GameUpdate } from '../websocket';
 import { useTranslation } from '../i18n/LanguageContext';
 import './Game.css';
@@ -24,13 +24,6 @@ interface GameData {
   result?: string;
   resultReason?: string;
   drawOfferedById?: string | null;
-}
-
-interface User {
-  id: string;
-  email: string;
-  username: string;
-  rating: number;
 }
 
 export const GameView: React.FC = () => {
@@ -68,9 +61,11 @@ export const GameView: React.FC = () => {
   const [toast, setToast] = useState<{ message: string; type?: 'info' | 'error' } | null>(null);
   const toastTimeoutRef = useRef<number | null>(null);
   const [boardWidth, setBoardWidth] = useState<number>(() => {
-    if (typeof window === 'undefined') return 600;
+    if (typeof window === 'undefined') return 800;
     const isMobile = window.innerWidth <= 768;
-    return isMobile ? Math.max(320, window.innerWidth) : 800;
+    return isMobile
+      ? Math.max(280, window.innerWidth - 24)
+      : Math.min(800, Math.max(280, window.innerWidth - 40));
   });
   const moveRowRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
@@ -195,7 +190,10 @@ export const GameView: React.FC = () => {
   useEffect(() => {
     const handleResize = () => {
       const isMobile = window.innerWidth <= 768;
-      setBoardWidth(isMobile ? Math.max(320, window.innerWidth) : 800);
+      const nextWidth = isMobile
+        ? Math.max(280, window.innerWidth - 24)
+        : Math.min(800, Math.max(280, window.innerWidth - 40));
+      setBoardWidth(nextWidth);
     };
 
     handleResize();
@@ -477,6 +475,9 @@ export const GameView: React.FC = () => {
     if (!game || !chessInstance || !currentUser) return false;
     if (game.status !== 'active') return false;
 
+    const isParticipant = game.whitePlayerId === currentUser.id || game.blackPlayerId === currentUser.id;
+    if (!isParticipant) return false;
+
     // Determine if current user is white or black
     const userIsWhite = game.whitePlayerId === currentUser.id;
     const isUsersTurn = (userIsWhite && chessInstance.turn() === 'w') ||
@@ -532,7 +533,10 @@ export const GameView: React.FC = () => {
   };
 
   const handlePromotionChoice = (piece: string) => {
-    if (!promotionData || !game || !chessInstance || !gameId) return;
+    if (!promotionData || !game || !chessInstance || !gameId || !currentUser) return;
+
+    const isParticipant = game.whitePlayerId === currentUser.id || game.blackPlayerId === currentUser.id;
+    if (!isParticipant) return;
 
     const { from, to } = promotionData;
     
@@ -704,6 +708,30 @@ export const GameView: React.FC = () => {
     return result;
   };
 
+  const handleShareGame = async () => {
+    if (typeof window === 'undefined' || !game) return;
+    const url = `${window.location.origin}/game/${encodeURIComponent(game.id)}`;
+
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = url;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-9999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+      showToast(t('linkCopied'));
+    } catch {
+      showToast(t('error'), 'error');
+    }
+  };
+
   if (loading) {
     return <div className="game-container"><p>Загрузка игры...</p></div>;
   }
@@ -717,11 +745,16 @@ export const GameView: React.FC = () => {
   }
 
   const isGameActive = game.status === 'active';
-  const userIsWhite = currentUser && game.whitePlayerId === currentUser.id;
-  const isUsersTurn = currentUser && (
+  const isParticipant = !!currentUser && (game.whitePlayerId === currentUser.id || game.blackPlayerId === currentUser.id);
+  const userIsWhite = !!currentUser && game.whitePlayerId === currentUser.id;
+  const isUsersTurn = isParticipant && (
     (userIsWhite && chessInstance.turn() === 'w') ||
     (!userIsWhite && chessInstance.turn() === 'b')
   );
+  const boardOrientation: 'white' | 'black' = isParticipant ? (userIsWhite ? 'white' : 'black') : 'white';
+  const showWhiteYouBadge = isParticipant && userIsWhite;
+  const showBlackYouBadge = isParticipant && !userIsWhite;
+  const canInteractWithBoard = isParticipant && game.status === 'active' && !isViewingHistory;
   const incrementSeconds = getIncrementSeconds(game.timeControl);
 
   return (
@@ -739,15 +772,26 @@ export const GameView: React.FC = () => {
           </span>
           {game.result && <span className="result-badge">{getResultLabel(game.result)}</span>}
           {wsConnected && game.status === 'active' && <span className="ws-badge">🟢 Live</span>}
+          {!isParticipant && <span className="ws-badge">👁 {t('spectatorView')}</span>}
+          <button
+            type="button"
+            className="share-link-btn"
+            onClick={handleShareGame}
+            title={t('copy')}
+            aria-label={t('copy')}
+          >
+            🔗
+          </button>
         </div>
       </div>
 
       <div className="layout-2col">
         <div className="layout-2col-board">
-          {userIsWhite ? (
+          {boardOrientation === 'white' ? (
             <div className="player-info black-player">
               <div className="player-name">
                 <strong>♚ {t('blacks')}:</strong> {game.blackPlayerName || game.blackPlayerId}
+                {showBlackYouBadge && <span className="you-badge">{t('you')}</span>}
               </div>
               <div className="player-time">{formatTime(blackTimeLeftMs)}</div>
             </div>
@@ -755,6 +799,7 @@ export const GameView: React.FC = () => {
             <div className="player-info white-player">
               <div className="player-name">
                 <strong>♔ {t('whites')}:</strong> {game.whitePlayerName || game.whitePlayerId}
+                {showWhiteYouBadge && <span className="you-badge">{t('you')}</span>}
               </div>
               <div className="player-time">{formatTime(whiteTimeLeftMs)}</div>
             </div>
@@ -802,20 +847,20 @@ export const GameView: React.FC = () => {
                   game={chessInstance}
                   onMove={handleOnDrop}
                   lastMove={lastMove}
-                  orientation={userIsWhite ? 'white' : 'black'}
+                  orientation={boardOrientation}
                   boardWidth={boardWidth}
-                  isInteractive={game.status === 'active' && !isViewingHistory}
+                  isInteractive={canInteractWithBoard}
                   showCheck={!isViewingHistory}
                 />
               );
             })()}
           </div>
 
-          {userIsWhite ? (
+          {boardOrientation === 'white' ? (
             <div className="player-info white-player">
               <div className="player-name">
                 <strong>♔ {t('whites')}:</strong> {game.whitePlayerName || game.whitePlayerId}
-                <span className="you-badge">{t('you')}</span>
+                {showWhiteYouBadge && <span className="you-badge">{t('you')}</span>}
               </div>
               <div className="player-time">{formatTime(whiteTimeLeftMs)}</div>
             </div>
@@ -823,13 +868,13 @@ export const GameView: React.FC = () => {
             <div className="player-info black-player">
               <div className="player-name">
                 <strong>♙ {t('blacks')}:</strong> {game.blackPlayerName || game.blackPlayerId}
-                <span className="you-badge">{t('you')}</span>
+                {showBlackYouBadge && <span className="you-badge">{t('you')}</span>}
               </div>
               <div className="player-time">{formatTime(blackTimeLeftMs)}</div>
             </div>
           )}
 
-          {isGameActive && (
+          {isGameActive && isParticipant && (
             <div className="turn-indicator">
               {isUsersTurn ? (
                 <span className="your-turn">
@@ -934,7 +979,7 @@ export const GameView: React.FC = () => {
             )}
           </div>
 
-          {isGameActive && (
+          {isGameActive && isParticipant && (
             <>
               {game.drawOfferedById && game.drawOfferedById !== currentUser?.id && (
                 <div className="draw-offer">
@@ -1014,3 +1059,5 @@ export const GameView: React.FC = () => {
     </div>
   );
 };
+
+export default GameView;

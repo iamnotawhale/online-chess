@@ -12,12 +12,21 @@ interface RegisterRequest {
   username: string;
 }
 
-interface User {
+export interface User {
   id: string;
-  email: string;
+  email?: string;
   username: string;
   rating: number;
-  avatarUrl?: string | null;
+  avatarUrl?: string;
+  country?: string;
+  bio?: string;
+  createdAt?: string;
+  stats?: {
+    wins: number;
+    losses: number;
+    draws: number;
+    totalGames: number;
+  };
 }
 
 interface GameResponse {
@@ -234,7 +243,7 @@ class ApiService {
   }
 
   getGame(gameId: string): Promise<GameResponse> {
-    return this.client.get(`/games/${gameId}`).then(res => res.data);
+    return this.client.get(`/games/by-id/${gameId}`).then(res => res.data);
   }
 
   getGameMoves(gameId: string): Promise<any[]> {
@@ -319,6 +328,10 @@ class ApiService {
     return this.client.get(`/puzzles/random${query}`).then(res => res.data);
   }
 
+  getPuzzleById(puzzleId: string): Promise<any> {
+    return this.client.get(`/puzzles/${puzzleId}`).then(res => res.data);
+  }
+
   getLessonPuzzle(openingTag: string, themes: string[] = [], minRating?: number, maxRating?: number): Promise<any> {
     const params = new URLSearchParams();
     params.append('openingTag', openingTag);
@@ -389,6 +402,46 @@ class ApiService {
 
   getToken(): string | null {
     return this.token;
+  }
+
+  // Friends endpoints
+  getFriends(): Promise<any[]> {
+    return this.client.get('/friends').then(res => res.data);
+  }
+
+  getPendingFriendRequests(): Promise<any[]> {
+    return this.client.get('/friends/requests').then(res => res.data);
+  }
+
+  getFriendshipStatus(userId: string): Promise<any | null> {
+    return this.client.get(`/friends/status/${userId}`).then(res => res.data);
+  }
+
+  sendFriendRequest(userId: string): Promise<any> {
+    return this.client.post(`/friends/${userId}`).then(res => res.data);
+  }
+
+  acceptFriendRequest(friendshipId: string): Promise<any> {
+    return this.client.post(`/friends/accept/${friendshipId}`).then(res => res.data);
+  }
+
+  declineFriendRequest(friendshipId: string): Promise<void> {
+    return this.client.delete(`/friends/decline/${friendshipId}`).then(res => res.data);
+  }
+
+  cancelFriendRequest(friendshipId: string): Promise<void> {
+    return this.client.delete(`/friends/cancel/${friendshipId}`).then(res => res.data);
+  }
+
+  removeFriend(userId: string): Promise<void> {
+    return this.client.delete(`/friends/${userId}`).then(res => res.data);
+  }
+
+  // Games endpoints
+  getUserGames(userId: string, status: string = 'all'): Promise<GameResponse[]> {
+    return this.client.get(`/games/user/${userId}`, {
+      params: { status }
+    }).then(res => res.data);
   }
 }
 

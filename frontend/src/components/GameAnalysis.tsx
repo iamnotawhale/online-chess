@@ -3,16 +3,9 @@ import { useParams } from 'react-router-dom';
 import { Chess } from 'chess.js';
 import { ChessBoardWrapper } from './common';
 import './GameAnalysis.css';
-import { apiService } from '../api';
+import { apiService, User } from '../api';
 import { useTranslation } from '../i18n/LanguageContext';
 import { MoveAnalysis, GameAnalysisResult } from '../utils/analysisTypes';
-
-interface User {
-  id: string;
-  email: string;
-  username: string;
-  rating: number;
-}
 
 export const GameAnalysis: React.FC = () => {
   const { t } = useTranslation();

@@ -58,6 +58,21 @@ public class PuzzleController {
     }
 
     /**
+     * Get puzzle by id (for shared deep-links)
+     */
+    @GetMapping("/{puzzleId}")
+    public ResponseEntity<PuzzleResponse> getPuzzleById(
+            Authentication authentication,
+            @PathVariable String puzzleId
+    ) {
+        String userId = authentication != null ? authentication.getName() : ANONYMOUS_USER_ID;
+        log.info("User {} requested puzzle by id {}", userId, puzzleId);
+
+        PuzzleResponse puzzle = puzzleService.getPuzzleById(puzzleId, userId);
+        return ResponseEntity.ok(puzzle);
+    }
+
+    /**
      * Get lesson puzzle by opening tag and themes
      */
     @GetMapping("/lesson")

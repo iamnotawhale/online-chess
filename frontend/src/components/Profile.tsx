@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { apiService } from '../api';
 import { useTranslation } from '../i18n/LanguageContext';
 import { RatingChart } from './RatingChart';
@@ -169,13 +169,11 @@ const DEFAULT_AVATARS = [
 ];
 
 export const Profile: React.FC = () => {
-  const { username } = useParams<{ username: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [boardTheme, setBoardThemeState] = useState<BoardTheme>(getBoardTheme());
   const [editData, setEditData] = useState({
@@ -188,23 +186,13 @@ export const Profile: React.FC = () => {
 
   useEffect(() => {
     loadProfile();
-  }, [username]);
+  }, []);
 
   const loadProfile = async () => {
-    if (!username) {
-      setError('Username not provided');
-      setLoading(false);
-      return;
-    }
-
     try {
       setLoading(true);
-      const response = await apiService.getUserByUsername(username);
+      const response = await apiService.getMe();
       setProfile(response);
-
-      // Check if this is the current user's profile
-      const currentUser = await apiService.getMe();
-      setIsOwnProfile(currentUser.id === response.id);
 
       setEditData({
         username: response.username || '',
@@ -345,7 +333,7 @@ export const Profile: React.FC = () => {
               </div>
             )}
 
-            {isEditing && isOwnProfile && (
+            {isEditing && (
               <div className="edit-section">
                 <input
                   type="text"
@@ -452,7 +440,7 @@ export const Profile: React.FC = () => {
               </div>
             )}
 
-            {isOwnProfile && !isEditing && (
+            {!isEditing && (
               <button onClick={() => setIsEditing(true)} className="edit-profile-btn">
                 {t('editProfile')}
               </button>
@@ -460,7 +448,7 @@ export const Profile: React.FC = () => {
           </div>
         </div>
 
-        {isOwnProfile && <RatingChart />}
+        <RatingChart />
 
         <div className="profile-stats">
           <h2>{t('statistics')}</h2>

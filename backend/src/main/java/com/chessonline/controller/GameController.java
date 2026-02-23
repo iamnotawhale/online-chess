@@ -92,6 +92,42 @@ public class GameController {
     }
 
     /**
+     * Get game by ID using explicit route (avoids path ambiguity with other mappings)
+     */
+    @GetMapping("/by-id/{gameId}")
+    public ResponseEntity<?> getGameById(
+            @PathVariable String gameId,
+            @RequestParam(required = false) UUID userId,
+            Authentication authentication) {
+        try {
+            UUID requestUserId = userId;
+            if (requestUserId == null && authentication != null) {
+                requestUserId = UUID.fromString(authentication.getName());
+            }
+
+            Optional<Game> gameOpt;
+            if (requestUserId != null) {
+                gameOpt = gameService.getGame(gameId, requestUserId);
+            } else {
+                gameOpt = gameService.getGamePublic(gameId);
+            }
+
+            if (gameOpt.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "Game not found"));
+            }
+
+            Game game = gameOpt.get();
+            List<Move> moves = gameService.getGameMoves(gameId);
+            GameResponse response = mapToResponse(game, moves.size());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
      * Get all games for current user
      */
     @GetMapping
@@ -306,5 +342,36 @@ public class GameController {
         response.setTimeLeftMs(move.getTimeLeftMs());
         response.setCreatedAt(move.getCreatedAt());
         return response;
+    }
+
+    /**
+     * Get all games for a user
+     */
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<?> getUserGames(
+            @PathVariable UUID userId,
+            @RequestParam(defaultValue = "all") String status) {
+        try {
+            List<Game> games;
+            if ("all".equals(status)) {
+                games = gameService.getUserGames(userId);
+            } else if ("active".equals(status)) {
+                games = gameService.getUserActiveGames(userId);
+            } else if ("finished".equals(status)) {
+                games = gameService.getUserFinishedGames(userId);
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "Invalid status"));
+            }
+
+            List<GameResponse> responses = games.stream()
+                    .map(game -> mapToResponse(game, 0))
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(responses);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 }

@@ -56,7 +56,7 @@ export const InviteByLinkModal: React.FC<InviteByLinkModalProps> = ({ onClose })
         isRated: preset.timeControl === 'custom' ? customIsRated : true,
         preferredColor: preset.timeControl === 'custom' ? customColor : undefined,
       });
-      setInviteLink(response.inviteUrl);
+      setInviteLink(`${window.location.origin}/invite/${encodeURIComponent(response.id)}`);
     } catch (err: any) {
       alert(err.response?.data?.message || t('inviteError'));
     } finally {
