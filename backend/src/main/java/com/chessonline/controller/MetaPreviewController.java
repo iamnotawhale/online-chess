@@ -17,8 +17,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -44,7 +49,7 @@ public class MetaPreviewController {
     public ResponseEntity<String> inviteMeta(@PathVariable String inviteId, HttpServletRequest request) {
         String normalizedId = inviteId.toUpperCase();
         String baseUrl = getBaseUrl(request);
-        Optional<Invite> inviteOpt = inviteRepository.findById(normalizedId);
+        Optional<Invite> inviteOpt = inviteRepository.findByIdWithUsers(normalizedId);
 
         String title;
         String description;
@@ -57,15 +62,16 @@ public class MetaPreviewController {
             String tc = safe(invite.getTimeControl(), "10+0");
             String ratedLabel = invite.isRated() ? "рейтинговую" : "нерейтинговую";
 
-            title = creatorName + " приглашает в партию";
-            description = creatorName + " (" + rating + ") приглашает тебя сыграть в "
-                    + ratedLabel + " " + mode + " " + tc + ".";
+            title = "⚔️ Вызов на доске: " + creatorName;
+            description = creatorName + " (Elo " + rating + ") зовёт тебя в "
+                    + ratedLabel + " " + mode + " " + tc
+                    + ". Прими вызов и покажи, кто контролирует центр.";
         } else {
-            title = "Приглашение в шахматы";
-            description = "Переходи по ссылке, чтобы принять приглашение и начать игру.";
+            title = "♟️ Приглашение в шахматы";
+            description = "Перейди по ссылке, чтобы принять вызов и начать игру.";
         }
 
-        String imageUrl = baseUrl + "/api/meta/image/invite/" + encodePath(normalizedId) + ".svg";
+        String imageUrl = baseUrl + "/api/meta/image/invite/" + encodePath(normalizedId) + ".png";
         String targetUrl = baseUrl + "/invite/" + encodePath(normalizedId);
 
         return htmlResponse(buildMetaHtml(title, description, imageUrl, targetUrl));
@@ -91,26 +97,28 @@ public class MetaPreviewController {
             int plies = moveRepository.findByGameIdOrderByMoveNumber(game.getId()).size();
             int moves = (plies + 1) / 2;
 
-            title = speed + " Chess • " + white + " vs " + black;
+            title = "♟️ " + speed + " Showdown • " + white + " vs " + black;
 
             if ("active".equalsIgnoreCase(game.getStatus())) {
-                description = white + " (" + whiteRating + ") plays " + black + " (" + blackRating + ") in a "
-                        + ratedLabel + " " + speed + " (" + tc + ") game. Click to watch live.";
+                description = "Live now: " + white + " (" + whiteRating + ") vs " + black + " (" + blackRating + ")"
+                        + " in a " + ratedLabel + " " + speed + " battle (" + tc + ")."
+                        + " Jump in and watch the next strike.";
             } else {
                 String result = safe(game.getResult(), "*");
                 String reason = humanResultReason(game.getResultReason());
-                description = white + " (" + whiteRating + ") played " + black + " (" + blackRating + ") in a "
-                        + ratedLabel + " " + speed + " (" + tc + ") game. Result: " + result
+                description = "Final whistle: " + white + " (" + whiteRating + ") faced " + black + " (" + blackRating + ")"
+                        + " in a " + ratedLabel + " " + speed + " game (" + tc + ")."
+                        + " Score " + result
                         + (reason.isBlank() ? "" : " by " + reason)
                         + (moves > 0 ? " after " + moves + " moves." : ".")
-                        + " Click to replay, analyse, and discuss the game!";
+                        + " Replay the key moments and analysis.";
             }
         } else {
-            title = "Chess game";
-            description = "Open the link to watch, replay, and analyze the game.";
+            title = "♟️ Chess game";
+            description = "Open the game to watch, replay, and analyze critical positions.";
         }
 
-        String imageUrl = baseUrl + "/api/meta/image/game/" + encodePath(gameId) + ".svg";
+        String imageUrl = baseUrl + "/api/meta/image/game/" + encodePath(gameId) + ".png";
         String targetUrl = baseUrl + "/game/" + encodePath(gameId);
 
         return htmlResponse(buildMetaHtml(title, description, imageUrl, targetUrl));
@@ -126,56 +134,69 @@ public class MetaPreviewController {
 
         if (puzzleOpt.isPresent()) {
             Puzzle puzzle = puzzleOpt.get();
-            String themes = safe(puzzle.getThemes(), "tactics").replace(',', ' ');
-            title = "Puzzle • " + puzzle.getId();
-            description = "Сможешь решить эту задачу? Пазл " + puzzle.getId()
-                    + " (" + puzzle.getRating() + "), темы: " + themes
-                    + ". Найди лучший ход и проверь себя!";
+            String themes = normalizeList(safe(puzzle.getThemes(), "tactics"), ",", 4);
+            String openings = normalizeList(safe(puzzle.getOpeningTags(), "unknown opening"), " ", 3);
+            title = "🧩 Puzzle " + puzzle.getId() + " • Elo " + puzzle.getRating();
+            description = "Тактический вызов: найди лучший ход в позиции " + puzzle.getId()
+                    + ". Themes: " + themes
+                    + ". Opening tags: " + openings
+                    + ". Справишься с решением без подсказки?";
         } else {
-            title = "Chess puzzle";
-            description = "Solve this tactical puzzle and test your calculation.";
+            title = "🧩 Chess puzzle";
+            description = "Find the best move and test your tactical vision.";
         }
 
-        String imageUrl = baseUrl + "/api/meta/image/puzzle/" + encodePath(puzzleId) + ".svg";
+        String imageUrl = baseUrl + "/api/meta/image/puzzle/" + encodePath(puzzleId) + ".png";
         String targetUrl = baseUrl + "/puzzle/" + encodePath(puzzleId);
 
         return htmlResponse(buildMetaHtml(title, description, imageUrl, targetUrl));
     }
 
-    @GetMapping(value = "/image/invite/{inviteId}.svg", produces = "image/svg+xml")
-    public ResponseEntity<String> inviteImage(@PathVariable String inviteId) {
-        if (!inviteRepository.existsById(inviteId.toUpperCase())) {
-            return svgResponse(ChessSvgRenderer.renderBoard(START_FEN, "Игра в шахматы", "Приглашение"));
+    @GetMapping(value = "/image/invite/{inviteId}.png", produces = "image/png")
+    public ResponseEntity<byte[]> inviteImagePng(@PathVariable String inviteId) {
+        Optional<Invite> inviteOpt = inviteRepository.findByIdWithUsers(inviteId.toUpperCase());
+        String title;
+        String subtitle;
+
+        if (inviteOpt.isPresent()) {
+            Invite invite = inviteOpt.get();
+            String creator = safe(invite.getCreator().getUsername(), "Player");
+            int rating = invite.getCreator().getRating() != null ? invite.getCreator().getRating() : 1200;
+            title = creator + " (" + rating + ")";
+            subtitle = humanGameMode(invite.getGameMode()) + " • " + safe(invite.getTimeControl(), "10+0");
+        } else {
+            title = "Invite";
+            subtitle = "Start position";
         }
 
-        return svgResponse(ChessSvgRenderer.renderBoard(START_FEN, "Приглашение в игру", "Стартовая позиция"));
+        return pngResponse(ChessPngRenderer.renderBoard(START_FEN, title, subtitle));
     }
 
-    @GetMapping(value = "/image/game/{gameId}.svg", produces = "image/svg+xml")
-    public ResponseEntity<String> gameImage(@PathVariable String gameId) {
+    @GetMapping(value = "/image/game/{gameId}.png", produces = "image/png")
+    public ResponseEntity<byte[]> gameImagePng(@PathVariable String gameId) {
         Optional<Game> gameOpt = gameRepository.findById(gameId);
         if (gameOpt.isEmpty()) {
-            return svgResponse(ChessSvgRenderer.renderBoard(START_FEN, "Chess Game", "Game preview"));
+            return pngResponse(ChessPngRenderer.renderBoard(START_FEN, "Chess Game", "Live or finished"));
         }
 
         Game game = gameOpt.get();
         String fen = safe(game.getFenCurrent(), START_FEN);
         String title = safe(game.getPlayerWhite().getUsername(), "White") + " vs " + safe(game.getPlayerBlack().getUsername(), "Black");
-        String subtitle = humanGameMode(inferSpeed(game.getTimeControl())) + " " + safe(game.getTimeControl(), "10+0");
+        String subtitle = inferSpeed(game.getTimeControl()) + " • " + safe(game.getTimeControl(), "10+0");
 
-        return svgResponse(ChessSvgRenderer.renderBoard(fen, title, subtitle));
+        return pngResponse(ChessPngRenderer.renderBoard(fen, title, subtitle));
     }
 
-    @GetMapping(value = "/image/puzzle/{puzzleId}.svg", produces = "image/svg+xml")
-    public ResponseEntity<String> puzzleImage(@PathVariable String puzzleId) {
+    @GetMapping(value = "/image/puzzle/{puzzleId}.png", produces = "image/png")
+    public ResponseEntity<byte[]> puzzleImagePng(@PathVariable String puzzleId) {
         Optional<Puzzle> puzzleOpt = puzzleRepository.findById(puzzleId);
         if (puzzleOpt.isEmpty()) {
-            return svgResponse(ChessSvgRenderer.renderBoard(START_FEN, "Puzzle", "Unknown puzzle"));
+            return pngResponse(ChessPngRenderer.renderBoard(START_FEN, "Puzzle", "Unknown puzzle"));
         }
 
         Puzzle puzzle = puzzleOpt.get();
-        String subtitle = "Puzzle " + puzzle.getId() + " • " + puzzle.getRating();
-        return svgResponse(ChessSvgRenderer.renderBoard(safe(puzzle.getFen(), START_FEN), "Найди лучший ход", subtitle));
+        String subtitle = "Puzzle " + puzzle.getId() + " • Elo " + puzzle.getRating();
+        return pngResponse(ChessPngRenderer.renderBoard(safe(puzzle.getFen(), START_FEN), "Find the best move", subtitle));
     }
 
     private ResponseEntity<String> htmlResponse(String html) {
@@ -185,11 +206,11 @@ public class MetaPreviewController {
                 .body(html);
     }
 
-    private ResponseEntity<String> svgResponse(String svg) {
+    private ResponseEntity<byte[]> pngResponse(byte[] pngData) {
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType("image/svg+xml"))
+                .contentType(MediaType.IMAGE_PNG)
                 .header(HttpHeaders.CACHE_CONTROL, "public, max-age=300")
-                .body(svg);
+                .body(pngData);
     }
 
     private String buildMetaHtml(String title, String description, String imageUrl, String targetUrl) {
@@ -207,6 +228,10 @@ public class MetaPreviewController {
                 + "<meta property=\"og:title\" content=\"" + escapedTitle + "\"/>"
                 + "<meta property=\"og:description\" content=\"" + escapedDescription + "\"/>"
                 + "<meta property=\"og:image\" content=\"" + escapedImage + "\"/>"
+                + "<meta property=\"og:image:secure_url\" content=\"" + escapedImage + "\"/>"
+                + "<meta property=\"og:image:type\" content=\"image/png\"/>"
+                + "<meta property=\"og:image:width\" content=\"1200\"/>"
+                + "<meta property=\"og:image:height\" content=\"630\"/>"
                 + "<meta property=\"og:url\" content=\"" + escapedTarget + "\"/>"
                 + "<meta name=\"twitter:card\" content=\"summary_large_image\"/>"
                 + "<meta name=\"twitter:title\" content=\"" + escapedTitle + "\"/>"
@@ -220,6 +245,21 @@ public class MetaPreviewController {
 
     private String safe(String value, String fallback) {
         return value == null || value.isBlank() ? fallback : value;
+    }
+
+    private String normalizeList(String raw, String separator, int maxItems) {
+        String[] parts = raw.split(separator);
+        StringBuilder result = new StringBuilder();
+        int count = 0;
+        for (String item : parts) {
+            String trimmed = item == null ? "" : item.trim();
+            if (trimmed.isEmpty()) continue;
+            if (count > 0) result.append(", ");
+            result.append(trimmed.replace('_', ' '));
+            count++;
+            if (count >= maxItems) break;
+        }
+        return count == 0 ? "unknown" : result.toString();
     }
 
     private String getBaseUrl(HttpServletRequest request) {
@@ -304,83 +344,108 @@ public class MetaPreviewController {
                 .replace("\"", "\\\"");
     }
 
-    private static class ChessSvgRenderer {
+    private static class ChessPngRenderer {
 
-        private static final String LIGHT = "#f0d9b5";
-        private static final String DARK = "#b58863";
-        private static final int BOARD_SIZE = 800;
-        private static final int CELL = BOARD_SIZE / 8;
+        private static final Color BG = new Color(17, 24, 39);
+        private static final Color PANEL = new Color(31, 41, 55);
+        private static final Color LIGHT = new Color(240, 217, 181);
+        private static final Color DARK = new Color(181, 136, 99);
+        private static final Color WHITE_PIECE = new Color(248, 250, 252);
+        private static final Color BLACK_PIECE = new Color(17, 24, 39);
+        private static final Color TEXT_PRIMARY = new Color(249, 250, 251);
+        private static final Color TEXT_SECONDARY = new Color(209, 213, 219);
+        private static final Color TEXT_MUTED = new Color(156, 163, 175);
 
-        private static final Map<Character, String> PIECES = Map.ofEntries(
-                Map.entry('K', "♔"), Map.entry('Q', "♕"), Map.entry('R', "♖"), Map.entry('B', "♗"), Map.entry('N', "♘"), Map.entry('P', "♙"),
-                Map.entry('k', "♚"), Map.entry('q', "♛"), Map.entry('r', "♜"), Map.entry('b', "♝"), Map.entry('n', "♞"), Map.entry('p', "♟")
-        );
+        private static final int W = 1200;
+        private static final int H = 630;
 
-        static String renderBoard(String fen, String title, String subtitle) {
-            String placement = fen != null && fen.contains(" ") ? fen.split(" ")[0] : fen;
-            if (placement == null || placement.isBlank()) {
-                placement = START_FEN.split(" ")[0];
-            }
+        static byte[] renderBoard(String fen, String title, String subtitle) {
+            try {
+                BufferedImage image = new BufferedImage(W, H, BufferedImage.TYPE_INT_ARGB);
+                Graphics2D g = image.createGraphics();
+                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-            StringBuilder svg = new StringBuilder();
-            svg.append("<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='630' viewBox='0 0 1200 630'>");
-            svg.append("<rect width='1200' height='630' fill='#111827' />");
-            svg.append("<rect x='40' y='40' width='550' height='550' rx='16' fill='#1f2937' />");
+                g.setColor(BG);
+                g.fillRect(0, 0, W, H);
 
-            for (int rank = 0; rank < 8; rank++) {
-                for (int file = 0; file < 8; file++) {
-                    boolean light = (rank + file) % 2 == 0;
-                    int x = 55 + file * 66;
-                    int y = 55 + rank * 66;
-                    svg.append("<rect x='").append(x).append("' y='").append(y)
-                            .append("' width='66' height='66' fill='")
-                            .append(light ? LIGHT : DARK)
-                            .append("' />");
-                }
-            }
+                g.setColor(PANEL);
+                g.fillRoundRect(40, 40, 550, 550, 20, 20);
 
-            String[] rows = placement.split("/");
-            for (int rank = 0; rank < Math.min(rows.length, 8); rank++) {
-                int file = 0;
-                char[] chars = rows[rank].toCharArray();
-                for (char c : chars) {
-                    if (Character.isDigit(c)) {
-                        file += Character.getNumericValue(c);
-                        continue;
+                int cell = 66;
+                int bx = 55;
+                int by = 55;
+
+                for (int rank = 0; rank < 8; rank++) {
+                    for (int file = 0; file < 8; file++) {
+                        g.setColor(((rank + file) % 2 == 0) ? LIGHT : DARK);
+                        g.fillRect(bx + file * cell, by + rank * cell, cell, cell);
                     }
-                    if (file >= 8) break;
-                    String piece = PIECES.get(c);
-                    if (piece != null) {
-                        int x = 55 + file * 66 + 33;
-                        int y = 55 + rank * 66 + 44;
-                        svg.append("<text x='").append(x).append("' y='").append(y)
-                                .append("' text-anchor='middle' font-size='44' font-family='Segoe UI Symbol, DejaVu Sans, Arial' fill='")
-                                .append(Character.isUpperCase(c) ? "#f9fafb" : "#111827")
-                                .append("'>").append(piece).append("</text>");
-                    }
-                    file++;
                 }
-            }
 
-            svg.append("<text x='650' y='190' fill='#f9fafb' font-size='52' font-weight='700' font-family='Inter, Arial, sans-serif'>")
-                    .append(escapeSvg(title))
-                    .append("</text>");
-            svg.append("<text x='650' y='250' fill='#d1d5db' font-size='32' font-family='Inter, Arial, sans-serif'>")
-                    .append(escapeSvg(subtitle))
-                    .append("</text>");
-            svg.append("<text x='650' y='560' fill='#9ca3af' font-size='28' font-family='Inter, Arial, sans-serif'>onchess.online</text>");
-            svg.append("</svg>");
-            return svg.toString();
+                String placement = fen != null && fen.contains(" ") ? fen.split(" ")[0] : fen;
+                if (placement == null || placement.isBlank()) {
+                    placement = START_FEN.split(" ")[0];
+                }
+
+                g.setFont(new Font("SansSerif", Font.BOLD, 30));
+                String[] rows = placement.split("/");
+                for (int rank = 0; rank < Math.min(8, rows.length); rank++) {
+                    int file = 0;
+                    for (char c : rows[rank].toCharArray()) {
+                        if (Character.isDigit(c)) {
+                            file += Character.getNumericValue(c);
+                            continue;
+                        }
+                        if (file >= 8) break;
+
+                        int cx = bx + file * cell + cell / 2;
+                        int cy = by + rank * cell + cell / 2;
+
+                        boolean whitePiece = Character.isUpperCase(c);
+                        g.setColor(whitePiece ? WHITE_PIECE : BLACK_PIECE);
+                        g.fillOval(cx - 22, cy - 22, 44, 44);
+
+                        g.setColor(whitePiece ? BLACK_PIECE : WHITE_PIECE);
+                        g.drawOval(cx - 22, cy - 22, 44, 44);
+
+                        g.setFont(new Font("SansSerif", Font.BOLD, 24));
+                        String label = String.valueOf(Character.toUpperCase(c));
+                        FontMetrics fm = g.getFontMetrics();
+                        int tx = cx - fm.stringWidth(label) / 2;
+                        int ty = cy + (fm.getAscent() - fm.getDescent()) / 2;
+                        g.drawString(label, tx, ty);
+
+                        file++;
+                    }
+                }
+
+                g.setColor(TEXT_PRIMARY);
+                g.setFont(new Font("SansSerif", Font.BOLD, 50));
+                g.drawString(trim(title, 30), 650, 190);
+
+                g.setColor(TEXT_SECONDARY);
+                g.setFont(new Font("SansSerif", Font.PLAIN, 30));
+                g.drawString(trim(subtitle, 48), 650, 245);
+
+                g.setColor(TEXT_MUTED);
+                g.setFont(new Font("SansSerif", Font.PLAIN, 24));
+                g.drawString("onchess.online", 650, 560);
+
+                g.dispose();
+
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ImageIO.write(image, "png", baos);
+                return baos.toByteArray();
+            } catch (Exception e) {
+                return new byte[0];
+            }
         }
 
-        private static String escapeSvg(String value) {
+        private static String trim(String value, int maxLen) {
             if (value == null) return "";
-            return value
-                    .replace("&", "&amp;")
-                    .replace("<", "&lt;")
-                    .replace(">", "&gt;")
-                    .replace("\"", "&quot;")
-                    .replace("'", "&#39;");
+            if (value.length() <= maxLen) return value;
+            return value.substring(0, Math.max(0, maxLen - 1)) + "…";
         }
     }
 }
