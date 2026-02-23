@@ -24,7 +24,7 @@ const PRESETS = [
 ];
 
 export const InviteByLinkModal: React.FC<InviteByLinkModalProps> = ({ onClose }) => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [inviteLink, setInviteLink] = useState('');
@@ -56,7 +56,7 @@ export const InviteByLinkModal: React.FC<InviteByLinkModalProps> = ({ onClose })
         isRated: preset.timeControl === 'custom' ? customIsRated : true,
         preferredColor: preset.timeControl === 'custom' ? customColor : undefined,
       });
-      setInviteLink(`${window.location.origin}/invite/${encodeURIComponent(response.id)}`);
+      setInviteLink(`${window.location.origin}/invite/${encodeURIComponent(response.id)}?lang=${language}`);
     } catch (err: any) {
       alert(err.response?.data?.message || t('inviteError'));
     } finally {

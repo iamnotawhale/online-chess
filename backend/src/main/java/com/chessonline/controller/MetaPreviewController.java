@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.imageio.ImageIO;
@@ -45,8 +46,13 @@ public class MetaPreviewController {
     @Autowired
     private MoveRepository moveRepository;
 
+    private String getText(String lang, String ruText, String enText) {
+        return "ru".equals(lang) ? ruText : enText;
+    }
+
     @GetMapping(value = "/invite/{inviteId}", produces = "text/html;charset=UTF-8")
-    public ResponseEntity<String> inviteMeta(@PathVariable String inviteId, HttpServletRequest request) {
+    public ResponseEntity<String> inviteMeta(@PathVariable String inviteId, HttpServletRequest request, 
+                                              @RequestParam(defaultValue = "en") String lang) {
         String normalizedId = inviteId.toUpperCase();
         String baseUrl = getBaseUrl(request);
         Optional<Invite> inviteOpt = inviteRepository.findByIdWithUsers(normalizedId);
@@ -56,19 +62,25 @@ public class MetaPreviewController {
 
         if (inviteOpt.isPresent()) {
             Invite invite = inviteOpt.get();
-            String creatorName = safe(invite.getCreator().getUsername(), "Игрок");
+            String creatorName = safe(invite.getCreator().getUsername(), "Player");
             int rating = invite.getCreator().getRating() != null ? invite.getCreator().getRating() : 1200;
-            String mode = humanGameMode(invite.getGameMode());
+            String mode = humanGameMode(invite.getGameMode(), lang);
             String tc = safe(invite.getTimeControl(), "10+0");
-            String ratedLabel = invite.isRated() ? "рейтинговую" : "нерейтинговую";
+            String ratedLabel = invite.isRated() ? 
+                    getText(lang, "рейтинговую", "rated") : 
+                    getText(lang, "нерейтинговую", "casual");
 
-            title = "⚔️ Вызов на доске: " + creatorName;
-            description = creatorName + " (Elo " + rating + ") зовёт тебя в "
-                    + ratedLabel + " " + mode + " " + tc
-                    + ". Прими вызов и покажи, кто контролирует центр.";
+            title = getText(lang, 
+                    "⚔️ Вызов на доске: " + creatorName,
+                    "♟️ Chess challenge from " + creatorName);
+            description = getText(lang,
+                    creatorName + " (" + rating + ") зовёт тебя в " + ratedLabel + " " + mode + " " + tc + ". Прими вызов и начни игру.",
+                    creatorName + " (" + rating + ") invites you to a " + ratedLabel + " " + mode + " (" + tc + ") game. Accept the challenge!");
         } else {
-            title = "♟️ Приглашение в шахматы";
-            description = "Перейди по ссылке, чтобы принять вызов и начать игру.";
+            title = getText(lang, "♟️ Приглашение в шахматы", "♟️ Chess invitation");
+            description = getText(lang, 
+                    "Перейди по ссылке, чтобы принять вызов и начать игру.",
+                    "Follow the link to accept the challenge and play a game.");
         }
 
         String imageUrl = baseUrl + "/api/meta/image/invite/" + encodePath(normalizedId) + ".png";
@@ -78,7 +90,8 @@ public class MetaPreviewController {
     }
 
     @GetMapping(value = "/game/{gameId}", produces = "text/html;charset=UTF-8")
-    public ResponseEntity<String> gameMeta(@PathVariable String gameId, HttpServletRequest request) {
+    public ResponseEntity<String> gameMeta(@PathVariable String gameId, HttpServletRequest request,
+                                            @RequestParam(defaultValue = "en") String lang) {
         String baseUrl = getBaseUrl(request);
         Optional<Game> gameOpt = gameRepository.findById(gameId);
 
@@ -91,31 +104,37 @@ public class MetaPreviewController {
             String black = safe(game.getPlayerBlack().getUsername(), "Black");
             int whiteRating = game.getPlayerWhite().getRating() != null ? game.getPlayerWhite().getRating() : 1200;
             int blackRating = game.getPlayerBlack().getRating() != null ? game.getPlayerBlack().getRating() : 1200;
-            String speed = inferSpeed(game.getTimeControl());
+            String speed = inferSpeed(game.getTimeControl(), lang);
             String tc = safe(game.getTimeControl(), "10+0");
-            String ratedLabel = game.isRated() ? "rated" : "casual";
+            String ratedLabel = game.isRated() ? 
+                    getText(lang, "рейтинговую", "rated") : 
+                    getText(lang, "нерейтинговую", "casual");
             int plies = moveRepository.findByGameIdOrderByMoveNumber(game.getId()).size();
             int moves = (plies + 1) / 2;
-
-            title = "♟️ " + speed + " Showdown • " + white + " vs " + black;
+            String result = safe(game.getResult(), "*");
+            String reason = humanResultReason(game.getResultReason(), lang);
 
             if ("active".equalsIgnoreCase(game.getStatus())) {
-                description = "Live now: " + white + " (" + whiteRating + ") vs " + black + " (" + blackRating + ")"
-                        + " in a " + ratedLabel + " " + speed + " battle (" + tc + ")."
-                        + " Jump in and watch the next strike.";
+                title = getText(lang,
+                        "♟️ " + speed + " • " + white + " vs " + black,
+                        "♟️ " + speed + ": " + white + " vs " + black);
+                description = getText(lang,
+                        white + " (" + whiteRating + ") играет против " + black + " (" + blackRating + ") в " + ratedLabel + " " + speed + " (" + tc + "). Смотрите игру вживую!",
+                        white + " (" + whiteRating + ") is playing " + black + " (" + blackRating + ") in a " + ratedLabel + " " + speed + " (" + tc + "). Watch live!");
             } else {
-                String result = safe(game.getResult(), "*");
-                String reason = humanResultReason(game.getResultReason());
-                description = "Final whistle: " + white + " (" + whiteRating + ") faced " + black + " (" + blackRating + ")"
-                        + " in a " + ratedLabel + " " + speed + " game (" + tc + ")."
-                        + " Score " + result
-                        + (reason.isBlank() ? "" : " by " + reason)
-                        + (moves > 0 ? " after " + moves + " moves." : ".")
-                        + " Replay the key moments and analysis.";
+                title = getText(lang,
+                        "♟️ Завершено: " + white + " vs " + black,
+                        "♟️ Finished: " + white + " vs " + black);
+                String reasonText = reason.isBlank() ? "" : " " + getText(lang, "по", "by") + " " + reason;
+                description = getText(lang,
+                        white + " (" + whiteRating + ") сыграл против " + black + " (" + blackRating + ") в " + ratedLabel + " " + speed + " (" + tc + "). Результат: " + result + reasonText + (moves > 0 ? " после " + moves + " ходов." : ".") + " Смотрите и анализируйте партию!",
+                        white + " (" + whiteRating + ") played " + black + " (" + blackRating + ") in a " + ratedLabel + " " + speed + " (" + tc + "). Result: " + result + reasonText + (moves > 0 ? " after " + moves + " moves." : ".") + " Watch and analyze!");
             }
         } else {
-            title = "♟️ Chess game";
-            description = "Open the game to watch, replay, and analyze critical positions.";
+            title = getText(lang, "♟️ Шахматная партия", "♟️ Chess game");
+            description = getText(lang, 
+                    "Откройте ссылку, чтобы смотреть, анализировать и обсуждать партию.",
+                    "Open the link to watch, analyze, and discuss the game.");
         }
 
         String imageUrl = baseUrl + "/api/meta/image/game/" + encodePath(gameId) + ".png";
@@ -125,7 +144,8 @@ public class MetaPreviewController {
     }
 
     @GetMapping(value = "/puzzle/{puzzleId}", produces = "text/html;charset=UTF-8")
-    public ResponseEntity<String> puzzleMeta(@PathVariable String puzzleId, HttpServletRequest request) {
+    public ResponseEntity<String> puzzleMeta(@PathVariable String puzzleId, HttpServletRequest request,
+                                              @RequestParam(defaultValue = "en") String lang) {
         String baseUrl = getBaseUrl(request);
         Optional<Puzzle> puzzleOpt = puzzleRepository.findById(puzzleId);
 
@@ -135,15 +155,27 @@ public class MetaPreviewController {
         if (puzzleOpt.isPresent()) {
             Puzzle puzzle = puzzleOpt.get();
             String themes = normalizeList(safe(puzzle.getThemes(), "tactics"), ",", 4);
-            String openings = normalizeList(safe(puzzle.getOpeningTags(), "unknown opening"), " ", 3);
-            title = "🧩 Puzzle " + puzzle.getId() + " • Elo " + puzzle.getRating();
-            description = "Тактический вызов: найди лучший ход в позиции " + puzzle.getId()
-                    + ". Themes: " + themes
-                    + ". Opening tags: " + openings
-                    + ". Справишься с решением без подсказки?";
+            String openings = normalizeList(safe(puzzle.getOpeningTags(), ""), " ", 3);
+            boolean hasKnownThemes = !themes.isBlank() && !"unknown".equalsIgnoreCase(themes) && !"unknown themes".equalsIgnoreCase(themes);
+            boolean hasKnownOpenings = !openings.isBlank() && !"unknown".equalsIgnoreCase(openings) && !"unknown opening".equalsIgnoreCase(openings);
+            
+            title = getText(lang,
+                    "🧩 Пазл " + puzzle.getId() + " • Elo " + puzzle.getRating(),
+                    "🧩 Puzzle " + puzzle.getId() + " • Elo " + puzzle.getRating());
+            description = getText(lang,
+                    "Найди лучший ход в этой позиции. Пазл рейтинг " + puzzle.getRating() + 
+                    (hasKnownThemes ? ". Темы: " + themes : "") +
+                (hasKnownOpenings ? ". Дебюты: " + openings : "") +
+                    ". Сможешь решить без подсказок?",
+                    "Find the best move in this position. Puzzle rating " + puzzle.getRating() +
+                    (hasKnownThemes ? ". Themes: " + themes : "") +
+                (hasKnownOpenings ? ". Openings: " + openings : "") +
+                    ". Can you solve it?");
         } else {
-            title = "🧩 Chess puzzle";
-            description = "Find the best move and test your tactical vision.";
+            title = getText(lang, "🧩 Шахматный пазл", "🧩 Chess puzzle");
+            description = getText(lang, 
+                    "Решите этот тактический пазл и проверьте свой расчет.",
+                    "Solve this tactical puzzle and test your calculation.");
         }
 
         String imageUrl = baseUrl + "/api/meta/image/puzzle/" + encodePath(puzzleId) + ".png";
@@ -153,50 +185,73 @@ public class MetaPreviewController {
     }
 
     @GetMapping(value = "/image/invite/{inviteId}.png", produces = "image/png")
-    public ResponseEntity<byte[]> inviteImagePng(@PathVariable String inviteId) {
+    public ResponseEntity<byte[]> inviteImagePng(@PathVariable String inviteId, 
+                                                  @RequestParam(defaultValue = "en") String lang) {
         Optional<Invite> inviteOpt = inviteRepository.findByIdWithUsers(inviteId.toUpperCase());
         String title;
         String subtitle;
-
         if (inviteOpt.isPresent()) {
             Invite invite = inviteOpt.get();
             String creator = safe(invite.getCreator().getUsername(), "Player");
             int rating = invite.getCreator().getRating() != null ? invite.getCreator().getRating() : 1200;
-            title = creator + " (" + rating + ")";
-            subtitle = humanGameMode(invite.getGameMode()) + " • " + safe(invite.getTimeControl(), "10+0");
+            String creatorFormatted = creator + " ●" + rating;
+            subtitle = humanGameMode(invite.getGameMode(), lang) + " • " + safe(invite.getTimeControl(), "10+0");
+            title = creatorFormatted;
         } else {
-            title = "Invite";
-            subtitle = "Start position";
+            title = getText(lang, "Приглашение", "Invite");
+            subtitle = getText(lang, "Начальная позиция", "Start position");
         }
-
         return pngResponse(ChessPngRenderer.renderBoard(START_FEN, title, subtitle));
     }
 
     @GetMapping(value = "/image/game/{gameId}.png", produces = "image/png")
-    public ResponseEntity<byte[]> gameImagePng(@PathVariable String gameId) {
+    public ResponseEntity<byte[]> gameImagePng(@PathVariable String gameId,
+                                                @RequestParam(defaultValue = "en") String lang) {
         Optional<Game> gameOpt = gameRepository.findById(gameId);
-        if (gameOpt.isEmpty()) {
-            return pngResponse(ChessPngRenderer.renderBoard(START_FEN, "Chess Game", "Live or finished"));
+        
+        String title;
+        String subtitle;
+        String fen = START_FEN;
+        
+        if (gameOpt.isPresent()) {
+            Game game = gameOpt.get();
+            String white = safe(game.getPlayerWhite().getUsername(), "White");
+            String black = safe(game.getPlayerBlack().getUsername(), "Black");
+            int whiteRating = game.getPlayerWhite().getRating() != null ? game.getPlayerWhite().getRating() : 1200;
+            int blackRating = game.getPlayerBlack().getRating() != null ? game.getPlayerBlack().getRating() : 1200;
+            String speed = inferSpeed(game.getTimeControl(), lang);
+            String tc = safe(game.getTimeControl(), "10+0");
+            
+            title = white + " ●" + whiteRating + " vs " + black + " ●" + blackRating;
+            subtitle = speed + " • " + tc;
+            fen = safe(game.getFenCurrent(), START_FEN);
+        } else {
+            title = getText(lang, "Шахматная партия", "Chess game");
+            subtitle = getText(lang, "Смотрите партию", "Watch the game");
         }
-
-        Game game = gameOpt.get();
-        String fen = safe(game.getFenCurrent(), START_FEN);
-        String title = safe(game.getPlayerWhite().getUsername(), "White") + " vs " + safe(game.getPlayerBlack().getUsername(), "Black");
-        String subtitle = inferSpeed(game.getTimeControl()) + " • " + safe(game.getTimeControl(), "10+0");
-
+        
         return pngResponse(ChessPngRenderer.renderBoard(fen, title, subtitle));
     }
 
     @GetMapping(value = "/image/puzzle/{puzzleId}.png", produces = "image/png")
-    public ResponseEntity<byte[]> puzzleImagePng(@PathVariable String puzzleId) {
+    public ResponseEntity<byte[]> puzzleImagePng(@PathVariable String puzzleId,
+                                                  @RequestParam(defaultValue = "en") String lang) {
         Optional<Puzzle> puzzleOpt = puzzleRepository.findById(puzzleId);
-        if (puzzleOpt.isEmpty()) {
-            return pngResponse(ChessPngRenderer.renderBoard(START_FEN, "Puzzle", "Unknown puzzle"));
+        String title;
+        String subtitle;
+        String fen = START_FEN;
+        
+        if (puzzleOpt.isPresent()) {
+            Puzzle puzzle = puzzleOpt.get();
+            subtitle = getText(lang, "Пазл • Elo ", "Puzzle • Elo ") + puzzle.getRating();
+            title = getText(lang, "Найди лучший ход", "Find the best move");
+            fen = safe(puzzle.getFen(), START_FEN);
+        } else {
+            title = getText(lang, "Пазл", "Puzzle");
+            subtitle = getText(lang, "Решите задачу", "Solve the puzzle");
         }
-
-        Puzzle puzzle = puzzleOpt.get();
-        String subtitle = "Puzzle " + puzzle.getId() + " • Elo " + puzzle.getRating();
-        return pngResponse(ChessPngRenderer.renderBoard(safe(puzzle.getFen(), START_FEN), "Find the best move", subtitle));
+        
+        return pngResponse(ChessPngRenderer.renderBoard(fen, title, subtitle));
     }
 
     private ResponseEntity<String> htmlResponse(String html) {
@@ -274,35 +329,52 @@ public class MetaPreviewController {
         return URLEncoder.encode(value, StandardCharsets.UTF_8).replace("+", "%20");
     }
 
-    private String humanGameMode(String mode) {
-        if (mode == null || mode.isBlank()) return "Rapid";
-        Map<String, String> map = Map.of(
-                "bullet", "Bullet",
-                "blitz", "Blitz",
-                "rapid", "Rapid",
-                "classic", "Classical",
-                "custom", "Custom"
-        );
+    private String humanGameMode(String mode, String lang) {
+        Map<String, String> map = "ru".equals(lang) ?
+                Map.of(
+                        "bullet", "Молния",
+                        "blitz", "Блиц",
+                        "rapid", "Рапид",
+                        "classic", "Классика",
+                        "custom", "Пользовательская"
+                ) :
+                Map.of(
+                        "bullet", "Bullet",
+                        "blitz", "Blitz",
+                        "rapid", "Rapid",
+                        "classic", "Classical",
+                        "custom", "Custom"
+                );
+        if (mode == null || mode.isBlank()) return getText(lang, "Рапид", "Rapid");
         String normalized = mode.toLowerCase();
         return map.getOrDefault(normalized, capitalize(normalized));
     }
 
-    private String humanResultReason(String reason) {
+    private String humanResultReason(String reason, String lang) {
         if (reason == null || reason.isBlank()) return "";
-        Map<String, String> map = Map.of(
-                "checkmate", "checkmate",
-                "resignation", "resignation",
-                "timeout", "timeout",
-                "stalemate", "stalemate",
-                "agreement", "draw agreement",
-                "abandonment", "abandonment"
-        );
+        Map<String, String> map = "ru".equals(lang) ?
+                Map.of(
+                        "checkmate", "мат",
+                        "resignation", "сдача",
+                        "timeout", "время вышло",
+                        "stalemate", "пат",
+                        "agreement", "согласие на ничью",
+                        "abandonment", "отказ"
+                ) :
+                Map.of(
+                        "checkmate", "checkmate",
+                        "resignation", "resignation",
+                        "timeout", "timeout",
+                        "stalemate", "stalemate",
+                        "agreement", "draw agreement",
+                        "abandonment", "abandonment"
+                );
         return map.getOrDefault(reason.toLowerCase(), reason);
     }
 
-    private String inferSpeed(String timeControl) {
+    private String inferSpeed(String timeControl, String lang) {
         if (timeControl == null || !timeControl.contains("+")) {
-            return "Rapid";
+            return getText(lang, "Рапид", "Rapid");
         }
 
         String[] parts = timeControl.split("\\+");
@@ -312,14 +384,18 @@ public class MetaPreviewController {
             minutes = Integer.parseInt(parts[0]);
             increment = Integer.parseInt(parts[1]);
         } catch (Exception e) {
-            return "Rapid";
+            return getText(lang, "Рапид", "Rapid");
         }
 
         int estimatedSeconds = minutes * 60 + increment * 40;
-        if (estimatedSeconds <= 179) return "Bullet";
-        if (estimatedSeconds <= 479) return "Blitz";
-        if (estimatedSeconds <= 1499) return "Rapid";
-        return "Classical";
+        String[] speedsRu = {"Молния", "Блиц", "Рапид", "Классика"};
+        String[] speedsEn = {"Bullet", "Blitz", "Rapid", "Classical"};
+        String[] speeds = "ru".equals(lang) ? speedsRu : speedsEn;
+        
+        if (estimatedSeconds <= 179) return speeds[0];
+        if (estimatedSeconds <= 479) return speeds[1];
+        if (estimatedSeconds <= 1499) return speeds[2];
+        return speeds[3];
     }
 
     private String capitalize(String text) {
@@ -359,6 +435,13 @@ public class MetaPreviewController {
         private static final int W = 1200;
         private static final int H = 630;
 
+        // Unicode chess piece symbols
+        private static final Map<Character, String> PIECE_SYMBOLS = Map.ofEntries(
+            Map.entry('P', "♙"), Map.entry('N', "♘"), Map.entry('B', "♗"), Map.entry('R', "♖"),
+            Map.entry('Q', "♕"), Map.entry('K', "♔"), Map.entry('p', "♟"), Map.entry('n', "♞"),
+            Map.entry('b', "♝"), Map.entry('r', "♜"), Map.entry('q', "♛"), Map.entry('k', "♚")
+        );
+
         static byte[] renderBoard(String fen, String title, String subtitle) {
             try {
                 BufferedImage image = new BufferedImage(W, H, BufferedImage.TYPE_INT_ARGB);
@@ -372,10 +455,11 @@ public class MetaPreviewController {
                 g.setColor(PANEL);
                 g.fillRoundRect(40, 40, 550, 550, 20, 20);
 
-                int cell = 66;
                 int bx = 55;
                 int by = 55;
+                int cell = 66;
 
+                // Draw board
                 for (int rank = 0; rank < 8; rank++) {
                     for (int file = 0; file < 8; file++) {
                         g.setColor(((rank + file) % 2 == 0) ? LIGHT : DARK);
@@ -383,57 +467,50 @@ public class MetaPreviewController {
                     }
                 }
 
+                // Draw pieces
                 String placement = fen != null && fen.contains(" ") ? fen.split(" ")[0] : fen;
                 if (placement == null || placement.isBlank()) {
                     placement = START_FEN.split(" ")[0];
                 }
 
-                g.setFont(new Font("SansSerif", Font.BOLD, 30));
+                g.setFont(new Font("SansSerif", Font.BOLD, 40));
                 String[] rows = placement.split("/");
                 for (int rank = 0; rank < Math.min(8, rows.length); rank++) {
                     int file = 0;
                     for (char c : rows[rank].toCharArray()) {
                         if (Character.isDigit(c)) {
                             file += Character.getNumericValue(c);
-                            continue;
+                        } else {
+                            int cx = bx + file * cell + cell / 2;
+                            int cy = by + rank * cell + cell / 2;
+                            boolean whitePiece = Character.isUpperCase(c);
+                            
+                            g.setColor(whitePiece ? WHITE_PIECE : BLACK_PIECE);
+                            String symbol = PIECE_SYMBOLS.getOrDefault(c, String.valueOf(c));
+                            FontMetrics fm = g.getFontMetrics();
+                            int tx = cx - fm.stringWidth(symbol) / 2;
+                            int ty = cy + (fm.getAscent() - fm.getDescent()) / 2;
+                            g.drawString(symbol, tx, ty);
+                            file++;
                         }
                         if (file >= 8) break;
-
-                        int cx = bx + file * cell + cell / 2;
-                        int cy = by + rank * cell + cell / 2;
-
-                        boolean whitePiece = Character.isUpperCase(c);
-                        g.setColor(whitePiece ? WHITE_PIECE : BLACK_PIECE);
-                        g.fillOval(cx - 22, cy - 22, 44, 44);
-
-                        g.setColor(whitePiece ? BLACK_PIECE : WHITE_PIECE);
-                        g.drawOval(cx - 22, cy - 22, 44, 44);
-
-                        g.setFont(new Font("SansSerif", Font.BOLD, 24));
-                        String label = String.valueOf(Character.toUpperCase(c));
-                        FontMetrics fm = g.getFontMetrics();
-                        int tx = cx - fm.stringWidth(label) / 2;
-                        int ty = cy + (fm.getAscent() - fm.getDescent()) / 2;
-                        g.drawString(label, tx, ty);
-
-                        file++;
                     }
                 }
 
-                g.setColor(TEXT_PRIMARY);
+                // Draw text on right side
                 g.setFont(new Font("SansSerif", Font.BOLD, 50));
+                g.setColor(TEXT_PRIMARY);
                 g.drawString(trim(title, 30), 650, 190);
 
-                g.setColor(TEXT_SECONDARY);
                 g.setFont(new Font("SansSerif", Font.PLAIN, 30));
+                g.setColor(TEXT_SECONDARY);
                 g.drawString(trim(subtitle, 48), 650, 245);
 
-                g.setColor(TEXT_MUTED);
                 g.setFont(new Font("SansSerif", Font.PLAIN, 24));
+                g.setColor(TEXT_MUTED);
                 g.drawString("onchess.online", 650, 560);
 
                 g.dispose();
-
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 ImageIO.write(image, "png", baos);
                 return baos.toByteArray();

@@ -33,7 +33,7 @@ export const GameView: React.FC = () => {
     const [promotionDialogOpen, setPromotionDialogOpen] = useState(false);
     const [promotionData, setPromotionData] = useState<{ from: string; to: string } | null>(null);
 
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
   const { gameId } = useParams<{ gameId: string }>();
   const [game, setGame] = useState<GameData | null>(null);
@@ -710,7 +710,7 @@ export const GameView: React.FC = () => {
 
   const handleShareGame = async () => {
     if (typeof window === 'undefined' || !game) return;
-    const url = `${window.location.origin}/game/${encodeURIComponent(game.id)}`;
+    const url = `${window.location.origin}/game/${encodeURIComponent(game.id)}?lang=${language}`;
 
     try {
       if (navigator.clipboard && window.isSecureContext) {

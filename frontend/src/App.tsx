@@ -141,13 +141,15 @@ const Header: React.FC<HeaderProps> = ({ themeMode, onToggleTheme }) => {
         <div className="header-actions">
           <div className="language-switcher">
             <button
-              className={`lang-btn ${language === 'en' ? 'active' : ''}`}
+              className={`lang-btn lang ${language === 'en' ? 'active' : ''}`}
+              data-lang="en"
               onClick={() => setLanguage('en')}
             >
               EN
             </button>
             <button
-              className={`lang-btn ${language === 'ru' ? 'active' : ''}`}
+              className={`lang-btn lang ${language === 'ru' ? 'active' : ''}`}
+              data-lang="ru"
               onClick={() => setLanguage('ru')}
             >
               RU

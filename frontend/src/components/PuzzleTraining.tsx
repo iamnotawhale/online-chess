@@ -47,7 +47,7 @@ function normalizeRatingFilter(filter: { min: number; max: number }) {
 }
 
 export const PuzzleTraining: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { puzzleId: puzzleIdFromPath } = useParams<{ puzzleId?: string }>();
@@ -623,7 +623,7 @@ export const PuzzleTraining: React.FC = () => {
 
   const handleSharePuzzle = async () => {
     if (typeof window === 'undefined' || !puzzle) return;
-    const url = `${window.location.origin}/puzzle/${encodeURIComponent(puzzle.id)}`;
+    const url = `${window.location.origin}/puzzle/${encodeURIComponent(puzzle.id)}?lang=${language}`;
 
     try {
       if (navigator.clipboard && window.isSecureContext) {
