@@ -7,6 +7,7 @@ import { ChessBoardWrapper } from './common';
 import './PuzzleTraining.css';
 import { PuzzleData, applyUciMove, buildPuzzleMoveRows } from './puzzleUtils';
 import { usePuzzleGame } from './usePuzzleGame';
+import { resolveBoardColumnWidth } from '../utils/boardLayout';
 
 const FILTER_STORAGE_KEY = 'puzzleTrainingRatingFilter';
 const ACTIVE_LESSON_STORAGE_KEY = 'educationActiveLesson';
@@ -422,7 +423,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
     const updateBoardWidth = () => {
       const width = stack.clientWidth;
       if (width > 0) {
-        setBoardWidth(Math.max(280, Math.min(560, width)));
+        setBoardWidth(resolveBoardColumnWidth(width));
       }
     };
 
@@ -672,7 +673,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
 
   if (rushFinished && rushMode) {
     return (
-      <div className="page-wrapper page-wrapper--play puzzle-training-page">
+      <div className="page-wrapper page-wrapper--play board-layout-page puzzle-training-page">
         <h2>{t('puzzleRush')}</h2>
         <p>{t('score')}: <strong>{rushScore}</strong></p>
         <button type="button" className="btn btn-primary" onClick={() => navigate('/puzzles')}>{t('back')}</button>
@@ -682,7 +683,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
 
   if (loading && !puzzle) {
     return (
-      <div className="page-wrapper page-wrapper--play puzzle-training-page">
+      <div className="page-wrapper page-wrapper--play board-layout-page puzzle-training-page">
         <div className="puzzle-loading">{t('loading')}</div>
       </div>
     );
@@ -690,7 +691,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
 
   if (!puzzle) {
     return (
-      <div className="page-wrapper page-wrapper--play puzzle-training-page">
+      <div className="page-wrapper page-wrapper--play board-layout-page puzzle-training-page">
         <div className="puzzle-error">{t('puzzleNotAvailable')}</div>
       </div>
     );
@@ -758,7 +759,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
   // Show congratulations screen if lesson is completed
   if (isLessonCompleted) {
     return (
-      <div className="page-wrapper page-wrapper--play puzzle-training-page">
+      <div className="page-wrapper page-wrapper--play board-layout-page puzzle-training-page">
         <div className="lesson-completion-overlay">
           <div className="lesson-completion-card">
             <div className="completion-confetti">
@@ -819,7 +820,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
 
   if (rushFinished && rushMode) {
     return (
-      <div className="page-wrapper page-wrapper--play puzzle-training-page">
+      <div className="page-wrapper page-wrapper--play board-layout-page puzzle-training-page">
         <h2>{t('puzzleRush')}</h2>
         <p>{t('score')}: <strong>{rushScore}</strong></p>
         <button type="button" className="btn btn-primary" onClick={() => navigate('/puzzles')}>{t('back')}</button>
@@ -828,8 +829,8 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
   }
 
   return (
-    <div className="page-wrapper page-wrapper--play puzzle-training-page">
-      <div className="puzzle-page-head">
+    <div className="page-wrapper page-wrapper--play board-layout-page puzzle-training-page">
+      <div className="board-surface__head puzzle-page-head">
         <h1 className="page-title">{rushMode ? t('puzzleRush') : t('puzzleTraining')}</h1>
         <div className="puzzle-page-head__meta">
           {rushMode && (
@@ -872,7 +873,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
         </div>
       </div>
 
-      <div className="puzzle-stack" ref={puzzleStackRef}>
+      <div className="board-surface puzzle-stack" ref={puzzleStackRef}>
         {!rushMode && (
           <div className="puzzle-board-meta">
             <span className="puzzle-board-meta__item" title={t('puzzleInfo')}>
@@ -891,7 +892,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
           </div>
         )}
 
-        <div className="puzzle-board-wrap">
+        <div className="board-stage puzzle-board-wrap">
           <ChessBoardWrapper
             position={displayPosition}
             game={game}
@@ -909,7 +910,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
           </div>
         )}
 
-        <div className="puzzle-panel puzzle-actions">
+        <div className="board-panel puzzle-panel puzzle-actions">
             {status === 'complete' && (
               <button
                 type="button"
@@ -950,7 +951,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
           </div>
 
           {moveHistory.length > 0 && (
-            <div className="puzzle-panel puzzle-moves-history">
+            <div className="board-panel puzzle-panel puzzle-moves-history">
               <div className="moves-controls">
                 <button
                   type="button"
@@ -1019,7 +1020,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
             </div>
           )}
 
-          <div className="puzzle-panel puzzle-tags">
+          <div className="board-panel puzzle-panel puzzle-tags">
             <div className="puzzle-themes">
               <span className="puzzle-theme-tag">
                 {playerColor === 'white' ? 'white' : 'black'}
@@ -1036,7 +1037,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
           </div>
 
           {!isLessonMode && !rushMode && ratingHistory.length > 0 && (
-            <div className="puzzle-panel puzzle-elo-history-panel">
+            <div className="board-panel puzzle-panel puzzle-elo-history-panel">
               <span className="puzzle-elo-history-label">{t('puzzleYourStats')}</span>
               <div className="puzzle-elo-history">
                 {ratingHistory.map((delta, idx) => (
@@ -1049,7 +1050,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
           )}
 
           {!isLessonMode && !rushMode && (
-            <div className="puzzle-panel puzzle-rating-filter">
+            <div className="board-panel puzzle-panel puzzle-rating-filter">
               <p className="puzzle-panel__label">{t('puzzleRatingRange')}</p>
               <div className="filter-group">
                 <label>

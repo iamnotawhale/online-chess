@@ -6,6 +6,7 @@ import './GameAnalysis.css';
 import { apiService, User } from '../api';
 import { useTranslation } from '../i18n/LanguageContext';
 import { MoveAnalysis, GameAnalysisResult } from '../utils/analysisTypes';
+import { resolveGameBoardWidth } from '../utils/boardLayout';
 
 const uciToSan = (fen: string, uci?: string): string => {
   if (!uci || uci.length < 4) return uci || '-';
@@ -51,7 +52,8 @@ export const GameAnalysis: React.FC = () => {
   const [chessInstance, setChessInstance] = useState<Chess | null>(null);
   const [highlightSquares, setHighlightSquares] = useState<{[key: string]: any}>({});
   const [arrows, setArrows] = useState<any[]>([]);
-  const [analysisBoardWidth, setAnalysisBoardWidth] = useState(800);
+  const [analysisBoardWidth, setAnalysisBoardWidth] = useState(() => resolveGameBoardWidth());
+  const boardStageRef = useRef<HTMLDivElement>(null);
   const moveRowRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [hoveredMoveIndex, setHoveredMoveIndex] = useState<number | null>(null);
 
@@ -95,19 +97,21 @@ export const GameAnalysis: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    const stage = boardStageRef.current;
+    if (!stage) return undefined;
+
     const updateBoardWidths = () => {
-      if (typeof window === 'undefined') return;
-      const isMobile = window.innerWidth <= 768;
-      // For mobile, use almost full width; for desktop, cap at 800px
-      const maxBoardWidth = isMobile 
-        ? window.innerWidth  // full width
-        : Math.min(800, Math.max(280, window.innerWidth - 40));
-      setAnalysisBoardWidth(maxBoardWidth);
+      setAnalysisBoardWidth(resolveGameBoardWidth(stage.clientWidth));
     };
 
     updateBoardWidths();
+    const observer = new ResizeObserver(updateBoardWidths);
+    observer.observe(stage);
     window.addEventListener('resize', updateBoardWidths);
-    return () => window.removeEventListener('resize', updateBoardWidths);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', updateBoardWidths);
+    };
   }, []);
 
   // Scroll selected move into view within moves table
@@ -664,7 +668,7 @@ export const GameAnalysis: React.FC = () => {
   }
 
   return (
-    <div className="page-wrapper page-wrapper--full">
+    <div className="page-wrapper page-wrapper--full board-layout-page analysis-page">
       <div className="page-header">
         <h2>{t('moveAnalysis')}</h2>
         {gameId && (
@@ -721,7 +725,7 @@ export const GameAnalysis: React.FC = () => {
       ) : (
         <div className="layout-2col">
           <div className="layout-2col-board">
-            <div className="analysis-result-board chess-board-wrapper">
+            <div className="analysis-result-board chess-board-wrapper board-stage" ref={boardStageRef}>
               <ChessBoardWrapper
                 position={boardPosition}
                 game={chessInstance}

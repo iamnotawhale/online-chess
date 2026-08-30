@@ -1,11 +1,18 @@
 .auth-container {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   min-height: calc(100vh - var(--header-height) - 48px);
   min-height: calc(100svh - var(--header-height) - 48px);
   min-height: calc(100dvh - var(--header-height) - 48px);
-  padding: 24px 16px;
+  padding: var(--space-4) var(--gap-page);
+  padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+  overflow-x: clip;
 }
 
 .auth-box {
@@ -16,6 +23,8 @@
   border: 1px solid var(--line);
   width: 100%;
   max-width: 420px;
+  min-width: 0;
+  box-sizing: border-box;
   position: relative;
   overflow: hidden;
 }
@@ -56,7 +65,10 @@
 
 .auth-box .form-group input,
 .auth-box .form-input {
+  display: block;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   box-sizing: border-box;
   height: 44px;
   padding: 0 14px;
@@ -67,6 +79,15 @@
   font-family: var(--font-body);
   font-size: 1rem;
   transition: border-color var(--trans-fast), box-shadow var(--trans-fast), background-color var(--trans-fast);
+}
+
+.auth-box .form-group {
+  min-width: 0;
+}
+
+.auth-box form {
+  width: 100%;
+  min-width: 0;
 }
 
 .auth-box .form-input:hover {
@@ -101,6 +122,7 @@
   margin-top: 22px;
   color: var(--muted);
   font-size: 0.875rem;
+  overflow-wrap: anywhere;
 }
 
 .auth-link a {
@@ -119,8 +141,10 @@
   grid-template-columns: 1fr 1fr;
   gap: 32px;
   align-items: center;
-  max-width: 900px;
+  max-width: min(900px, 100%);
   width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .auth-pitch h2 {
@@ -136,13 +160,40 @@
 }
 
 @media (max-width: 768px) {
-  .auth-layout { grid-template-columns: 1fr; }
-  .auth-pitch { display: none; }
-  .auth-box { max-width: 100%; }
+  .auth-container {
+    justify-content: flex-start;
+    padding-top: var(--space-3);
+    min-height: auto;
+  }
+
+  .auth-layout {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .auth-pitch {
+    display: none;
+  }
+
+  .auth-box {
+    max-width: 100%;
+    padding: var(--space-5) var(--space-4);
+    border-radius: var(--r-lg);
+  }
 }
 
 @media (max-width: 480px) {
+  .auth-container {
+    padding-left: var(--space-3);
+    padding-right: var(--space-3);
+  }
+
   .auth-box {
-    padding: 28px 20px;
+    padding: var(--space-4) var(--space-3);
+  }
+
+  .auth-box h1 {
+    margin-bottom: var(--space-4);
+    font-size: 1.35rem;
   }
 }

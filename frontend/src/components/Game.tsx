@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Chess } from 'chess.js';
+import { resolveGameBoardWidth } from '../utils/boardLayout';
 import { ChessBoardWrapper, Modal } from './common';
 import { GameOverModal } from './GameOverModal';
 import { apiService, User } from '../api';
@@ -68,13 +69,8 @@ export const GameView: React.FC = () => {
   const lastFenRef = useRef<string>(START_FEN);
   const [boardFlipped, setBoardFlipped] = useState(false);
   const toastTimeoutRef = useRef<number | null>(null);
-  const [boardWidth, setBoardWidth] = useState<number>(() => {
-    if (typeof window === 'undefined') return 800;
-    const isMobile = window.innerWidth <= 768;
-    return isMobile
-      ? Math.max(280, window.innerWidth - 24)
-      : Math.min(800, Math.max(280, window.innerWidth - 40));
-  });
+  const [boardWidth, setBoardWidth] = useState<number>(() => resolveGameBoardWidth());
+  const boardStageRef = useRef<HTMLDivElement>(null);
   const moveRowRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   // Cleanup timer on unmount
@@ -196,17 +192,21 @@ export const GameView: React.FC = () => {
   }, [isBotGame, game, currentUser, gameId, chessInstance, isGettingBotMove]);
 
   useEffect(() => {
+    const stage = boardStageRef.current;
+    if (!stage) return undefined;
+
     const handleResize = () => {
-      const isMobile = window.innerWidth <= 768;
-      const nextWidth = isMobile
-        ? Math.max(280, window.innerWidth - 24)
-        : Math.min(800, Math.max(280, window.innerWidth - 40));
-      setBoardWidth(nextWidth);
+      setBoardWidth(resolveGameBoardWidth(stage.clientWidth));
     };
 
     handleResize();
+    const observer = new ResizeObserver(handleResize);
+    observer.observe(stage);
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   useEffect(() => {
@@ -849,7 +849,7 @@ export const GameView: React.FC = () => {
   const incrementSeconds = getIncrementSeconds(game.timeControl);
 
   return (
-    <div className="page-wrapper page-wrapper--full game-page">
+    <div className="page-wrapper page-wrapper--full board-layout-page game-page">
       {toast && (
         <div className={`game-toast ${toast.type || 'info'}`}>
           {toast.message}
@@ -896,7 +896,7 @@ export const GameView: React.FC = () => {
             </div>
           )}
 
-          <div className="chess-board-wrapper">
+          <div className="chess-board-wrapper board-stage" ref={boardStageRef}>
             {!isGameActive && !isViewingHistory && (
               <div className="game-over-overlay">
                 <div className="game-over-content">
