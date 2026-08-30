@@ -47,24 +47,13 @@
     <title>OnChess - Online Chess Game</title>
     <script>
       (function () {
-        var SW_MIGRATE = '4';
         try {
           var t = localStorage.getItem('themeMode') || 'light';
           document.documentElement.setAttribute('data-theme', t);
         } catch (e) {}
 
+        // Always remove legacy service workers so reload serves fresh JS/CSS.
         try {
-          if (localStorage.getItem('onchess-sw-migrate') === SW_MIGRATE) return;
-
-          var reloadKey = 'onchess-sw-migrate-reload-' + SW_MIGRATE;
-          var done = function () {
-            try { localStorage.setItem('onchess-sw-migrate', SW_MIGRATE); } catch (e) {}
-            if (!sessionStorage.getItem(reloadKey)) {
-              try { sessionStorage.setItem(reloadKey, '1'); } catch (e) {}
-              location.reload();
-            }
-          };
-
           var tasks = [];
           if ('serviceWorker' in navigator) {
             tasks.push(navigator.serviceWorker.getRegistrations().then(function (regs) {
@@ -77,9 +66,7 @@
             }));
           }
           if (tasks.length) {
-            Promise.all(tasks).then(done).catch(done);
-          } else {
-            done();
+            Promise.all(tasks).catch(function () {});
           }
         } catch (e) {}
       })();

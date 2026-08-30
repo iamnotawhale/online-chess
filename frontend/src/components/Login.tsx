@@ -28,6 +28,10 @@ export const Login: React.FC = () => {
     } catch (err: any) {
       if (err?.message === 'STORAGE_UNAVAILABLE') {
         setError(t('loginError') + ' (storage blocked — disable private mode)');
+      } else if (err.response?.status === 401) {
+        setError(t('invalidCredentials'));
+      } else if (!err.response) {
+        setError(t('loginError') + ' (network)');
       } else {
         setError(err.response?.data?.message || err.response?.data?.error || t('loginError'));
       }

@@ -266,6 +266,7 @@ export const translations = {
     noAccount: 'No account?',
     registerLink: 'Register',
     loginError: 'Login error',
+    invalidCredentials: 'Invalid email or password',
     
     // Register
     registerTitle: 'Registration',
@@ -674,6 +675,7 @@ export const translations = {
     noAccount: 'Нет аккаунта?',
     registerLink: 'Зарегистрироваться',
     loginError: 'Ошибка входа',
+    invalidCredentials: 'Неверный email или пароль',
     
     // Register
     registerTitle: 'Регистрация',
