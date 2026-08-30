@@ -17,9 +17,9 @@ export const PlayHub: React.FC = () => {
   const [lobbyKey, setLobbyKey] = useState(0);
 
   return (
-    <div className="page-wrapper page-wrapper--play play-hub">
-      <div className="play-hub__intro">
-        <h1 className="page-title">{t('navPlay')}</h1>
+    <div className="oc-page oc-page--play oc-page--nav play-hub">
+      <div className="oc-head play-hub__intro">
+        <h1 className="oc-head__title">{t('navPlay')}</h1>
         <p className="page-subtitle">{t('playHubSubtitle')}</p>
       </div>
 
@@ -46,13 +46,13 @@ export const PlayHub: React.FC = () => {
         </button>
       </div>
 
-      <div className="play-hub-layout">
-        <div id="quick-play" className="play-hub-main">
+      <div className="oc-layout-aside play-hub-layout">
+        <div id="quick-play" className="oc-layout-aside__main play-hub-main">
           <div className="cc-card">
             <MatchmakingPanel />
           </div>
         </div>
-        <aside className="play-hub-aside">
+        <aside className="oc-layout-aside__side play-hub-aside">
           <div className="cc-card">
             <Lobby
               key={lobbyKey}

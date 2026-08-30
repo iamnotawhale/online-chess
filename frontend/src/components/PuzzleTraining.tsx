@@ -673,7 +673,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
 
   if (rushFinished && rushMode) {
     return (
-      <div className="page-wrapper page-wrapper--full board-layout-page puzzle-training-page">
+      <div className="oc-page oc-page--full oc-page--board oc-page--nav puzzle-training-page">
         <h2>{t('puzzleRush')}</h2>
         <p>{t('score')}: <strong>{rushScore}</strong></p>
         <button type="button" className="btn btn-primary" onClick={() => navigate('/puzzles')}>{t('back')}</button>
@@ -683,7 +683,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
 
   if (loading && !puzzle) {
     return (
-      <div className="page-wrapper page-wrapper--full board-layout-page puzzle-training-page">
+      <div className="oc-page oc-page--full oc-page--board oc-page--nav puzzle-training-page">
         <div className="puzzle-loading">{t('loading')}</div>
       </div>
     );
@@ -691,7 +691,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
 
   if (!puzzle) {
     return (
-      <div className="page-wrapper page-wrapper--full board-layout-page puzzle-training-page">
+      <div className="oc-page oc-page--full oc-page--board oc-page--nav puzzle-training-page">
         <div className="puzzle-error">{t('puzzleNotAvailable')}</div>
       </div>
     );
@@ -759,7 +759,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
   // Show congratulations screen if lesson is completed
   if (isLessonCompleted) {
     return (
-      <div className="page-wrapper page-wrapper--full board-layout-page puzzle-training-page">
+      <div className="oc-page oc-page--full oc-page--board oc-page--nav puzzle-training-page">
         <div className="lesson-completion-overlay">
           <div className="lesson-completion-card">
             <div className="completion-confetti">
@@ -820,7 +820,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
 
   if (rushFinished && rushMode) {
     return (
-      <div className="page-wrapper page-wrapper--full board-layout-page puzzle-training-page">
+      <div className="oc-page oc-page--full oc-page--board oc-page--nav puzzle-training-page">
         <h2>{t('puzzleRush')}</h2>
         <p>{t('score')}: <strong>{rushScore}</strong></p>
         <button type="button" className="btn btn-primary" onClick={() => navigate('/puzzles')}>{t('back')}</button>
@@ -829,10 +829,10 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
   }
 
   return (
-    <div className="page-wrapper page-wrapper--full board-layout-page puzzle-training-page">
-      <div className="board-surface__head puzzle-page-head">
-        <h1 className="page-title">{rushMode ? t('puzzleRush') : t('puzzleTraining')}</h1>
-        <div className="puzzle-page-head__meta">
+    <div className="oc-page oc-page--full oc-page--board oc-page--nav puzzle-training-page">
+      <div className="oc-head puzzle-page-head">
+        <h1 className="oc-head__title">{rushMode ? t('puzzleRush') : t('puzzleTraining')}</h1>
+        <div className="oc-head__actions puzzle-page-head__meta">
           {rushMode && (
             <div className="rush-hud">
               <span>⏱ {Math.floor(rushTimeLeft / 60)}:{String(rushTimeLeft % 60).padStart(2, '0')}</span>
@@ -873,7 +873,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
         </div>
       </div>
 
-      <div className="board-surface puzzle-stack" ref={puzzleStackRef}>
+      <div className="oc-layout-stack oc-board puzzle-stack" ref={puzzleStackRef}>
         {!rushMode && (
           <div className="puzzle-board-meta">
             <span className="puzzle-board-meta__item" title={t('puzzleInfo')}>
@@ -892,7 +892,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
           </div>
         )}
 
-        <div className="board-stage puzzle-board-wrap">
+        <div className="oc-board__stage puzzle-board-wrap">
           <ChessBoardWrapper
             position={displayPosition}
             game={game}
@@ -910,7 +910,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
           </div>
         )}
 
-        <div className="board-panel puzzle-panel puzzle-actions">
+        <div className="oc-block puzzle-panel puzzle-actions">
             {status === 'complete' && (
               <button
                 type="button"
@@ -951,7 +951,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
           </div>
 
           {moveHistory.length > 0 && (
-            <div className="board-panel puzzle-panel puzzle-moves-history">
+            <div className="oc-block puzzle-panel puzzle-moves-history">
               <div className="moves-controls">
                 <button
                   type="button"
@@ -1020,7 +1020,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
             </div>
           )}
 
-          <div className="board-panel puzzle-panel puzzle-tags">
+          <div className="oc-block puzzle-panel puzzle-tags">
             <div className="puzzle-themes">
               <span className="puzzle-theme-tag">
                 {playerColor === 'white' ? 'white' : 'black'}
@@ -1037,7 +1037,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
           </div>
 
           {!isLessonMode && !rushMode && ratingHistory.length > 0 && (
-            <div className="board-panel puzzle-panel puzzle-elo-history-panel">
+            <div className="oc-block puzzle-panel puzzle-elo-history-panel">
               <span className="puzzle-elo-history-label">{t('puzzleYourStats')}</span>
               <div className="puzzle-elo-history">
                 {ratingHistory.map((delta, idx) => (
@@ -1050,7 +1050,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
           )}
 
           {!isLessonMode && !rushMode && (
-            <div className="board-panel puzzle-panel puzzle-rating-filter">
+            <div className="oc-block puzzle-panel puzzle-rating-filter">
               <p className="puzzle-panel__label">{t('puzzleRatingRange')}</p>
               <div className="filter-group">
                 <label>

@@ -312,7 +312,7 @@ export const PublicProfile: React.FC = () => {
   const paginatedGames = filteredGames.slice(startIndex, endIndex);
 
   return (
-    <div className="page-wrapper profile-page">
+    <div className="oc-page oc-page--nav profile-page">
       <div className="profile-content">
         <div className="profile-header">
           <div className="profile-avatar">

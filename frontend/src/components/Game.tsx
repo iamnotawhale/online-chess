@@ -849,15 +849,15 @@ export const GameView: React.FC = () => {
   const incrementSeconds = getIncrementSeconds(game.timeControl);
 
   return (
-    <div className="page-wrapper page-wrapper--full board-layout-page game-page">
+    <div className="oc-page oc-page--full oc-page--board game-page">
       {toast && (
         <div className={`game-toast ${toast.type || 'info'}`}>
           {toast.message}
         </div>
       )}
-      <div className="page-header">
-        <h1>{game.gameMode} ({game.timeControl})</h1>
-        <div className="page-header-actions">
+      <div className="oc-head">
+        <h1 className="oc-head__title">{game.gameMode} ({game.timeControl})</h1>
+        <div className="oc-head__actions">
           <span className={`status-badge ${game.status === 'finished' ? 'finished' : 'active'}`}>
             {getStatusLabel(game.status).toUpperCase()}
           </span>
@@ -876,8 +876,8 @@ export const GameView: React.FC = () => {
         </div>
       </div>
 
-      <div className="layout-2col">
-        <div className="layout-2col-board">
+      <div className="oc-layout-board">
+        <div className="oc-layout-board__main">
           {boardOrientation === 'white' ? (
             <div className="player-info black-player">
               <div className="player-name">
@@ -896,7 +896,7 @@ export const GameView: React.FC = () => {
             </div>
           )}
 
-          <div className="chess-board-wrapper board-stage" ref={boardStageRef}>
+          <div className="oc-board__stage chess-board-wrapper" ref={boardStageRef}>
             {!isGameActive && !isViewingHistory && (
               <div className="game-over-overlay">
                 <div className="game-over-content">
@@ -980,7 +980,7 @@ export const GameView: React.FC = () => {
           )}
         </div>
 
-        <div className="layout-2col-sidebar">
+        <div className="oc-layout-board__side">
           <div className="panel move-history">
             <h3>{t('moveHistory')}</h3>
             <div className="history-controls">

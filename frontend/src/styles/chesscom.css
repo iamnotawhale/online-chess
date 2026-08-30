@@ -1,52 +1,17 @@
 /**
- * OnChess panel layouts — two-column grids and card surfaces
+ * OnChess card surfaces — layout grids in layout-system.css
  */
 
-/* ---- Panel cards ---- */
 .cc-card {
-  background: var(--surface);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--r-md);
   box-shadow: var(--shadow-sm);
-  padding: var(--space-4);
+  padding: var(--oc-block-pad, var(--space-3));
   min-width: 0;
 }
 
 .cc-card__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  margin-bottom: var(--space-3);
-  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-2);
+  padding-bottom: var(--space-2);
   border-bottom: 1px solid var(--line-faint);
-}
-
-.cc-card__title {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: 0.9375rem;
-  font-weight: 700;
-  color: var(--text);
-}
-
-/* ---- Dashboard ---- */
-.dashboard-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
-  gap: var(--space-4);
-  align-items: start;
-}
-
-.dashboard-main {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  min-width: 0;
-}
-
-.dashboard-aside {
-  min-width: 0;
 }
 
 .dashboard-hero {
@@ -55,23 +20,15 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: var(--space-3);
-  margin-bottom: var(--space-4);
-  padding-bottom: var(--space-4);
+  margin-bottom: var(--oc-section-gap, var(--space-3));
+  padding-bottom: var(--oc-block-pad, var(--space-3));
   border-bottom: 1px solid var(--line-faint);
-}
-
-/* ---- Puzzle hub ---- */
-.puzzle-hub-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
-  gap: var(--space-4);
-  align-items: start;
 }
 
 .puzzle-modes-grid {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--oc-section-gap, var(--space-3));
 }
 
 .cc-mode-card {
@@ -91,11 +48,6 @@
 }
 
 @media (max-width: 900px) {
-  .dashboard-layout,
-  .puzzle-hub-layout {
-    grid-template-columns: 1fr;
-  }
-
   .dashboard-aside {
     order: -1;
   }

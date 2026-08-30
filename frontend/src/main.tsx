@@ -8,7 +8,7 @@ import './styles/architect.css'
 import './styles/common.css'
 import './styles/ui.css'
 import './styles/chesscom.css'
-import './styles/board-layout.css'
+import './styles/layout-system.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

@@ -1,40 +1,7 @@
 /**
  * OnChess unified UI primitives — use these instead of one-off component styles.
+ * Page shell / blocks / grids: styles/layout-system.css
  */
-
-/* ---- Page shell ---- */
-.page-wrapper {
-  max-width: var(--container);
-  margin: 0 auto;
-  padding: var(--space-5) var(--gap-page) var(--space-10);
-  min-height: calc(100vh - var(--header-height));
-  box-sizing: border-box;
-  width: 100%;
-  min-width: 0;
-  overflow-x: clip;
-}
-
-.page-wrapper--play {
-  max-width: var(--container-play);
-}
-
-.page-wrapper--wide {
-  max-width: var(--container-wide);
-}
-
-.page-wrapper--full {
-  max-width: var(--container-full);
-}
-
-.page-title {
-  margin: 0 0 var(--space-2);
-  font-family: var(--font-display);
-  font-size: clamp(1.2rem, 2.2vw, 1.5rem);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: var(--text);
-  line-height: 1.2;
-}
 
 .country-flag {
   width: 22px;
@@ -78,11 +45,8 @@
 }
 
 .page-subtitle {
-  margin: 0 0 var(--space-4);
-  color: var(--muted);
-  font-size: 0.875rem;
-  line-height: 1.5;
   max-width: 42ch;
+  line-height: 1.5;
 }
 
 .page-section {
@@ -795,16 +759,6 @@
 }
 
 @media (max-width: 860px) {
-  .page-wrapper {
-    padding: var(--space-3) var(--space-3) calc(var(--bottom-nav-height) + var(--space-8));
-  }
-
-  .page-wrapper--full.game-page {
-    padding-bottom: var(--space-4);
-  }
-}
-
-@media (max-width: 768px) {
   .page-hero {
     flex-direction: column;
     align-items: flex-start;

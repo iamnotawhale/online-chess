@@ -83,17 +83,17 @@ export const Dashboard: React.FC = () => {
     return reason ? (reasons[reason] || reason) : '';
   };
 
-  if (loading) return <div className="page-wrapper page-loading">{t('loading')}</div>;
-  if (error) return <div className="page-wrapper"><p className="error-message">{error}</p></div>;
+  if (loading) return <div className="oc-page oc-page--nav page-loading">{t('loading')}</div>;
+  if (error) return <div className="oc-page oc-page--nav"><p className="error-message">{error}</p></div>;
 
   const finishedPageSize = 5;
   const finishedStart = finishedGamesPage * finishedPageSize;
   const pagedFinished = finishedGames.slice(finishedStart, finishedStart + finishedPageSize);
 
   return (
-    <div className="page-wrapper dashboard-page">
-      <div className="dashboard-hero">
-        <h1 className="page-title">
+    <div className="oc-page oc-page--nav dashboard-page">
+      <div className="oc-head dashboard-hero">
+        <h1 className="oc-head__title">
           <span className="dashboard-hero__name">{user?.username}</span>
           {user?.country && (
             <img
@@ -107,8 +107,8 @@ export const Dashboard: React.FC = () => {
         <TimeControlRatings ratings={tcRatings} puzzleRating={puzzleRating} compact />
       </div>
 
-      <div className="dashboard-layout">
-        <div className="dashboard-main">
+      <div className="oc-layout-aside dashboard-layout">
+        <div className="oc-layout-aside__main dashboard-main">
           <div className="cc-card">
             <div className="cc-card__head">
               <h2 className="cc-card__title">{t('overview')}</h2>
@@ -207,7 +207,7 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        <aside className="dashboard-aside">
+        <aside className="oc-layout-aside__side dashboard-aside">
           <div className="cc-card cc-card--puzzle">
             <DailyPuzzle />
           </div>

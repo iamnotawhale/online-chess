@@ -49,9 +49,6 @@
 }
 
 .categories-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
   margin-bottom: var(--space-8);
 }
 
@@ -436,14 +433,7 @@
   font-size: 16px;
 }
 
-.lessons-wrapper {
-  display: grid;
-  grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
-  gap: var(--space-4);
-  min-width: 0;
-  max-width: var(--container-wide);
-  align-items: start;
-}
+/* layout: styles/layout-system.css (.oc-layout-aside--lesson) */
 
 .lessons-sidebar.cc-card,
 .lessons-main.cc-card {
@@ -792,9 +782,9 @@
     font-size: 1.125rem;
   }
 
+  .oc-layout-aside--lesson,
   .lessons-wrapper {
     grid-template-columns: 1fr;
-    gap: var(--space-5);
   }
 }
 

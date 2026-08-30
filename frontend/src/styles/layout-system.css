@@ -1,0 +1,459 @@
+/**
+ * OnChess — unified layout system
+ * Same block primitives on every page: head, board zone, info blocks, grids.
+ * Mobile: full viewport width, edge-to-edge blocks, uniform inner padding.
+ */
+
+:root {
+  --oc-page-pad-x: var(--space-4);
+  --oc-page-pad-y: var(--space-5);
+  --oc-block-pad: var(--space-3);
+  --oc-block-gap: var(--space-2);
+  --oc-section-gap: var(--space-3);
+  --oc-board-max: 800px;
+  --oc-board-stack-max: 560px;
+  --oc-info-col: minmax(280px, 300px);
+  --oc-layout-break: 860px;
+  --oc-stack-break: 768px;
+}
+
+/* ── Page shell ─────────────────────────────────────────────── */
+
+.oc-page,
+.page-wrapper {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding: var(--oc-page-pad-y) var(--oc-page-pad-x) var(--space-10);
+  min-height: calc(100vh - var(--header-height));
+  overflow-x: clip;
+}
+
+.oc-page--wide,
+.page-wrapper--wide {
+  max-width: var(--container-wide);
+}
+
+.oc-page--play,
+.page-wrapper--play {
+  max-width: var(--container-play);
+}
+
+.oc-page--full,
+.page-wrapper--full {
+  max-width: var(--container-full);
+}
+
+.oc-page--nav {
+  padding-bottom: calc(var(--bottom-nav-height) + var(--space-6));
+}
+
+.oc-page--board,
+.board-layout-page {
+  /* board-first pages */
+}
+
+/* ── Page head (title + actions) ────────────────────────────── */
+
+.oc-head,
+.page-header,
+.board-surface__head,
+.puzzle-page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--oc-block-gap);
+  margin-bottom: var(--oc-section-gap);
+  padding-bottom: var(--oc-block-pad);
+  border-bottom: 1px solid var(--line-soft);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.oc-head__title,
+.page-title,
+.page-header h1,
+.page-header h2,
+.page-header h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  line-height: 1.2;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.oc-head__actions,
+.page-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gap-inline);
+  flex-shrink: 0;
+}
+
+.page-subtitle {
+  margin: calc(var(--space-1) * -1) 0 var(--oc-section-gap);
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+/* ── Universal content block ────────────────────────────────── */
+
+.oc-block,
+.board-panel,
+.puzzle-panel,
+.panel {
+  box-sizing: border-box;
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-md);
+}
+
+.oc-block__head,
+.cc-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--oc-block-gap);
+  padding: var(--oc-block-pad) var(--oc-block-pad) 0;
+}
+
+.oc-block__title,
+.cc-card__title,
+.panel h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.oc-block__body,
+.cc-card__body,
+.panel-body {
+  padding: var(--oc-block-pad);
+}
+
+.oc-block__body--flush {
+  padding-top: 0;
+}
+
+/* panel default padding when no panel-body */
+.panel:not(:has(.panel-body)) {
+  padding: var(--oc-block-pad);
+}
+
+.board-panel,
+.puzzle-panel {
+  padding: var(--oc-block-pad);
+}
+
+/* ── Board zone (meta + stage + status) ─────────────────────── */
+
+.oc-board,
+.board-surface,
+.puzzle-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--oc-section-gap);
+  width: 100%;
+  min-width: 0;
+}
+
+.oc-board--stack {
+  max-width: var(--oc-board-stack-max);
+  margin-inline: auto;
+}
+
+.oc-board__meta,
+.puzzle-board-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--oc-block-gap);
+  padding: var(--space-1) var(--oc-block-pad);
+}
+
+.oc-board__stage,
+.board-stage,
+.puzzle-board-wrap,
+.chess-board-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.oc-board__stage > *,
+.board-stage > * {
+  max-width: 100%;
+}
+
+.oc-board__status,
+.puzzle-message,
+.turn-indicator {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* player bars in board zone */
+.oc-board__meta--players,
+.player-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--oc-block-gap);
+  padding: var(--oc-block-pad);
+  background: var(--surface);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-md);
+  font-size: 0.8125rem;
+}
+
+/* ── Layout: board + info sidebar (game, analysis) ───────────── */
+
+.oc-layout-board,
+.layout-2col {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--oc-info-col);
+  gap: var(--oc-section-gap);
+  align-items: start;
+  justify-content: center;
+  width: 100%;
+  max-width: var(--container-full);
+  margin-inline: auto;
+}
+
+.oc-layout-board__main,
+.layout-2col-board {
+  display: flex;
+  flex-direction: column;
+  gap: var(--oc-block-gap);
+  width: 100%;
+  min-width: 0;
+  max-width: var(--oc-board-max);
+  margin-inline: auto;
+}
+
+.oc-layout-board__side,
+.layout-2col-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--oc-section-gap);
+  min-width: 0;
+  width: 100%;
+}
+
+/* ── Layout: vertical stack (puzzles) ───────────────────────── */
+
+.oc-layout-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--oc-section-gap);
+  width: 100%;
+  max-width: var(--oc-board-stack-max);
+  margin-inline: auto;
+}
+
+/* ── Layout: main + aside (dashboard, play hub) ─────────────── */
+
+.oc-layout-aside,
+.dashboard-layout,
+.play-hub-layout,
+.puzzle-hub-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+  gap: var(--oc-section-gap);
+  align-items: start;
+  width: 100%;
+}
+
+.oc-layout-aside__main,
+.dashboard-main,
+.play-hub-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--oc-section-gap);
+  min-width: 0;
+}
+
+.oc-layout-aside__side,
+.dashboard-aside,
+.play-hub-aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--oc-section-gap);
+  min-width: 0;
+}
+
+/* ── Grids (themes, categories, CTA) ────────────────────────── */
+
+.oc-grid {
+  display: grid;
+  gap: var(--oc-section-gap);
+  width: 100%;
+}
+
+.oc-grid--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.oc-grid--3,
+.puzzle-modes-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.oc-grid--auto {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
+.oc-layout-aside--lesson {
+  grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
+}
+
+/* ── Section flow inside pages ──────────────────────────────── */
+
+.oc-flow,
+.page-flow,
+.page-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--oc-section-gap);
+  width: 100%;
+}
+
+/* ── Responsive: tablet stack ───────────────────────────────── */
+
+@media (max-width: 1200px) {
+  .oc-layout-board,
+  .layout-2col {
+    grid-template-columns: 1fr;
+    justify-items: stretch;
+  }
+
+  .oc-layout-board__main,
+  .layout-2col-board {
+    max-width: 100%;
+    margin-inline: 0;
+  }
+
+  .oc-layout-board__side,
+  .layout-2col-sidebar {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 900px) {
+  .oc-layout-aside,
+  .dashboard-layout,
+  .play-hub-layout,
+  .puzzle-hub-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .oc-grid--3,
+  .puzzle-modes-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Responsive: mobile full-bleed ──────────────────────────── */
+
+@media (max-width: 860px) {
+  :root {
+    --oc-page-pad-x: 0;
+    --oc-block-pad: var(--space-3);
+  }
+
+  .oc-page,
+  .page-wrapper {
+    padding-top: var(--space-3);
+    padding-bottom: calc(var(--bottom-nav-height) + var(--space-8));
+    max-width: 100%;
+  }
+
+  .oc-page--board,
+  .board-layout-page,
+  .oc-page--full.game-page,
+  .page-wrapper--full.game-page {
+    padding-bottom: var(--space-4);
+  }
+
+  .oc-head,
+  .page-header,
+  .board-surface__head,
+  .puzzle-page-head {
+    padding-inline: var(--oc-block-pad);
+    margin-bottom: var(--oc-block-gap);
+  }
+
+  .oc-board--stack,
+  .board-surface,
+  .puzzle-stack,
+  .oc-layout-stack {
+    max-width: 100%;
+    margin-inline: 0;
+  }
+
+  .oc-layout-board,
+  .layout-2col,
+  .oc-layout-board__main,
+  .layout-2col-board,
+  .oc-layout-board__side,
+  .layout-2col-sidebar {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .oc-board__stage,
+  .board-stage,
+  .chess-board-wrapper {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: 0;
+  }
+
+  .oc-block,
+  .board-panel,
+  .puzzle-panel,
+  .panel,
+  .oc-board__meta--players,
+  .player-info,
+  .turn-indicator,
+  .puzzle-message {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+
+  /* content pages keep side padding on head only */
+  .oc-page:not(.oc-page--board):not(.board-layout-page) .oc-grid,
+  .oc-page:not(.oc-page--board):not(.board-layout-page) .oc-layout-aside,
+  .page-wrapper:not(.board-layout-page) .dashboard-layout,
+  .page-wrapper:not(.board-layout-page) .play-hub-layout {
+    padding-inline: var(--oc-block-pad);
+  }
+
+  .oc-page:not(.oc-page--board):not(.board-layout-page) .oc-block,
+  .oc-page:not(.oc-page--board):not(.board-layout-page) .cc-card,
+  .page-wrapper:not(.board-layout-page) .cc-card {
+    border-radius: var(--r-md);
+    border-left: 1px solid var(--line-soft);
+    border-right: 1px solid var(--line-soft);
+  }
+}
+
+@media (max-width: 640px) {
+  .oc-grid--2 {
+    grid-template-columns: 1fr;
+  }
+}

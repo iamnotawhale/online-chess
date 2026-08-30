@@ -666,11 +666,11 @@ export const GameAnalysis: React.FC = () => {
   }
 
   return (
-    <div className="page-wrapper page-wrapper--full board-layout-page analysis-page">
-      <div className="page-header">
-        <h2>{t('moveAnalysis')}</h2>
+    <div className="oc-page oc-page--full oc-page--board oc-page--nav analysis-page">
+      <div className="oc-head">
+        <h2 className="oc-head__title">{t('moveAnalysis')}</h2>
         {gameId && (
-          <div className="page-header-actions">
+          <div className="oc-head__actions">
             <button type="button" className="btn btn-secondary btn-sm" onClick={async () => {
               try {
                 const { pgn } = await apiService.getGamePgn(gameId);
@@ -721,9 +721,9 @@ export const GameAnalysis: React.FC = () => {
           )}
         </div>
       ) : (
-        <div className="layout-2col">
-          <div className="layout-2col-board">
-            <div className="analysis-result-board chess-board-wrapper board-stage" ref={boardStageRef}>
+        <div className="oc-layout-board">
+          <div className="oc-layout-board__main">
+            <div className="oc-board__stage analysis-result-board chess-board-wrapper" ref={boardStageRef}>
               <ChessBoardWrapper
                 position={boardPosition}
                 game={chessInstance}
@@ -740,7 +740,7 @@ export const GameAnalysis: React.FC = () => {
             {renderEvalChart('eval-chart-desktop')}
           </div>
 
-          <div className="layout-2col-sidebar">
+          <div className="oc-layout-board__side">
             <div className="panel moves-analysis">
               <h3>{t('moveHistory')}</h3>
               <div className="analysis-board-controls">

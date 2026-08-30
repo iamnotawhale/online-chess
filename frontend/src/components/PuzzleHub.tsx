@@ -23,9 +23,9 @@ export const PuzzleHub: React.FC<PuzzleHubProps> = ({ guestMode = false }) => {
 
   if (guestMode) {
     return (
-      <div className="puzzle-hub page-wrapper">
-        <h1 className="page-title">{t('dailyPuzzle')}</h1>
-        <div className="cc-card">
+      <div className="puzzle-hub oc-page oc-page--nav">
+        <h1 className="oc-head__title">{t('dailyPuzzle')}</h1>
+        <div className="oc-block cc-card">
           <DailyPuzzle />
         </div>
         <p className="puzzle-hub-guest-note">
@@ -36,14 +36,14 @@ export const PuzzleHub: React.FC<PuzzleHubProps> = ({ guestMode = false }) => {
   }
 
   return (
-    <div className="puzzle-hub page-wrapper">
-      <h1 className="page-title">{t('navPuzzles')}</h1>
+    <div className="puzzle-hub oc-page oc-page--nav">
+      <h1 className="oc-head__title">{t('navPuzzles')}</h1>
       {puzzleRating !== null && (
         <p className="page-subtitle">{t('puzzleRating')}: <strong>{puzzleRating}</strong></p>
       )}
 
-      <div className="puzzle-hub-layout">
-        <div className="cc-card cc-card--featured">
+      <div className="oc-layout-aside puzzle-hub-layout">
+        <div className="oc-block cc-card cc-card--featured">
           <DailyPuzzle />
         </div>
 

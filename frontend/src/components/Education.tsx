@@ -441,8 +441,8 @@ export const Education: React.FC = () => {
   // View: Category selection
   if (!selectedCategory) {
     return (
-      <div className="page-wrapper page-wrapper--wide education-page">
-        <div className="page-hero education-header">
+      <div className="oc-page oc-page--wide oc-page--nav education-page">
+        <div className="oc-head page-hero education-header">
           <div className="header-info">
             <h1 className="page-title">{t('educationTitle')}</h1>
             <p className="page-subtitle">{t('educationSubtitle')}</p>
@@ -463,7 +463,7 @@ export const Education: React.FC = () => {
           </div>
         </div>
 
-        <div className="categories-grid">
+        <div className="oc-flow categories-grid">
           {categories.map(category => (
             <div
               key={category.id}
@@ -488,7 +488,7 @@ export const Education: React.FC = () => {
   // View: Opening selection within category
   if (!selectedSubtopic) {
     return (
-      <div className="page-wrapper page-wrapper--wide education-page">
+      <div className="oc-page oc-page--wide oc-page--nav education-page">
         <div className="category-header">
           <h1>
             <span className="icon">{selectedCategory.icon}</span>
@@ -544,7 +544,7 @@ export const Education: React.FC = () => {
 
   // View: Lesson page
   return (
-    <div className="page-wrapper page-wrapper--wide education-page">
+    <div className="oc-page oc-page--wide oc-page--nav education-page">
       <div className="lesson-header">
         <h1>
           <span className="icon">{selectedSubtopic.icon}</span>
@@ -553,7 +553,7 @@ export const Education: React.FC = () => {
         <p>{getOpeningDescription(selectedSubtopic)}</p>
       </div>
 
-      <div className="lessons-wrapper">
+      <div className="oc-layout-aside oc-layout-aside--lesson lessons-wrapper">
         <div className="cc-card lessons-sidebar">
           <div className="sidebar-info">
             <h3>{t('progress')}</h3>
