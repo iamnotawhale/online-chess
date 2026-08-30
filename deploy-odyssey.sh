@@ -15,6 +15,25 @@ fi
 # shellcheck disable=SC1091
 source .env
 
+# Support legacy .env from pol/infra (POSTGRES_PASSWORD -> DB_PASSWORD)
+if [ -z "${DB_PASSWORD:-}" ] && [ -n "${POSTGRES_PASSWORD:-}" ]; then
+    DB_PASSWORD="$POSTGRES_PASSWORD"
+    export DB_PASSWORD
+fi
+if [ -z "${FRONTEND_URL:-}" ]; then
+    FRONTEND_URL="https://${DOMAIN:-onchess.online}"
+    export FRONTEND_URL
+fi
+
+missing=()
+[ -z "${DB_PASSWORD:-}" ] && missing+=("DB_PASSWORD")
+[ -z "${JWT_SECRET:-}" ] && missing+=("JWT_SECRET")
+if [ "${#missing[@]}" -gt 0 ]; then
+    echo "Missing required .env variables: ${missing[*]}"
+    echo "See .env.example for the expected format."
+    exit 1
+fi
+
 SCRIPT_PATH="$APP_DIR/deploy-odyssey.sh"
 if [ "${DEPLOY_FROM_CI:-}" != "1" ] && [ "${DEPLOY_REEXEC:-}" != "1" ] && [ -d .git ]; then
     echo "Pulling latest code..."
