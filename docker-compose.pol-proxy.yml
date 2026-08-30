@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: chess_nginx_proxy
+    restart: always
+    network_mode: host
+    volumes:
+      - ./nginx-pol-proxy.conf:/etc/nginx/nginx.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro

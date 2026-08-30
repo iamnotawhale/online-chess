@@ -1,0 +1,13 @@
+[Unit]
+Description=OnChess PostgreSQL SSH tunnel to pol
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/ssh -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -L 127.0.0.1:5433:127.0.0.1:5432 root@144.31.102.74
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

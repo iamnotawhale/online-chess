@@ -16,6 +16,7 @@ export interface User {
   email?: string;
   username: string;
   rating: number;
+  online?: boolean;
   avatarUrl?: string;
   country?: string;
   bio?: string;
@@ -328,10 +329,11 @@ class ApiService {
     return this.client.get('/puzzles/daily').then(res => res.data);
   }
 
-  getRandomPuzzle(minRating?: number, maxRating?: number): Promise<any> {
+  getRandomPuzzle(minRating?: number, maxRating?: number, themes?: string[]): Promise<any> {
     const params = new URLSearchParams();
     if (minRating !== undefined) params.append('minRating', minRating.toString());
     if (maxRating !== undefined) params.append('maxRating', maxRating.toString());
+    if (themes && themes.length > 0) params.append('themes', themes.join(','));
     const query = params.toString() ? `?${params.toString()}` : '';
     return this.client.get(`/puzzles/random${query}`).then(res => res.data);
   }
@@ -450,6 +452,86 @@ class ApiService {
     return this.client.get(`/games/user/${userId}`, {
       params: { status }
     }).then(res => res.data);
+  }
+
+  getGamePgn(gameId: string): Promise<{ pgn: string }> {
+    return this.client.get(`/games/${gameId}/pgn`).then(res => res.data);
+  }
+
+  rematchGame(gameId: string): Promise<GameResponse> {
+    return this.client.post(`/games/${gameId}/rematch`).then(res => res.data);
+  }
+
+  abortGame(gameId: string): Promise<GameResponse> {
+    return this.client.post(`/games/${gameId}/abort`).then(res => res.data);
+  }
+
+  offerTakeback(gameId: string): Promise<GameResponse> {
+    return this.client.post(`/games/${gameId}/offer-takeback`).then(res => res.data);
+  }
+
+  respondTakeback(gameId: string, accept: boolean): Promise<GameResponse> {
+    return this.client.post(`/games/${gameId}/respond-takeback`, null, { params: { accept } }).then(res => res.data);
+  }
+
+  claimDraw(gameId: string): Promise<GameResponse> {
+    return this.client.post(`/games/${gameId}/claim-draw`).then(res => res.data);
+  }
+
+  searchUsers(q: string, limit = 20): Promise<any[]> {
+    return this.client.get('/users/search', { params: { q, limit } }).then(res => res.data);
+  }
+
+  ping(): Promise<void> {
+    return this.client.post('/users/me/ping').then(() => undefined);
+  }
+
+  createChallenge(userId: string, timeControl = '5+3', rated = true): Promise<any> {
+    return this.client.post('/challenges', { userId, timeControl, rated }).then(res => res.data);
+  }
+
+  getIncomingChallenges(): Promise<any[]> {
+    return this.client.get('/challenges/incoming').then(res => res.data);
+  }
+
+  acceptChallenge(id: string): Promise<GameResponse> {
+    return this.client.post(`/challenges/accept/${id}`).then(res => res.data);
+  }
+
+  declineChallenge(id: string): Promise<any> {
+    return this.client.post(`/challenges/decline/${id}`).then(res => res.data);
+  }
+
+  getAllRatings(): Promise<any[]> {
+    return this.client.get('/ratings/me/all').then(res => res.data);
+  }
+
+  startPuzzleRush(): Promise<{ sessionId: string }> {
+    return this.client.post('/puzzles/rush/start').then(res => res.data);
+  }
+
+  getPuzzleRushNext(sessionId: string): Promise<any> {
+    return this.client.get(`/puzzles/rush/${sessionId}/next`).then(res => res.data);
+  }
+
+  finishPuzzleRush(sessionId: string, score: number, puzzlesSolved: number): Promise<any> {
+    return this.client.post(`/puzzles/rush/${sessionId}/finish`, { score, puzzlesSolved }).then(res => res.data);
+  }
+
+  getArenas(): Promise<any[]> {
+    return this.client.get('/arenas').then(res => res.data);
+  }
+
+  getArena(id: string): Promise<any> {
+    return this.client.get(`/arenas/${id}`).then(res => res.data);
+  }
+
+  getArenaStandings(id: string): Promise<any[]> {
+    return this.client.get(`/arenas/${id}/standings`).then(res => res.data);
+  }
+
+  joinArena(id: string): Promise<any> {
+    return this.client.post(`/arenas/${id}/join`).then(res => res.data);
   }
 }
 

@@ -65,6 +65,10 @@ public class Game {
     @JoinColumn(name = "draw_offered_by_id")
     private User drawOfferedBy;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "takeback_offered_by_id")
+    private User takebackOfferedBy;
+
     @PrePersist
     protected void onCreate() {
         if (id == null) {
@@ -221,6 +225,14 @@ public class Game {
 
     public void setDrawOfferedBy(User drawOfferedBy) {
         this.drawOfferedBy = drawOfferedBy;
+    }
+
+    public User getTakebackOfferedBy() {
+        return takebackOfferedBy;
+    }
+
+    public void setTakebackOfferedBy(User takebackOfferedBy) {
+        this.takebackOfferedBy = takebackOfferedBy;
     }
 
     // Helper methods

@@ -1,0 +1,28 @@
+.challenge-inbox {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 280px;
+}
+
+.challenge-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color, #334155);
+  border-radius: 8px;
+}
+
+.challenge-meta {
+  display: block;
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+
+.challenge-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}

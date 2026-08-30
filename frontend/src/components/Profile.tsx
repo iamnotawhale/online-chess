@@ -3,7 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { apiService } from '../api';
 import { useTranslation } from '../i18n/LanguageContext';
 import { RatingChart } from './RatingChart';
+import { isSoundEnabled, setSoundEnabled } from '../hooks/useSound';
 import { getBoardTheme, setBoardTheme, BoardTheme } from '../utils/boardTheme';
+import { getPieceSet, setPieceSet, PieceSet } from '../utils/pieceSet';
+import { setupInstallPrompt, promptInstall, isPWAInstalled } from '../utils/pwa';
 import './Profile.css';
 
 interface UserProfile {
@@ -176,6 +179,10 @@ export const Profile: React.FC = () => {
   const [error, setError] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [boardTheme, setBoardThemeState] = useState<BoardTheme>(getBoardTheme());
+  const [soundOn, setSoundOn] = useState(isSoundEnabled());
+  const [pieceSet, setPieceSetState] = useState<PieceSet>(getPieceSet());
+  const [canInstall, setCanInstall] = useState(false);
+  const [tcRatings, setTcRatings] = useState<Array<{ category: string; rating: number }>>([]);
   const [editData, setEditData] = useState({
     username: '',
     password: '',
@@ -186,6 +193,11 @@ export const Profile: React.FC = () => {
 
   useEffect(() => {
     loadProfile();
+    apiService.getAllRatings().then(setTcRatings).catch(() => undefined);
+    if (!isPWAInstalled()) {
+      return setupInstallPrompt(setCanInstall);
+    }
+    return undefined;
   }, []);
 
   const loadProfile = async () => {
@@ -252,6 +264,22 @@ export const Profile: React.FC = () => {
   const handleBoardThemeChange = (theme: BoardTheme) => {
     setBoardTheme(theme);
     setBoardThemeState(theme);
+  };
+
+  const handleSoundToggle = () => {
+    const next = !soundOn;
+    setSoundOn(next);
+    setSoundEnabled(next);
+  };
+
+  const handlePieceSetChange = (set: PieceSet) => {
+    setPieceSet(set);
+    setPieceSetState(set);
+  };
+
+  const handleInstall = async () => {
+    await promptInstall();
+    setCanInstall(false);
   };
 
   if (loading) {
@@ -325,6 +353,30 @@ export const Profile: React.FC = () => {
                 <span className="rating-label">{t('rating')}</span>
                 <span className="rating-value">{profile.rating}</span>
               </div>
+              {tcRatings.length > 0 && (
+                <div className="tc-ratings">
+                  {tcRatings.map((r) => (
+                    <span key={r.category} className="tc-rating-badge">
+                      {t(r.category as 'bullet' | 'blitz' | 'rapid' | 'classic')}: {r.rating}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="profile-preferences">
+              <label className="pref-row">
+                <input type="checkbox" checked={soundOn} onChange={handleSoundToggle} />
+                {t('soundEnabled')}
+              </label>
+              <div className="piece-set-row">
+                <span>{t('pieceSet')}</span>
+                <button type="button" className={`btn btn-sm ${pieceSet === 'default' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => handlePieceSetChange('default')}>{t('pieceSetDefault')}</button>
+                <button type="button" className={`btn btn-sm ${pieceSet === 'neo' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => handlePieceSetChange('neo')}>{t('pieceSetNeo')}</button>
+              </div>
+              {canInstall && (
+                <button type="button" className="btn btn-secondary btn-sm" onClick={handleInstall}>{t('installApp')}</button>
+              )}
             </div>
 
             {profile.bio && !isEditing && (

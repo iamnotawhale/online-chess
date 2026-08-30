@@ -50,6 +50,7 @@ export const PublicProfile: React.FC = () => {
   const [gamesLoading, setGamesLoading] = useState(false);
   const [friendshipStatus, setFriendshipStatus] = useState<FriendshipStatus | null>(null);
   const [friendshipLoading, setFriendshipLoading] = useState(false);
+  const [challengeLoading, setChallengeLoading] = useState(false);
   const [incomingRequests, setIncomingRequests] = useState<FriendshipStatus[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -126,6 +127,22 @@ export const PublicProfile: React.FC = () => {
       setIncomingRequests(requests);
     } catch (err) {
       console.error('Failed to load incoming requests:', err);
+    }
+  };
+
+  const handleChallenge = async () => {
+    if (!profile?.id || !currentUser) {
+      navigate('/login');
+      return;
+    }
+    setChallengeLoading(true);
+    try {
+      await apiService.createChallenge(profile.id);
+      alert(t('challengeSent'));
+    } catch (err: any) {
+      alert(err.response?.data?.error || t('error'));
+    } finally {
+      setChallengeLoading(false);
     }
   };
 
@@ -346,13 +363,20 @@ export const PublicProfile: React.FC = () => {
                   </button>
                 </>
               ) : (
-                <button
-                  onClick={handleFriendshipAction}
-                  disabled={friendshipLoading}
-                  className={`friend-btn ${friendshipStatus?.status === 'accepted' ? 'remove' : friendshipStatus?.status === 'pending' ? 'pending' : 'add'}`}
-                >
-                  {getFriendshipButtonLabel()}
-                </button>
+                <>
+                  <button
+                    onClick={handleFriendshipAction}
+                    disabled={friendshipLoading}
+                    className={`friend-btn ${friendshipStatus?.status === 'accepted' ? 'remove' : friendshipStatus?.status === 'pending' ? 'pending' : 'add'}`}
+                  >
+                    {getFriendshipButtonLabel()}
+                  </button>
+                  {currentUser && (
+                    <button type="button" onClick={handleChallenge} disabled={challengeLoading} className="friend-btn add">
+                      {t('challenge')}
+                    </button>
+                  )}
+                </>
               )}
             </div>
           </div>

@@ -1,6 +1,8 @@
+@import './styles/theme.css';
+
 :root {
-  font-family: inherit;
-  line-height: 1.5;
+  font-family: var(--font-body);
+  line-height: 1.6;
   font-weight: 400;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -8,12 +10,75 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  font-family: var(--font-body);
+  color: var(--text);
+  background:
+    radial-gradient(1200px 600px at 8% -8%, var(--fx-aurora), transparent 55%),
+    radial-gradient(900px 480px at 92% 0%, rgb(var(--accent-deep-rgb) / 0.08), transparent 50%),
+    linear-gradient(var(--fx-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--fx-grid) 1px, transparent 1px),
+    var(--bg);
+  background-size: auto, auto, 48px 48px, 48px 48px, auto;
+  position: relative;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(ellipse at center, transparent 40%, var(--fx-vignette) 100%);
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--text);
+}
+
 a {
-  font-weight: 500;
-  color: var(--accent);
+  font-weight: 600;
+  color: var(--accent-ink);
   text-decoration: none;
+  transition: color var(--trans-fast);
 }
 
 a:hover {
-  color: var(--surface);
+  color: var(--accent-lift);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+code, pre, .mono {
+  font-family: var(--font-mono);
+}
+
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }

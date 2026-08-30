@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Chess } from 'chess.js';
 import { Chessboard } from 'react-chessboard';
 import { getBoardTheme, getBoardColors, BoardTheme } from '../../utils/boardTheme';
+import { getPieceSet, PieceSet } from '../../utils/pieceSet';
 import { useChessBoardStyles } from '../../hooks/useChessBoardStyles';
 import { useSquareClick } from '../../hooks/useSquareClick';
 
@@ -43,14 +44,17 @@ export const ChessBoardWrapper: React.FC<ChessBoardWrapperProps> = ({
   onPieceDragEnd,
 }) => {
   const [boardTheme, setBoardThemeState] = useState<BoardTheme>(getBoardTheme());
+  const [pieceSet, setPieceSetState] = useState<PieceSet>(getPieceSet());
 
-  // Listen for board theme changes
   useEffect(() => {
-    const handleThemeChange = () => {
-      setBoardThemeState(getBoardTheme());
+    const onTheme = () => setBoardThemeState(getBoardTheme());
+    const onPieces = () => setPieceSetState(getPieceSet());
+    window.addEventListener('boardThemeChanged', onTheme);
+    window.addEventListener('pieceSetChanged', onPieces);
+    return () => {
+      window.removeEventListener('boardThemeChanged', onTheme);
+      window.removeEventListener('pieceSetChanged', onPieces);
     };
-    window.addEventListener('boardThemeChanged', handleThemeChange);
-    return () => window.removeEventListener('boardThemeChanged', handleThemeChange);
   }, []);
 
   // Square click handling
@@ -117,6 +121,7 @@ export const ChessBoardWrapper: React.FC<ChessBoardWrapperProps> = ({
       customBoardStyle={{
         borderRadius: '4px',
         boxShadow: '0 2px 10px rgba(0, 0, 0, 0.3)',
+        ...(pieceSet === 'neo' ? { filter: 'saturate(1.15) contrast(1.05)' } : {}),
       }}
     />
   );

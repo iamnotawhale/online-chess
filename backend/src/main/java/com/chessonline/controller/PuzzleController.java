@@ -5,6 +5,7 @@ import com.chessonline.dto.PuzzleResponse;
 import com.chessonline.dto.PuzzleRatingHistoryResponse;
 import com.chessonline.dto.PuzzleHintRequest;
 import com.chessonline.model.PuzzleRatingHistory;
+import com.chessonline.service.PuzzleRushService;
 import com.chessonline.service.PuzzleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +29,9 @@ public class PuzzleController {
     
     @Autowired
     private PuzzleService puzzleService;
+
+    @Autowired
+    private PuzzleRushService puzzleRushService;
     
     /**
      * Get daily puzzle
@@ -48,12 +52,19 @@ public class PuzzleController {
     public ResponseEntity<PuzzleResponse> getRandomPuzzle(
             Authentication authentication,
             @RequestParam(required = false) Integer minRating,
-            @RequestParam(required = false) Integer maxRating
+            @RequestParam(required = false) Integer maxRating,
+            @RequestParam(required = false) String themes
     ) {
         String userId = authentication != null ? authentication.getName() : ANONYMOUS_USER_ID;
-        log.info("User {} requested random puzzle (rating range: {}-{})", userId, minRating, maxRating);
+        List<String> themeList = themes == null || themes.isBlank()
+                ? List.of()
+                : Arrays.stream(themes.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .toList();
+        log.info("User {} requested random puzzle (rating range: {}-{}, themes={})", userId, minRating, maxRating, themeList);
         
-        PuzzleResponse puzzle = puzzleService.getRandomPuzzle(userId, minRating, maxRating);
+        PuzzleResponse puzzle = puzzleService.getRandomPuzzle(userId, minRating, maxRating, themeList);
         return ResponseEntity.ok(puzzle);
     }
 
@@ -176,6 +187,53 @@ public class PuzzleController {
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/rush/start")
+    public ResponseEntity<?> startRush(Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+        try {
+            UUID userId = UUID.fromString(authentication.getName());
+            return ResponseEntity.ok(puzzleRushService.startSession(userId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/rush/{sessionId}/next")
+    public ResponseEntity<?> nextRushPuzzle(
+            @PathVariable UUID sessionId,
+            Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+        try {
+            UUID userId = UUID.fromString(authentication.getName());
+            PuzzleResponse puzzle = puzzleRushService.nextPuzzle(sessionId, userId);
+            return ResponseEntity.ok(puzzle);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/rush/{sessionId}/finish")
+    public ResponseEntity<?> finishRush(
+            @PathVariable UUID sessionId,
+            @RequestBody Map<String, Integer> body,
+            Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+        try {
+            UUID userId = UUID.fromString(authentication.getName());
+            int score = body.getOrDefault("score", 0);
+            int puzzlesSolved = body.getOrDefault("puzzlesSolved", 0);
+            return ResponseEntity.ok(puzzleRushService.finishSession(sessionId, userId, score, puzzlesSolved));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 

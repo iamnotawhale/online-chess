@@ -202,3 +202,13 @@
     min-width: 80px;
   }
 }
+
+.online-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  margin-right: 6px;
+  vertical-align: middle;
+}

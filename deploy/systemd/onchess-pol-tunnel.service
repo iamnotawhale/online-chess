@@ -1,0 +1,13 @@
+[Unit]
+Description=OnChess reverse SSH tunnel to pol (nginx upstream)
+After=network-online.target onchess-backend.service onchess-frontend.service
+Wants=onchess-backend.service onchess-frontend.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/ssh -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -R 127.0.0.1:8082:127.0.0.1:8082 -R 127.0.0.1:3000:127.0.0.1:3000 root@144.31.102.74
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

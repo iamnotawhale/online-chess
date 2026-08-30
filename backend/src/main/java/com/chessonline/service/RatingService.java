@@ -3,27 +3,37 @@ package com.chessonline.service;
 import com.chessonline.model.Game;
 import com.chessonline.model.RatingHistory;
 import com.chessonline.model.User;
+import com.chessonline.model.UserRating;
 import com.chessonline.model.UserStats;
 import com.chessonline.repository.RatingHistoryRepository;
+import com.chessonline.repository.UserRatingRepository;
 import com.chessonline.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class RatingService {
 
     private static final int INITIAL_RATING = 1200;
     private static final int MINIMUM_RATING = 100;
+    private static final List<String> CATEGORIES = List.of("bullet", "blitz", "rapid", "classical");
 
     @Autowired
     private RatingHistoryRepository ratingHistoryRepository;
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private UserRatingRepository userRatingRepository;
 
     /**
      * Calculate K-factor based on player rating
@@ -115,6 +125,97 @@ public class RatingService {
         // Record rating history
         recordRatingHistory(game, whitePlayer, whiteRating, whiteNewRating, whiteChange);
         recordRatingHistory(game, blackPlayer, blackRating, blackNewRating, blackChange);
+
+        // Update per time-control category ratings
+        String category = resolveCategory(game.getTimeControl());
+        applyCategoryRatingUpdate(whitePlayer.getId(), blackPlayer.getId(), category, whiteScore);
+        applyCategoryRatingUpdate(blackPlayer.getId(), whitePlayer.getId(), category, blackScore);
+    }
+
+    private void applyCategoryRatingUpdate(UUID playerId, UUID opponentId, String category, double score) {
+        UserRating playerRating = getOrCreateCategoryRating(playerId, category);
+        UserRating opponentRating = getOrCreateCategoryRating(opponentId, category);
+
+        int k = calculateKFactor(playerRating.getRating());
+        double expected = calculateExpectedScore(playerRating.getRating(), opponentRating.getRating());
+        int change = (int) Math.round(k * (score - expected));
+        int newRating = Math.max(MINIMUM_RATING, playerRating.getRating() + change);
+
+        playerRating.setRating(newRating);
+        playerRating.setGamesPlayed(playerRating.getGamesPlayed() + 1);
+        userRatingRepository.save(playerRating);
+    }
+
+    public String resolveCategory(String timeControl) {
+        int minutes = parseBaseMinutes(timeControl);
+        if (minutes < 3) {
+            return "bullet";
+        }
+        if (minutes < 10) {
+            return "blitz";
+        }
+        if (minutes <= 60) {
+            return "rapid";
+        }
+        return "classical";
+    }
+
+    private int parseBaseMinutes(String timeControl) {
+        if (timeControl == null || timeControl.isBlank()) {
+            return 5;
+        }
+        String base = timeControl.split("\\+")[0].trim();
+        try {
+            return Integer.parseInt(base);
+        } catch (NumberFormatException e) {
+            return 5;
+        }
+    }
+
+    @Transactional
+    public UserRating getOrCreateCategoryRating(UUID userId, String category) {
+        return userRatingRepository.findById(new UserRating.UserRatingId(userId, category))
+                .orElseGet(() -> {
+                    int baseRating = userRepository.findById(userId)
+                            .map(User::getRating)
+                            .orElse(INITIAL_RATING);
+                    UserRating rating = new UserRating(userId, category, baseRating, 0);
+                    return userRatingRepository.save(rating);
+                });
+    }
+
+    @Transactional
+    public List<Map<String, Object>> getAllRatingsForUser(UUID userId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<UserRating> existing = userRatingRepository.findByUserId(userId);
+        Set<String> present = existing.stream()
+                .map(UserRating::getCategory)
+                .collect(Collectors.toSet());
+
+        List<UserRating> all = new ArrayList<>(existing);
+        for (String category : CATEGORIES) {
+            if (!present.contains(category)) {
+                all.add(getOrCreateCategoryRating(userId, category));
+            }
+        }
+
+        return all.stream()
+                .sorted((a, b) -> a.getCategory().compareTo(b.getCategory()))
+                .map(r -> Map.<String, Object>of(
+                        "category", r.getCategory(),
+                        "rating", r.getRating(),
+                        "gamesPlayed", r.getGamesPlayed()
+                ))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getAllRatingsForUsername(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return getAllRatingsForUser(user.getId());
     }
 
     /**

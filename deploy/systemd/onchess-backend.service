@@ -1,0 +1,15 @@
+[Unit]
+Description=OnChess backend
+After=network-online.target onchess-pg-tunnel.service
+Wants=onchess-pg-tunnel.service
+
+[Service]
+Type=simple
+WorkingDirectory=%h/online-chess
+EnvironmentFile=%h/online-chess/deploy/onchess.env
+ExecStart=/usr/lib/jvm/java-21-openjdk-amd64/bin/java -Duser.timezone=Europe/Moscow -Xms256m -Xmx768m -jar %h/online-chess/deploy/chessonline-backend.jar
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target

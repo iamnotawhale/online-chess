@@ -2,8 +2,20 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <style>
+      html { background: #fbfbfd; }
+      html[data-theme='dark'] { background: #030304; }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        background: inherit;
+        color: #131318;
+        font-family: "Manrope", system-ui, sans-serif;
+      }
+      html[data-theme='dark'] body { color: #f1efeb; }
+    </style>
     <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#333333" />
+    <meta name="theme-color" content="#475569" />
     <meta name="description" content="Play chess online: Player vs Player, Player vs Bot, and solve daily puzzles with ELO rating system" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     
@@ -33,6 +45,16 @@
     <meta name="twitter:image" content="/icons/favicon-512x512.png" />
     
     <title>OnChess - Online Chess Game</title>
+    <script>
+      try {
+        var t = localStorage.getItem('themeMode') || 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@600;800&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div id="root"></div>

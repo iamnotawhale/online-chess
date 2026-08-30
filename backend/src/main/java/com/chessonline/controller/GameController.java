@@ -296,6 +296,72 @@ public class GameController {
         }
     }
 
+    @PostMapping("/{gameId}/rematch")
+    public ResponseEntity<?> rematch(@PathVariable String gameId, Authentication authentication) {
+        try {
+            UUID userId = UUID.fromString(authentication.getName());
+            Game game = gameService.rematch(gameId, userId);
+            GameResponse response = mapToResponse(game, 0);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{gameId}/abort")
+    public ResponseEntity<?> abortGame(@PathVariable String gameId, Authentication authentication) {
+        try {
+            UUID userId = UUID.fromString(authentication.getName());
+            Game game = gameService.abortGame(gameId, userId);
+            List<Move> moves = gameService.getGameMoves(gameId);
+            return ResponseEntity.ok(mapToResponse(game, moves.size()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{gameId}/offer-takeback")
+    public ResponseEntity<?> offerTakeback(@PathVariable String gameId, Authentication authentication) {
+        try {
+            UUID userId = UUID.fromString(authentication.getName());
+            gameService.offerTakeback(gameId, userId);
+            return ResponseEntity.ok(Map.of("message", "Takeback offered"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{gameId}/respond-takeback")
+    public ResponseEntity<?> respondToTakeback(
+            @PathVariable String gameId,
+            @RequestParam boolean accept,
+            Authentication authentication) {
+        try {
+            UUID userId = UUID.fromString(authentication.getName());
+            gameService.respondToTakeback(gameId, userId, accept);
+            return ResponseEntity.ok(Map.of("message", accept ? "Takeback accepted" : "Takeback declined"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{gameId}/claim-draw")
+    public ResponseEntity<?> claimDraw(@PathVariable String gameId, Authentication authentication) {
+        try {
+            UUID userId = UUID.fromString(authentication.getName());
+            Game game = gameService.claimDraw(gameId, userId);
+            List<Move> moves = gameService.getGameMoves(gameId);
+            return ResponseEntity.ok(mapToResponse(game, moves.size()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
     // Helper methods
     private GameResponse mapToResponse(Game game, int moveCount) {
         return mapToResponseWithRating(game, moveCount, null);

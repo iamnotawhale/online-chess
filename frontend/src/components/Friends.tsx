@@ -59,6 +59,15 @@ export const Friends: React.FC = () => {
     }
   };
 
+  const handleChallenge = async (userId: string) => {
+    try {
+      await apiService.createChallenge(userId);
+      alert(t('challengeSent'));
+    } catch (err) {
+      console.error('Challenge failed:', err);
+    }
+  };
+
   const handleRemoveFriend = async (userId: string) => {
     if (window.confirm(t('confirmRemoveFriend'))) {
       try {
@@ -151,7 +160,10 @@ export const Friends: React.FC = () => {
                 <div key={friend.id} className="friend-item">
                   <div className="friend-header">
                     <div className="user-info">
-                      <span className="username">{friend.friend.username}</span>
+                      <span className="username">
+                        {friend.friend.online && <span className="online-dot" title={t('online')} />}
+                        {friend.friend.username}
+                      </span>
                       <span className="rating">Rating: {friend.friend.rating}</span>
                     </div>
                     <span className="date">{formatDate(friend.createdAt)}</span>
@@ -162,6 +174,12 @@ export const Friends: React.FC = () => {
                       onClick={() => handleViewProfile(friend.friend.username)}
                     >
                       {t('view')}
+                    </button>
+                    <button
+                      className="btn btn-accept"
+                      onClick={() => handleChallenge(friend.friend.id)}
+                    >
+                      {t('challenge')}
                     </button>
                     <button
                       className="btn btn-remove"

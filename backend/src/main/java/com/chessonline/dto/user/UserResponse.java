@@ -14,6 +14,7 @@ public class UserResponse {
     private String avatarUrl;
     private Instant createdAt;
     private UserStatsResponse stats;
+    private Boolean online;
 
     public UserResponse(UUID id, String username, String email, Integer rating, String country,
                         String bio, String avatarUrl, Instant createdAt, UserStatsResponse stats) {
@@ -62,5 +63,13 @@ public class UserResponse {
 
     public UserStatsResponse getStats() {
         return stats;
+    }
+
+    public Boolean getOnline() {
+        return online;
+    }
+
+    public void setOnline(Boolean online) {
+        this.online = online;
     }
 }

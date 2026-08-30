@@ -1,0 +1,13 @@
+[Unit]
+Description=OnChess frontend
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/online-chess
+ExecStart=%h/.nvm/versions/node/v20.20.2/bin/node %h/.nvm/versions/node/v20.20.2/lib/node_modules/serve/build/main.js -s %h/online-chess/frontend-dist -l tcp://127.0.0.1:3000
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

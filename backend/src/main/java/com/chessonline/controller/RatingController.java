@@ -101,6 +101,25 @@ public class RatingController {
         }
     }
 
+    @GetMapping("/me/all")
+    public ResponseEntity<?> getMyAllRatings(Authentication authentication) {
+        try {
+            UUID userId = UUID.fromString(authentication.getName());
+            return ResponseEntity.ok(ratingService.getAllRatingsForUser(userId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/user/{username}/all")
+    public ResponseEntity<?> getUserAllRatings(@PathVariable String username) {
+        try {
+            return ResponseEntity.ok(ratingService.getAllRatingsForUsername(username));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     // Helper method
     private RatingHistoryResponse mapToResponse(RatingHistory history) {
         RatingHistoryResponse response = new RatingHistoryResponse();

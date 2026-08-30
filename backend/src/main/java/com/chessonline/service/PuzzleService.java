@@ -103,10 +103,10 @@ public class PuzzleService {
     /**
      * Get random puzzle for training from CSV
      */
-    public PuzzleResponse getRandomPuzzle(String userId, Integer minRating, Integer maxRating) {
+    public PuzzleResponse getRandomPuzzle(String userId, Integer minRating, Integer maxRating, List<String> themes) {
         int min = minRating != null ? minRating : 1000;
         int max = maxRating != null ? maxRating : 2000;
-        Puzzle puzzle = getRandomPuzzleByRating(min, max);
+        Puzzle puzzle = getRandomPuzzleByRating(min, max, themes);
         if (puzzle == null) {
             log.error("Failed to load random puzzle from CSV with rating {} - {}", min, max);
             throw new RuntimeException("No puzzle available for rating " + min + "-" + max);

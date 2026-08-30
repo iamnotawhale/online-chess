@@ -46,7 +46,9 @@ function normalizeRatingFilter(filter: { min: number; max: number }) {
   return { min: clampedMin, max: clampedMax };
 }
 
-export const PuzzleTraining: React.FC = () => {
+const THEME_OPTIONS = ['fork', 'pin', 'mate', 'skewer', 'discoveredAttack', 'sacrifice'];
+
+export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = false }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -78,6 +80,46 @@ export const PuzzleTraining: React.FC = () => {
   const [currentMoveIndex, setCurrentMoveIndex] = useState<number>(-1);
   const [isViewingHistory, setIsViewingHistory] = useState(false);
   const [displayPosition, setDisplayPosition] = useState<string>('start');
+  const [selectedThemes, setSelectedThemes] = useState<string[]>([]);
+  const [, setRushSessionId] = useState<string | null>(null);
+  const [rushScore, setRushScore] = useState(0);
+  const [rushLives, setRushLives] = useState(3);
+  const [rushTimeLeft, setRushTimeLeft] = useState(180);
+  const [rushFinished, setRushFinished] = useState(false);
+  const rushScoreRef = useRef(0);
+  const rushSessionRef = useRef<string | null>(null);
+
+  const finishRushSession = async (score: number) => {
+    const sid = rushSessionRef.current;
+    if (sid) {
+      try {
+        await apiService.finishPuzzleRush(sid, score, score);
+      } catch {
+        // ignore
+      }
+    }
+    setRushFinished(true);
+  };
+
+  const loadRushPuzzle = async (sessionId?: string) => {
+    const sid = sessionId || rushSessionRef.current;
+    if (!sid) return;
+    setLoading(true);
+    try {
+      const data = await apiService.getPuzzleRushNext(sid);
+      setPuzzle(data);
+      setPuzzleElo(null);
+      setPuzzleEloDelta(0);
+      setStatus('playing');
+      setMessageKey('');
+      setHintUsed(false);
+    } catch (error) {
+      console.error('Failed to load rush puzzle:', error);
+      finishRushSession(rushScoreRef.current);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const {
     game,
@@ -95,8 +137,17 @@ export const PuzzleTraining: React.FC = () => {
     puzzle,
     loading,
     autoFirstMoveDelayMs: 400,
-    skipRatingUpdate: isLessonMode,
+    skipRatingUpdate: isLessonMode || rushMode,
     onComplete: () => {
+      if (rushMode) {
+        setRushScore((s) => {
+          const next = s + 1;
+          rushScoreRef.current = next;
+          return next;
+        });
+        setTimeout(() => loadRushPuzzle(), 800);
+        return;
+      }
       updateLessonProgressAfterSolve();
       setStreak(prev => prev + 1);
       setTimeout(() => {
@@ -105,11 +156,20 @@ export const PuzzleTraining: React.FC = () => {
         loadRandomPuzzle(true);
       }, 2000);
     },
-    onCorrect: () => {
-      // Don't count attempts for intermediate correct moves
-      // Attempts are only counted on completion or error
-    },
+    onCorrect: () => {},
     onWrong: () => {
+      if (rushMode) {
+        setRushLives((l) => {
+          const next = l - 1;
+          if (next <= 0) {
+            finishRushSession(rushScoreRef.current);
+          } else {
+            setTimeout(() => loadRushPuzzle(), 800);
+          }
+          return next;
+        });
+        return;
+      }
       setStreak(0);
     },
     onRatingChange: (rating, delta) => {
@@ -312,8 +372,34 @@ export const PuzzleTraining: React.FC = () => {
   };
 
   useEffect(() => {
+    if (!rushMode || rushFinished) return;
+    let timer: number;
+    (async () => {
+      try {
+        const { sessionId } = await apiService.startPuzzleRush();
+        rushSessionRef.current = sessionId;
+        setRushSessionId(sessionId);
+        await loadRushPuzzle(sessionId);
+      } catch {
+        setRushFinished(true);
+      }
+    })();
+    timer = window.setInterval(() => {
+      setRushTimeLeft((t) => {
+        if (t <= 1) {
+          finishRushSession(rushScoreRef.current);
+          return 0;
+        }
+        return t - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [rushMode]);
+
+  useEffect(() => {
     const activeLesson = isLessonRequested ? readActiveLesson() : null;
     setIsLessonMode(Boolean(activeLesson));
+    if (rushMode) return;
     loadRandomPuzzle(false);
     // Initialize lesson progress on component mount
     const initLessonProgress = async () => {
@@ -441,7 +527,11 @@ export const PuzzleTraining: React.FC = () => {
     }
 
     try {
-      const data = await apiService.getRandomPuzzle(ratingFilter.min, ratingFilter.max);
+      const data = await apiService.getRandomPuzzle(
+        ratingFilter.min,
+        ratingFilter.max,
+        selectedThemes.length > 0 ? selectedThemes : undefined
+      );
       setPuzzle(data);
       setPuzzleElo(typeof data.userPuzzleRating === 'number' ? data.userPuzzleRating : null);
       setPuzzleEloDelta(0);
@@ -574,6 +664,16 @@ export const PuzzleTraining: React.FC = () => {
       setIsViewingHistory(false);
     }
   };
+
+  if (rushFinished && rushMode) {
+    return (
+      <div className="puzzle-training-container">
+        <h2>{t('puzzleRush')}</h2>
+        <p>{t('score')}: <strong>{rushScore}</strong></p>
+        <button type="button" className="btn btn-primary" onClick={() => navigate('/puzzles')}>{t('back')}</button>
+      </div>
+    );
+  }
 
   if (loading && !puzzle) {
     return (
@@ -712,10 +812,27 @@ export const PuzzleTraining: React.FC = () => {
     );
   }
 
+  if (rushFinished && rushMode) {
+    return (
+      <div className="puzzle-training-container">
+        <h2>{t('puzzleRush')}</h2>
+        <p>{t('score')}: <strong>{rushScore}</strong></p>
+        <button type="button" className="btn btn-primary" onClick={() => navigate('/puzzles')}>{t('back')}</button>
+      </div>
+    );
+  }
+
   return (
     <div className="puzzle-training-container">
       <div className="puzzle-header">
-        <h3>{t('puzzleTraining')}</h3>
+        <h3>{rushMode ? t('puzzleRush') : t('puzzleTraining')}</h3>
+        {rushMode && (
+          <div className="rush-hud">
+            <span>⏱ {Math.floor(rushTimeLeft / 60)}:{String(rushTimeLeft % 60).padStart(2, '0')}</span>
+            <span>❤️ {rushLives}</span>
+            <span>{t('score')}: {rushScore}</span>
+          </div>
+        )}
         {lessonProgress && lessonProgress.puzzlesTotal > 0 && (
           <div className="lesson-progress-indicator">
             <span className="progress-text">
@@ -877,6 +994,25 @@ export const PuzzleTraining: React.FC = () => {
                     );  
                   })}
                 </div>
+              </div>
+            </div>
+          )}
+          {!isLessonMode && !rushMode && (
+            <div className="puzzle-container puzzle-theme-filter">
+              <label>{t('puzzleDifficulty')}</label>
+              <div className="theme-chips">
+                {THEME_OPTIONS.map((theme) => (
+                  <button
+                    key={theme}
+                    type="button"
+                    className={`theme-chip ${selectedThemes.includes(theme) ? 'active' : ''}`}
+                    onClick={() => setSelectedThemes((prev) =>
+                      prev.includes(theme) ? prev.filter((x) => x !== theme) : [...prev, theme]
+                    )}
+                  >
+                    {theme}
+                  </button>
+                ))}
               </div>
             </div>
           )}

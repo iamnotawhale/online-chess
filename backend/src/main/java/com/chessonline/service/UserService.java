@@ -1,14 +1,19 @@
 package com.chessonline.service;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import org.springframework.data.domain.PageRequest;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.chessonline.dto.user.UpdateProfileRequest;
@@ -20,6 +25,8 @@ import com.chessonline.repository.UserRepository;
 
 @Service
 public class UserService {
+
+    private static final Duration ONLINE_THRESHOLD = Duration.ofMinutes(2);
 
     private final UserRepository userRepository;
     private final GameRepository gameRepository;
@@ -62,7 +69,40 @@ public class UserService {
     public UserResponse getPublicProfile(String username) {
         User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-        return toUserResponse(user, false);
+        UserResponse response = toUserResponse(user, false);
+        response.setOnline(isOnline(user));
+        return response;
+    }
+
+    @Transactional
+    public void ping(UUID userId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        user.setLastSeenAt(Instant.now());
+        userRepository.save(user);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserResponse> searchUsers(String query, int limit) {
+        if (query == null || query.trim().length() < 2) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Query must be at least 2 characters");
+        }
+        int cappedLimit = Math.min(Math.max(limit, 1), 50);
+        return userRepository.searchByUsername(query.trim(), PageRequest.of(0, cappedLimit)).stream()
+            .map(user -> {
+                UserResponse response = toUserResponse(user, false);
+                response.setOnline(isOnline(user));
+                return response;
+            })
+            .collect(Collectors.toList());
+    }
+
+    public boolean isOnline(User user) {
+        Instant lastSeen = user.getLastSeenAt();
+        if (lastSeen == null) {
+            return false;
+        }
+        return Duration.between(lastSeen, Instant.now()).compareTo(ONLINE_THRESHOLD) < 0;
     }
 
     public User getUserEntity(UUID userId) {

@@ -651,6 +651,28 @@ export const GameAnalysis: React.FC = () => {
     <div className="page-wrapper">
       <div className="page-header">
         <h2>{t('moveAnalysis')}</h2>
+        {gameId && (
+          <div className="page-header-actions">
+            <button type="button" className="btn btn-secondary btn-sm" onClick={async () => {
+              try {
+                const { pgn } = await apiService.getGamePgn(gameId);
+                await navigator.clipboard.writeText(pgn);
+              } catch { /* ignore */ }
+            }}>{t('copyPgn')}</button>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={async () => {
+              try {
+                const { pgn } = await apiService.getGamePgn(gameId);
+                const blob = new Blob([pgn], { type: 'application/x-chess-pgn' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `onchess-${gameId.slice(0, 8)}.pgn`;
+                a.click();
+                URL.revokeObjectURL(url);
+              } catch { /* ignore */ }
+            }}>{t('downloadPgn')}</button>
+          </div>
+        )}
       </div>
       {error && <div className="error-message">{error}</div>}
 

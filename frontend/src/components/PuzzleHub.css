@@ -1,0 +1,30 @@
+.puzzle-hub h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.puzzle-hub-rating {
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+.puzzle-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.puzzle-hub-card h2 {
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-ink);
+  margin-bottom: 12px;
+}
+
+.puzzle-hub-guest-note {
+  margin-top: 16px;
+  color: var(--muted);
+}

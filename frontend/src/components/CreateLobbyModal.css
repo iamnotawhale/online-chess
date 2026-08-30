@@ -1,0 +1,17 @@
+.create-lobby-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.create-lobby-form .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.create-lobby-form .color-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}

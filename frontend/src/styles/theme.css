@@ -1,0 +1,171 @@
+/* OnChess design system — inspired by Any Tech ARCHITECT, indigo/violet accent */
+
+:root {
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-xl: 20px;
+  --r-pill: 999px;
+
+  --font-body: "Manrope", system-ui, -apple-system, sans-serif;
+  --font-display: "Unbounded", var(--font-body);
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", monospace;
+
+  --ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-snap: cubic-bezier(0.16, 1, 0.3, 1);
+  --trans-fast: 0.15s var(--ease);
+  --trans-norm: 0.25s var(--ease);
+
+  --header-height: 72px;
+  --container: min(1200px, calc(100vw - 32px));
+
+  --accent-rgb: 71 85 105;
+  --accent-lift-rgb: 100 116 139;
+  --accent-deep-rgb: 51 65 85;
+  --accent-ink-light: #334155;
+  --counter-rgb: 56 189 248;
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.06), 0 1px 3px rgb(0 0 0 / 0.04);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 0.08), 0 1px 4px rgb(0 0 0 / 0.05);
+  --shadow-lg: 0 8px 32px rgb(0 0 0 / 0.1), 0 2px 8px rgb(0 0 0 / 0.06);
+  --shadow-glow: 0 10px 28px rgb(var(--accent-deep-rgb) / 0.16);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --ground: color-mix(in oklab, rgb(var(--accent-rgb)) 3%, #fbfbfd);
+  --ground-2: #ffffff;
+  --ground-3: color-mix(in oklab, rgb(var(--accent-deep-rgb)) 4%, var(--ground));
+  --ground-4: color-mix(in oklab, rgb(var(--accent-deep-rgb)) 8%, var(--ground));
+  --ground-5: color-mix(in oklab, rgb(var(--accent-deep-rgb)) 12%, var(--ground));
+
+  --ink: color-mix(in oklab, rgb(var(--accent-deep-rgb)) 8%, #131318);
+  --ink-2: color-mix(in oklab, rgb(var(--accent-deep-rgb)) 12%, #3c3a44);
+  --ink-3: color-mix(in oklab, rgb(var(--accent-deep-rgb)) 12%, #55535d);
+
+  --line: rgb(var(--accent-deep-rgb) / 0.22);
+  --line-soft: rgb(var(--accent-deep-rgb) / 0.12);
+  --line-faint: rgb(var(--accent-deep-rgb) / 0.07);
+
+  --accent-ink: var(--accent-ink-light);
+  --on-accent: color-mix(in oklab, black 84%, rgb(var(--accent-deep-rgb)));
+
+  --glow: rgb(var(--accent-rgb) / 0.12);
+  --glow-soft: rgb(var(--accent-rgb) / 0.06);
+  --fx-grid: rgb(var(--accent-deep-rgb) / 0.055);
+  --fx-aurora: rgb(var(--accent-rgb) / 0.14);
+  --fx-vignette: rgb(var(--accent-deep-rgb) / 0.06);
+
+  --green: #256640;
+  --green2: #24693e;
+  --red: #b03a26;
+  --red2: #8f2c1b;
+  --blue: #1f5f9c;
+  --cyan: #0e6472;
+
+  --info-bg: rgb(var(--accent-rgb) / 0.08);
+  --info-text: var(--accent-ink-light);
+  --info-border: rgb(var(--accent-rgb) / 0.22);
+  --success-bg: rgb(var(--counter-rgb) / 0.1);
+  --success-text: var(--green);
+  --success-border: rgb(var(--counter-rgb) / 0.22);
+  --warning-bg: rgb(180 83 9 / 0.1);
+  --warning-text: #9a3412;
+  --warning-border: rgb(180 83 9 / 0.2);
+  --danger-bg: rgb(176 58 38 / 0.1);
+  --danger-text: var(--red);
+  --danger-border: rgb(176 58 38 / 0.18);
+  --neutral-bg: var(--ground-3);
+  --neutral-text: var(--ink-3);
+  --neutral-border: var(--line-soft);
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.06), 0 1px 3px rgb(0 0 0 / 0.04);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 0.08), 0 1px 4px rgb(0 0 0 / 0.05);
+  --shadow-lg: 0 8px 32px rgb(0 0 0 / 0.1), 0 2px 8px rgb(0 0 0 / 0.06);
+  --shadow-glow: 0 10px 28px rgb(var(--accent-deep-rgb) / 0.16);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --accent-rgb: 148 163 184;
+  --accent-lift-rgb: 186 199 216;
+  --accent-deep-rgb: 100 116 139;
+  --accent-ink-light: #cbd5e1;
+
+  --ground: color-mix(in oklab, rgb(var(--accent-rgb)) 4%, #030304);
+  --ground-2: color-mix(in oklab, rgb(var(--accent-rgb)) 5%, #0a090c);
+  --ground-3: color-mix(in oklab, rgb(var(--accent-rgb)) 6%, #100f14);
+  --ground-4: color-mix(in oklab, rgb(var(--accent-rgb)) 7%, #17161c);
+  --ground-5: color-mix(in oklab, rgb(var(--accent-rgb)) 8%, #1e1d25);
+
+  --ink: color-mix(in oklab, rgb(var(--accent-rgb)) 13%, #f1efeb);
+  --ink-2: color-mix(in oklab, rgb(var(--accent-rgb)) 22%, #a8a49d);
+  --ink-3: color-mix(in oklab, rgb(var(--accent-rgb)) 22%, #97938c);
+
+  --line: rgb(var(--accent-rgb) / 0.14);
+  --line-soft: rgb(var(--accent-rgb) / 0.07);
+  --line-faint: rgb(var(--accent-rgb) / 0.03);
+
+  --accent-ink: rgb(var(--accent-rgb));
+  --on-accent: color-mix(in oklab, black 84%, rgb(var(--accent-deep-rgb)));
+
+  --glow: rgb(var(--accent-rgb) / 0.12);
+  --glow-soft: rgb(var(--accent-rgb) / 0.06);
+  --fx-grid: rgb(var(--accent-rgb) / 0.018);
+  --fx-aurora: rgb(var(--accent-rgb) / 0.1);
+  --fx-vignette: rgb(0 0 0 / 0.42);
+
+  --green: #5cb87a;
+  --green2: #7dd99a;
+  --red: #d4604a;
+  --red2: #ff8f7d;
+  --blue: #5b9bd5;
+  --cyan: #64d4e0;
+
+  --info-bg: rgb(var(--accent-rgb) / 0.08);
+  --info-text: rgb(var(--accent-lift-rgb));
+  --info-border: rgb(var(--accent-rgb) / 0.22);
+  --success-bg: rgb(var(--counter-rgb) / 0.08);
+  --success-text: var(--green);
+  --success-border: rgb(var(--counter-rgb) / 0.2);
+  --warning-bg: rgb(251 191 36 / 0.08);
+  --warning-text: #fbbf24;
+  --warning-border: rgb(251 191 36 / 0.2);
+  --danger-bg: rgb(212 96 74 / 0.08);
+  --danger-text: var(--red);
+  --danger-border: rgb(212 96 74 / 0.15);
+  --neutral-bg: var(--ground-3);
+  --neutral-text: var(--ink-3);
+  --neutral-border: var(--line-soft);
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3), 0 1px 3px rgb(0 0 0 / 0.15);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 0.4), 0 1px 4px rgb(0 0 0 / 0.2);
+  --shadow-lg: 0 8px 32px rgb(0 0 0 / 0.5), 0 2px 8px rgb(0 0 0 / 0.3);
+  --shadow-glow: 0 0 60px rgb(var(--accent-rgb) / 0.04);
+}
+
+/* Map architect tokens → existing OnChess variables */
+:root,
+:root[data-theme='light'],
+:root[data-theme='dark'] {
+  --bg: var(--ground);
+  --surface: var(--ground-2);
+  --surface-2: var(--ground-3);
+  --surface-3: var(--ground-4);
+  --surface-4: var(--ground-5);
+  --text: var(--ink);
+  --muted: var(--ink-2);
+  --muted-2: var(--ink-3);
+  --border: var(--line);
+  --border-2: var(--line-soft);
+  --accent: rgb(var(--accent-rgb));
+  --accent-contrast: var(--on-accent);
+  --accent-lift: rgb(var(--accent-lift-rgb));
+  --accent-deep: rgb(var(--accent-deep-rgb));
+  --shadow: rgb(0 0 0 / 0.12);
+  --shadow-2: rgb(0 0 0 / 0.22);
+  --panel-glow: var(--glow-soft);
+  --focus-ring: 0 0 0 2px var(--ground), 0 0 0 4px rgb(var(--accent-rgb) / 0.55);
+}

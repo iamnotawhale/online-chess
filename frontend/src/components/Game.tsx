@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Chess } from 'chess.js';
 import { ChessBoardWrapper, Modal } from './common';
+import { GameOverModal } from './GameOverModal';
 import { apiService, User } from '../api';
 import { wsService, GameUpdate } from '../websocket';
 import { useTranslation } from '../i18n/LanguageContext';
+import { playCaptureSound, playCheckSound, playGameEndSound, playMoveSound } from '../hooks/useSound';
 import './Game.css';
 
 interface GameData {
@@ -34,6 +36,7 @@ export const GameView: React.FC = () => {
     const [promotionData, setPromotionData] = useState<{ from: string; to: string } | null>(null);
 
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
   const { gameId } = useParams<{ gameId: string }>();
   const [game, setGame] = useState<GameData | null>(null);
@@ -59,6 +62,11 @@ export const GameView: React.FC = () => {
   const lastDrawOfferRef = useRef<string | null>(null);
   const isViewingHistoryRef = useRef(false);
   const [toast, setToast] = useState<{ message: string; type?: 'info' | 'error' } | null>(null);
+  const [showGameOverModal, setShowGameOverModal] = useState(false);
+  const [rematchLoading, setRematchLoading] = useState(false);
+  const premoveRef = useRef<string | null>(null);
+  const lastFenRef = useRef<string>(START_FEN);
+  const [boardFlipped, setBoardFlipped] = useState(false);
   const toastTimeoutRef = useRef<number | null>(null);
   const [boardWidth, setBoardWidth] = useState<number>(() => {
     if (typeof window === 'undefined') return 800;
@@ -209,6 +217,53 @@ export const GameView: React.FC = () => {
     };
   }, []);
 
+  const playMoveSounds = (oldFen: string, newFen: string) => {
+    try {
+      const oldChess = new Chess(oldFen);
+      const newChess = new Chess(newFen);
+      const countPieces = (c: Chess) => {
+        let n = 0;
+        for (let row = 0; row < 8; row++) {
+          for (let col = 0; col < 8; col++) {
+            const sq = String.fromCharCode(97 + col) + (8 - row);
+            if (c.get(sq as any)) n++;
+          }
+        }
+        return n;
+      };
+      if (newChess.inCheck()) playCheckSound();
+      else if (countPieces(newChess) < countPieces(oldChess)) playCaptureSound();
+      else playMoveSound();
+    } catch {
+      playMoveSound();
+    }
+  };
+
+  const executePremove = () => {
+    const notation = premoveRef.current;
+    if (!notation || !game || !chessInstance || !currentUser || game.status !== 'active') return;
+    const userIsWhite = game.whitePlayerId === currentUser.id;
+    const isUsersTurn = (userIsWhite && chessInstance.turn() === 'w') || (!userIsWhite && chessInstance.turn() === 'b');
+    if (!isUsersTurn) return;
+    premoveRef.current = null;
+    handleOnDrop(notation.slice(0, 2), notation.slice(2, 4));
+  };
+
+  useEffect(() => {
+    executePremove();
+  }, [chessInstance?.fen(), game?.status, currentUser?.id]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.key === 'f') setBoardFlipped((v) => !v);
+      if (e.key === 'ArrowLeft') goToPreviousMove();
+      if (e.key === 'ArrowRight') goToNextMove();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [currentMoveIndex, moveHistory.length]);
+
   const showToast = (message: string, type: 'info' | 'error' = 'info', timeout = 3000) => {
     setToast({ message, type });
     if (toastTimeoutRef.current) {
@@ -232,6 +287,8 @@ export const GameView: React.FC = () => {
       const currentFen = chessInstance?.fen();
       if (currentFen !== update.fenCurrent) {
         try {
+          playMoveSounds(lastFenRef.current, update.fenCurrent);
+          lastFenRef.current = update.fenCurrent;
           // Create new Chess instance to force React re-render
           const newChess = new Chess(update.fenCurrent);
           setChessInstance(newChess);
@@ -254,26 +311,9 @@ export const GameView: React.FC = () => {
       // Don't update board position if viewing history and FEN hasn't changed
     }
     
-    // Show game end notification    // Show game end notification
     if (update.status === 'completed' && update.result && update.resultReason) {
-      let message = '';
-      if (update.resultReason === 'checkmate') {
-        if (update.result === '1-0') {
-          message = '♔ Checkmate! White wins!';
-        } else if (update.result === '0-1') {
-          message = '♔ Checkmate! Black wins!';
-        }
-      } else if (update.resultReason === 'stalemate') {
-        message = '♔ Stalemate! Draw!';
-      } else if (update.resultReason === 'timeout') {
-        message = '⏰ Time out!';
-      } else if (update.resultReason === 'resignation') {
-        message = '🏳️ Resignation!';
-      }
-      
-      if (message) {
-        setTimeout(() => alert(message), 500);
-      }
+      playGameEndSound();
+      setShowGameOverModal(true);
     }
     
     setGame((prevGame) => {
@@ -484,7 +524,12 @@ export const GameView: React.FC = () => {
                         (!userIsWhite && chessInstance.turn() === 'b');
 
     if (!isUsersTurn) {
-      alert(t('notYourTurn'));
+      const piece = chessInstance.get(sourceSquare as any);
+      const userColor = userIsWhite ? 'w' : 'b';
+      if (piece?.color === userColor) {
+        premoveRef.current = `${sourceSquare}${targetSquare}`;
+        return true;
+      }
       return false;
     }
 
@@ -640,7 +685,50 @@ export const GameView: React.FC = () => {
       await apiService.resignGame(gameId);
       loadGame();
     } catch (err: any) {
-      alert(err.response?.data?.message || t('errorResign'));
+      showToast(err.response?.data?.message || t('errorResign'), 'error');
+    }
+  };
+
+  const handleAbort = async () => {
+    if (!gameId || !confirm(t('confirmAbort'))) return;
+    try {
+      await apiService.abortGame(gameId);
+      loadGame();
+    } catch (err: any) {
+      showToast(err.response?.data?.error || t('error'), 'error');
+    }
+  };
+
+  const handleOfferTakeback = async () => {
+    if (!gameId) return;
+    try {
+      await apiService.offerTakeback(gameId);
+      loadGame();
+    } catch (err: any) {
+      showToast(err.response?.data?.error || t('error'), 'error');
+    }
+  };
+
+  const handleClaimDraw = async () => {
+    if (!gameId) return;
+    try {
+      await apiService.claimDraw(gameId);
+      loadGame();
+    } catch (err: any) {
+      showToast(err.response?.data?.error || t('error'), 'error');
+    }
+  };
+
+  const handleRematch = async () => {
+    if (!gameId) return;
+    setRematchLoading(true);
+    try {
+      const g = await apiService.rematchGame(gameId);
+      navigate(`/game/${g.id}`);
+    } catch (err: any) {
+      showToast(err.response?.data?.error || t('error'), 'error');
+    } finally {
+      setRematchLoading(false);
     }
   };
 
@@ -652,7 +740,7 @@ export const GameView: React.FC = () => {
       await apiService.offerDraw(gameId);
       loadGame();
     } catch (err: any) {
-      alert(err.response?.data?.error || t('errorOfferDraw'));
+      showToast(err.response?.data?.error || t('errorOfferDraw'), 'error');
     }
   };
 
@@ -663,7 +751,7 @@ export const GameView: React.FC = () => {
       await apiService.respondToDraw(gameId, accept);
       loadGame();
     } catch (err: any) {
-      alert(err.response?.data?.error || t('errorRespondDraw'));
+      showToast(err.response?.data?.error || t('errorRespondDraw'), 'error');
     }
   };
 
@@ -751,7 +839,10 @@ export const GameView: React.FC = () => {
     (userIsWhite && chessInstance.turn() === 'w') ||
     (!userIsWhite && chessInstance.turn() === 'b')
   );
-  const boardOrientation: 'white' | 'black' = isParticipant ? (userIsWhite ? 'white' : 'black') : 'white';
+  const baseOrientation: 'white' | 'black' = isParticipant ? (userIsWhite ? 'white' : 'black') : 'white';
+  const boardOrientation: 'white' | 'black' = boardFlipped
+    ? (baseOrientation === 'white' ? 'black' : 'white')
+    : baseOrientation;
   const showWhiteYouBadge = isParticipant && userIsWhite;
   const showBlackYouBadge = isParticipant && !userIsWhite;
   const canInteractWithBoard = isParticipant && game.status === 'active' && !isViewingHistory;
@@ -1007,7 +1098,26 @@ export const GameView: React.FC = () => {
               <button type="button" onClick={handleResign} className="resign-btn">
                 {t('resign')}
               </button>
+              {moveHistory.length < 4 && (
+                <button type="button" onClick={handleAbort} className="btn btn-secondary btn-sm">
+                  {t('abort')}
+                </button>
+              )}
+              {!game.rated && (
+                <button type="button" onClick={handleOfferTakeback} className="btn btn-secondary btn-sm">
+                  {t('takeback')}
+                </button>
+              )}
+              <button type="button" onClick={handleClaimDraw} className="btn btn-secondary btn-sm">
+                {t('claimDraw')}
+              </button>
             </>
+          )}
+
+          {!isGameActive && game.result && (
+            <button type="button" className="btn btn-primary" onClick={() => setShowGameOverModal(true)}>
+              {t('gameOver')}
+            </button>
           )}
 
         
@@ -1055,6 +1165,16 @@ export const GameView: React.FC = () => {
             </div>
           )}
         </Modal>
+        <GameOverModal
+          isOpen={showGameOverModal && !!game.result}
+          gameId={game.id}
+          result={game.result || '*'}
+          resultReason={game.resultReason ? getResultReasonLabel(game.resultReason) : undefined}
+          opponentName={userIsWhite ? game.blackPlayerName : game.whitePlayerName}
+          onRematch={isParticipant && !isBotGame ? handleRematch : undefined}
+          rematchLoading={rematchLoading}
+          onClose={() => setShowGameOverModal(false)}
+        />
       </div>
     </div>
   );

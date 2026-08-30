@@ -34,6 +34,9 @@ public class GameService {
     private RatingService ratingService;
 
     @Autowired
+    private ArenaService arenaService;
+
+    @Autowired
     private LobbyGameRepository lobbyGameRepository;
 
     @Autowired(required = false)
@@ -148,7 +151,7 @@ public class GameService {
         // Update clocks before move
         if (updateClocksOnMove(game, isWhiteToMove)) {
             Game savedTimeoutGame = gameRepository.save(game);
-            ratingService.updateRatingsForGame(savedTimeoutGame);
+            onGameFinished(savedTimeoutGame);
             notifyGameUpdate(savedTimeoutGame);
             throw new RuntimeException("Time out");
         }
@@ -214,15 +217,23 @@ public class GameService {
         
         // Update ratings if game finished
         if ("finished".equals(savedGame.getStatus())) {
-            ratingService.updateRatingsForGame(savedGame);
-            // Remove from lobby if it was created via matchmaking
-            removeLobbyGameByPlayers(savedGame.getPlayerWhite().getId(), savedGame.getPlayerBlack().getId());
+            onGameFinished(savedGame);
         }
         
         // Send WebSocket notification
         notifyGameUpdate(savedGame);
 
         return moveRecord;
+    }
+
+    private void onGameFinished(Game game) {
+        ratingService.updateRatingsForGame(game);
+        removeLobbyGameByPlayers(game.getPlayerWhite().getId(), game.getPlayerBlack().getId());
+        arenaService.updateScoresOnGameFinish(game);
+    }
+
+    private void onGameFinishedWithoutRating(Game game) {
+        removeLobbyGameByPlayers(game.getPlayerWhite().getId(), game.getPlayerBlack().getId());
     }
     
     /**
@@ -295,6 +306,7 @@ public class GameService {
         msg.setBlackTimeLeftMs(getEffectiveTimeLeftMs(game, false));
         msg.setLastMoveAt(game.getLastMoveAt());
         msg.setDrawOfferedById(game.getDrawOfferedBy() != null ? game.getDrawOfferedBy().getId() : null);
+        msg.setTakebackOfferedById(game.getTakebackOfferedBy() != null ? game.getTakebackOfferedBy().getId() : null);
         return msg;
     }
     
@@ -309,6 +321,7 @@ public class GameService {
         private Long blackTimeLeftMs;
         private LocalDateTime lastMoveAt;
         private UUID drawOfferedById;
+        private UUID takebackOfferedById;
         
         public String getGameId() { return gameId; }
         public void setGameId(String gameId) { this.gameId = gameId; }
@@ -328,6 +341,8 @@ public class GameService {
         public void setLastMoveAt(LocalDateTime lastMoveAt) { this.lastMoveAt = lastMoveAt; }
         public UUID getDrawOfferedById() { return drawOfferedById; }
         public void setDrawOfferedById(UUID drawOfferedById) { this.drawOfferedById = drawOfferedById; }
+        public UUID getTakebackOfferedById() { return takebackOfferedById; }
+        public void setTakebackOfferedById(UUID takebackOfferedById) { this.takebackOfferedById = takebackOfferedById; }
     }
 
     private boolean updateClocksOnMove(Game game, boolean isWhiteToMove) {
@@ -446,9 +461,7 @@ public class GameService {
                 }
                 finishGameOnTimeout(game, whiteToMove);
                 Game savedGame = gameRepository.save(game);
-                ratingService.updateRatingsForGame(savedGame);
-                // Remove from lobby if it was created via matchmaking
-                removeLobbyGameByPlayers(savedGame.getPlayerWhite().getId(), savedGame.getPlayerBlack().getId());
+                onGameFinished(savedGame);
                 notifyGameUpdate(savedGame);
                 continue;
             }
@@ -485,16 +498,207 @@ public class GameService {
 
         Game savedGame = gameRepository.save(game);
         
-        // Update ratings
-        ratingService.updateRatingsForGame(savedGame);
+        onGameFinished(savedGame);
         
-        // Remove from lobby if it was created via matchmaking
-        removeLobbyGameByPlayers(savedGame.getPlayerWhite().getId(), savedGame.getPlayerBlack().getId());
-        
-        // Send WebSocket notification
         notifyGameUpdate(savedGame);
         
         return savedGame;
+    }
+
+    /**
+     * Rematch with swapped colors
+     */
+    @Transactional
+    public Game rematch(String gameId, UUID userId) {
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new RuntimeException("Game not found"));
+
+        if (!"finished".equals(game.getStatus())) {
+            throw new RuntimeException("Game must be finished to rematch");
+        }
+        if (!game.isPlayerInGame(userId)) {
+            throw new RuntimeException("User is not in this game");
+        }
+
+        return createGame(
+                game.getPlayerBlack().getId(),
+                game.getPlayerWhite().getId(),
+                game.getTimeControl(),
+                null,
+                game.isRated()
+        );
+    }
+
+    /**
+     * Abort game before 2 full moves (no rating change)
+     */
+    @Transactional
+    public Game abortGame(String gameId, UUID userId) {
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new RuntimeException("Game not found"));
+
+        if (!game.isActive()) {
+            throw new RuntimeException("Game is not active");
+        }
+        if (!game.isPlayerInGame(userId)) {
+            throw new RuntimeException("User is not in this game");
+        }
+
+        int moveCount = moveRepository.findByGameIdOrderByMoveNumber(gameId).size();
+        if (moveCount >= 4) {
+            throw new RuntimeException("Cannot abort after 2 full moves");
+        }
+
+        game.setStatus("abandoned");
+        game.setFinishedAt(LocalDateTime.now());
+        game.setResultReason("abort");
+        game.setDrawOfferedBy(null);
+        game.setTakebackOfferedBy(null);
+
+        Game savedGame = gameRepository.save(game);
+        onGameFinishedWithoutRating(savedGame);
+        notifyGameUpdate(savedGame);
+        return savedGame;
+    }
+
+    /**
+     * Offer takeback of the last move
+     */
+    @Transactional
+    public void offerTakeback(String gameId, UUID userId) {
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new RuntimeException("Game not found"));
+
+        if (!game.isActive()) {
+            throw new RuntimeException("Game is not active");
+        }
+        if (!game.isPlayerInGame(userId)) {
+            throw new RuntimeException("User is not in this game");
+        }
+
+        List<Move> moves = moveRepository.findByGameIdOrderByMoveNumber(gameId);
+        if (moves.isEmpty()) {
+            throw new RuntimeException("No moves to take back");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        game.setTakebackOfferedBy(user);
+        gameRepository.save(game);
+        notifyGameUpdate(game);
+    }
+
+    /**
+     * Respond to takeback offer
+     */
+    @Transactional
+    public void respondToTakeback(String gameId, UUID userId, boolean accept) {
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new RuntimeException("Game not found"));
+
+        if (!game.isActive()) {
+            throw new RuntimeException("Game is not active");
+        }
+        if (!game.isPlayerInGame(userId)) {
+            throw new RuntimeException("User is not in this game");
+        }
+        if (game.getTakebackOfferedBy() == null) {
+            throw new RuntimeException("No takeback offer pending");
+        }
+        if (game.getTakebackOfferedBy().getId().equals(userId)) {
+            throw new RuntimeException("Cannot respond to your own takeback offer");
+        }
+
+        if (accept) {
+            List<Move> moves = moveRepository.findByGameIdOrderByMoveNumber(gameId);
+            if (moves.isEmpty()) {
+                throw new RuntimeException("No moves to take back");
+            }
+            Move lastMove = moves.get(moves.size() - 1);
+            moveRepository.delete(lastMove);
+
+            List<Move> remaining = moveRepository.findByGameIdOrderByMoveNumber(gameId);
+            if (remaining.isEmpty()) {
+                game.setFenCurrent("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+                game.setLastMoveAt(null);
+            } else {
+                Move previous = remaining.get(remaining.size() - 1);
+                game.setFenCurrent(previous.getFen());
+            }
+            game.setTakebackOfferedBy(null);
+            game.setDrawOfferedBy(null);
+            gameRepository.save(game);
+        } else {
+            game.setTakebackOfferedBy(null);
+            gameRepository.save(game);
+        }
+
+        notifyGameUpdate(game);
+    }
+
+    /**
+     * Claim draw by stalemate or insufficient material
+     */
+    @Transactional
+    public Game claimDraw(String gameId, UUID userId) {
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new RuntimeException("Game not found"));
+
+        if (!game.isActive()) {
+            throw new RuntimeException("Game is not active");
+        }
+        if (!game.isPlayerInGame(userId)) {
+            throw new RuntimeException("User is not in this game");
+        }
+
+        Board board = new Board();
+        board.loadFromFen(game.getFenCurrent());
+
+        String reason;
+        if (board.isStaleMate()) {
+            reason = "stalemate";
+        } else if (isInsufficientMaterial(board)) {
+            reason = "insufficient material";
+        } else {
+            throw new RuntimeException("Draw cannot be claimed in this position");
+        }
+
+        game.setStatus("finished");
+        game.setFinishedAt(LocalDateTime.now());
+        game.setResult("1/2-1/2");
+        game.setResultReason(reason);
+        game.setDrawOfferedBy(null);
+        game.setTakebackOfferedBy(null);
+
+        Game savedGame = gameRepository.save(game);
+        onGameFinished(savedGame);
+        notifyGameUpdate(savedGame);
+        return savedGame;
+    }
+
+    private boolean isInsufficientMaterial(Board board) {
+        String placement = board.getFen().split(" ")[0];
+        int whiteNonKing = 0;
+        int blackNonKing = 0;
+
+        for (char c : placement.toCharArray()) {
+            if (c == '/' || Character.isDigit(c)) {
+                continue;
+            }
+            if (c == 'K' || c == 'k') {
+                continue;
+            }
+            if (c == 'P' || c == 'p' || c == 'R' || c == 'r' || c == 'Q' || c == 'q') {
+                return false;
+            }
+            if (Character.isUpperCase(c)) {
+                whiteNonKing++;
+            } else {
+                blackNonKing++;
+            }
+        }
+
+        return whiteNonKing <= 1 && blackNonKing <= 1;
     }
 
     /**
@@ -557,13 +761,8 @@ public class GameService {
             
             Game savedGame = gameRepository.save(game);
             
-            // Update ratings
-            ratingService.updateRatingsForGame(savedGame);
+            onGameFinished(savedGame);
             
-            // Remove from lobby if it was created via matchmaking
-            removeLobbyGameByPlayers(savedGame.getPlayerWhite().getId(), savedGame.getPlayerBlack().getId());
-            
-            // Notify via WebSocket
             notifyGameUpdate(savedGame);
         } else {
             // Decline draw
@@ -646,10 +845,16 @@ public class GameService {
         pgn.append("[Date \"").append(game.getCreatedAt().toLocalDate()).append("\"]\n");
         pgn.append("[White \"").append(game.getPlayerWhite().getUsername()).append("\"]\n");
         pgn.append("[Black \"").append(game.getPlayerBlack().getUsername()).append("\"]\n");
+        pgn.append("[WhiteElo \"").append(game.getPlayerWhite().getRating()).append("\"]\n");
+        pgn.append("[BlackElo \"").append(game.getPlayerBlack().getRating()).append("\"]\n");
         pgn.append("[TimeControl \"").append(game.getTimeControl()).append("\"]\n");
 
         if (game.getResult() != null) {
-            pgn.append("[Result \"").append(game.getResult()).append("\"]");
+            pgn.append("[Result \"").append(game.getResult()).append("\"]\n");
+        }
+
+        if (game.getResultReason() != null) {
+            pgn.append("[Termination \"").append(formatTermination(game.getResultReason())).append("\"]\n");
         }
 
         pgn.append("\n");
@@ -667,6 +872,19 @@ public class GameService {
         }
 
         return pgn.toString();
+    }
+
+    private String formatTermination(String resultReason) {
+        return switch (resultReason) {
+            case "checkmate" -> "Checkmate";
+            case "resignation" -> "Resignation";
+            case "timeout" -> "Time forfeit";
+            case "stalemate" -> "Stalemate";
+            case "agreement" -> "Agreement";
+            case "abort" -> "Aborted";
+            case "insufficient material" -> "Insufficient material";
+            default -> resultReason;
+        };
     }
 
     /**

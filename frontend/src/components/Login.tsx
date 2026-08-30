@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from '../i18n/LanguageContext';
 import './Auth.css';
@@ -34,7 +34,13 @@ export const Login: React.FC = () => {
 
   return (
     <div className="auth-container">
-      <div className="auth-box">
+      <div className="auth-layout">
+        <div className="auth-pitch">
+          <h2>ONCHESS</h2>
+          <p>{t('loginPitch')}</p>
+          <Link to="/puzzles/daily" className="btn btn-secondary">{t('dailyPuzzle')}</Link>
+        </div>
+        <div className="auth-box">
         <h1>{t('loginTitle')}</h1>
         {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleLogin}>
@@ -65,6 +71,7 @@ export const Login: React.FC = () => {
         <p className="auth-link">
           {t('noAccount')} <a href={registerLink}>{t('registerLink')}</a>
         </p>
+        </div>
       </div>
     </div>
   );
