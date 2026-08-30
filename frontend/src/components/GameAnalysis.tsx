@@ -7,6 +7,33 @@ import { apiService, User } from '../api';
 import { useTranslation } from '../i18n/LanguageContext';
 import { MoveAnalysis, GameAnalysisResult } from '../utils/analysisTypes';
 
+const uciToSan = (fen: string, uci?: string): string => {
+  if (!uci || uci.length < 4) return uci || '-';
+  try {
+    const chess = new Chess(fen);
+    const move = chess.move({
+      from: uci.slice(0, 2),
+      to: uci.slice(2, 4),
+      promotion: uci.length > 4 ? (uci[4] as 'q' | 'r' | 'b' | 'n') : undefined,
+    });
+    return move?.san || uci;
+  } catch {
+    return uci;
+  }
+};
+
+const buildFenBeforeMove = (startFen: string | undefined, analysisMoves: MoveAnalysis[], index: number): string => {
+  const chess = new Chess(startFen || undefined);
+  for (let i = 0; i < index; i++) {
+    try {
+      chess.move(analysisMoves[i].move);
+    } catch {
+      // ignore invalid SAN in replay
+    }
+  }
+  return chess.fen();
+};
+
 export const GameAnalysis: React.FC = () => {
   const { t } = useTranslation();
   const { gameId } = useParams<{ gameId: string }>();
@@ -178,6 +205,8 @@ export const GameAnalysis: React.FC = () => {
         move: m.move,
         evaluation: m.evaluation,
         bestMove: m.bestMove,
+        bestEvaluation: m.bestEvaluation,
+        centipawnLoss: m.centipawnLoss ?? 0,
         isMistake: m.mistake,
         isInaccuracy: m.inaccuracy,
         isBlunder: m.blunder,
@@ -200,6 +229,8 @@ export const GameAnalysis: React.FC = () => {
         blackMistakes: response.blackMistakes,
         whiteBlunders: response.whiteBlunders,
         blackBlunders: response.blackBlunders,
+        whiteInaccuracies: response.whiteInaccuracies,
+        blackInaccuracies: response.blackInaccuracies,
         moves: analysisResults,
         analysisProgress: 100,
       });
@@ -311,15 +342,8 @@ export const GameAnalysis: React.FC = () => {
     if (!analysis) return;
     handleMoveClick(analysis.moves.length - 1);
   };
-  const getEvalDeltas = (analysisMoves: MoveAnalysis[]) => {
-    if (analysisMoves.length === 0) return [];
-    return analysisMoves.map((move, index) => {
-      if (index === 0) {
-        return move.evaluation;
-      }
-      return move.evaluation - analysisMoves[index - 1].evaluation;
-    });
-  };
+  const getChartEvaluations = (analysisMoves: MoveAnalysis[]) =>
+    analysisMoves.map((move) => move.evaluation);
 
   const getPhaseValue = (chess: Chess) => {
     const board = chess.board();
@@ -437,20 +461,12 @@ export const GameAnalysis: React.FC = () => {
           : 'white')
     : 'white';
 
-  const analysisEvalDeltas = analysis ? getEvalDeltas(analysis.moves) : [];
-
   const renderEvalChart = (extraClassName: string) => {
     if (!analysis || analysis.moves.length === 0) {
       return null;
     }
 
-    const evalDeltas = getEvalDeltas(analysis.moves);
-    const cumulativeValues = evalDeltas.reduce<number[]>((acc, value, index) => {
-      const previous = index === 0 ? 0 : acc[index - 1];
-      acc.push(previous + value);
-      return acc;
-    }, []);
-    const chartValues = cumulativeValues;
+    const chartValues = getChartEvaluations(analysis.moves);
     const width = 600;
     const height = 140;
     const padding = 12;
@@ -523,7 +539,7 @@ export const GameAnalysis: React.FC = () => {
       .filter((segment) => segment.sign === 'neg')
       .map((segment) => buildAreaPath(segment.points));
 
-    const { midStart, endStart } = getPhaseBoundaries(analysis.moves.length, cumulativeValues);
+    const { midStart, endStart } = getPhaseBoundaries(analysis.moves.length, chartValues);
     const selectedIndex = selectedMoveIndex ?? null;
     const hoverIndex = hoveredMoveIndex ?? null;
     const activeIndex = hoverIndex !== null ? hoverIndex : selectedIndex;
@@ -630,7 +646,7 @@ export const GameAnalysis: React.FC = () => {
               style={{ left: `${(activePoint.x / width) * 100}%` }}
             >
               <div>Move {analysis.moves[hoverIndex].moveNumber}{analysis.moves[hoverIndex].isWhiteMove ? '.' : '...'} {analysis.moves[hoverIndex].move}</div>
-              <div>{(cumulativeValues[hoverIndex] / 100).toFixed(1)} eval</div>
+              <div>{(chartValues[hoverIndex] / 100).toFixed(1)} eval</div>
             </div>
           )}
         </div>
@@ -762,25 +778,29 @@ export const GameAnalysis: React.FC = () => {
               <div className="moves-table">
                 <div className="table-header">
                   <div className="col-move">{t('analysisMoveCol')}</div>
-                  <div className="col-eval">Δ {t('analysisEvalCol')}</div>
+                  <div className="col-eval">{t('analysisEvalCol')}</div>
                   <div className="col-type">{t('analysisTypeCol')}</div>
                   <div className="col-best">{t('analysisBestCol')}</div>
                 </div>
-                {analysis.moves.map((m, idx) => (
+                {analysis.moves.map((m, idx) => {
+                  const fenBefore = buildFenBeforeMove(game?.startFen, analysis.moves, idx);
+                  const bestSan = uciToSan(fenBefore, m.bestMove);
+                  const cpl = m.centipawnLoss ?? 0;
+                  return (
                   <div 
                     key={idx}
                     ref={(el) => { moveRowRefs.current[idx] = el; }}
-                    className={`table-row ${m.isBlunder ? 'blunder' : m.isMistake ? 'mistake' : ''} ${selectedMoveIndex === idx ? 'selected' : ''}`}
+                    className={`table-row ${m.isBlunder ? 'blunder' : m.isMistake ? 'mistake' : m.isInaccuracy ? 'inaccuracy' : ''} ${selectedMoveIndex === idx ? 'selected' : ''}`}
                     onClick={() => handleMoveClick(idx)}
                   >
                     <div className="col-move">{m.moveNumber}{m.isWhiteMove ? '.' : '...'} {m.move}</div>
-                    <div className="col-eval">{(analysisEvalDeltas[idx] / 100).toFixed(1)}</div>
+                    <div className="col-eval">{(m.evaluation / 100).toFixed(1)}</div>
                     <div className="col-type">
-                      {m.isBlunder ? '💣' : m.isMistake ? '❌' : '✓'}
+                      {m.isBlunder ? `💣 ${(cpl / 100).toFixed(1)}` : m.isMistake ? `❌ ${(cpl / 100).toFixed(1)}` : m.isInaccuracy ? `?! ${(cpl / 100).toFixed(1)}` : '✓'}
                     </div>
-                    <div className="col-best">{m.bestMove || '-'}</div>
+                    <div className="col-best">{bestSan}</div>
                   </div>
-                ))}
+                );})}
               </div>
             </div>
 
@@ -796,6 +816,7 @@ export const GameAnalysis: React.FC = () => {
                   <div className="accuracy-player-name">{game.whitePlayerName || game.whitePlayerId}</div>
                   <div className="accuracy-percent">{Math.round(analysis.whiteAccuracy)}%</div>
                   <div className="accuracy-details">
+                    <span>? {analysis.whiteInaccuracies ?? 0}</span>
                     <span>❌ {analysis.whiteMistakes}</span>
                     <span>💣 {analysis.whiteBlunders}</span>
                   </div>
@@ -809,6 +830,7 @@ export const GameAnalysis: React.FC = () => {
                   <div className="accuracy-player-name">{game.blackPlayerName || game.blackPlayerId}</div>
                   <div className="accuracy-percent">{Math.round(analysis.blackAccuracy)}%</div>
                   <div className="accuracy-details">
+                    <span>? {analysis.blackInaccuracies ?? 0}</span>
                     <span>❌ {analysis.blackMistakes}</span>
                     <span>💣 {analysis.blackBlunders}</span>
                   </div>

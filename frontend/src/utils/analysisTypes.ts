@@ -3,17 +3,18 @@
 export interface MoveAnalysis {
   moveNumber: number;
   isWhiteMove: boolean;
-  move: string; // e.g., "e2e4" or "e4"
-  evaluation: number; // Stockfish evaluation in centipawns
+  move: string;
+  evaluation: number;
   bestMove?: string;
   bestEvaluation?: number;
+  centipawnLoss?: number;
   alternatives?: {
     move: string;
     evaluation: number;
   }[];
-  isMistake: boolean; // Big blunder
-  isInaccuracy: boolean; // Small mistake
-  isBlunder: boolean; // Major mistake (evaluation drop > 200)
+  isMistake: boolean;
+  isInaccuracy: boolean;
+  isBlunder: boolean;
 }
 
 export interface GameAnalysisResult {
@@ -25,8 +26,10 @@ export interface GameAnalysisResult {
   blackMistakes: number;
   whiteBlunders: number;
   blackBlunders: number;
+  whiteInaccuracies?: number;
+  blackInaccuracies?: number;
   moves: MoveAnalysis[];
-  analysisProgress: number; // 0-100
+  analysisProgress: number;
 }
 
 export interface AnalysisProgress {
@@ -37,6 +40,6 @@ export interface AnalysisProgress {
 }
 
 // Evaluation thresholds
-export const BLUNDER_THRESHOLD = 200; // cp (centipawns)
-export const MISTAKE_THRESHOLD = 50; // cp
-export const INACCURACY_THRESHOLD = 20; // cp
+export const BLUNDER_THRESHOLD = 300;
+export const MISTAKE_THRESHOLD = 100;
+export const INACCURACY_THRESHOLD = 50;

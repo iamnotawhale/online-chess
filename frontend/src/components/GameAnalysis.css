@@ -494,6 +494,14 @@ zz
   background: rgba(249, 115, 22, 0.15);
 }
 
+.table-row.inaccuracy {
+  background: rgba(234, 179, 8, 0.08);
+}
+
+.table-row.inaccuracy:hover {
+  background: rgba(234, 179, 8, 0.12);
+}
+
 .col-move {
   font-weight: 600;
   color: var(--text);

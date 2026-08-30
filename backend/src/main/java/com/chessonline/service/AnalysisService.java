@@ -26,9 +26,9 @@ public class AnalysisService {
     private static final int INACCURACY_THRESHOLD = 50;    // 0.5 pawns - minor inaccuracy
     
     // Analysis parameters
-    private static final int DEFAULT_DEPTH = 8; // Reduced from 10 for faster analysis (3-4x faster per position)
+    private static final int DEFAULT_DEPTH = 12;
     private static final int MIN_DEPTH = 5;
-    private static final int MAX_DEPTH = 15;
+    private static final int MAX_DEPTH = 18;
     private static final int MAX_GAME_LENGTH_FOR_ANALYSIS = 200; // No hard limit, allow full games
 
     public AnalysisService(StockfishService stockfishService) {
@@ -68,6 +68,9 @@ public class AnalysisService {
             int whiteMistakes = 0, whiteBlunders = 0, whiteInaccuracies = 0;
             int blackMistakes = 0, blackBlunders = 0, blackInaccuracies = 0;
 
+            int whiteTotalCpl = 0;
+            int blackTotalCpl = 0;
+
             StockfishService.PositionEvaluation prevEval = null;
             int moveNumber = 1;
 
@@ -85,9 +88,9 @@ public class AnalysisService {
                 // Make the move
                 Move move = parseMove(board, sanMove);
                 if (move == null) {
-                    logger.error("Could not parse move: {}", sanMove);
-                    continue;
+                    throw new MoveGeneratorException("Could not parse move: " + sanMove);
                 }
+                String playedUci = move.toString();
                 board.doMove(move);
 
                 // Check if game ended with this move (checkmate or stalemate)
@@ -123,25 +126,15 @@ public class AnalysisService {
                     }
                 }
 
-                // Stockfish returns evaluation from perspective of side to move in the position
-                // We want to display evaluation from White's perspective (standard convention)
-                // After White's move: next side to move is Black, so Stockfish returns Black's perspective → invert
-                // After Black's move: next side to move is White, so Stockfish returns White's perspective → keep as is
-                // Exception: For checkmate on board, evaluation is already from White's perspective
                 int displayEvaluation;
-                int displayBestEvaluation;
-                
                 if (gameEnded && board.isMated()) {
-                    // Checkmate eval is already from White's perspective, don't invert
-                    displayEvaluation = afterEval.getEvaluation();
-                    displayBestEvaluation = isWhiteMove ? -prevEval.getEvaluation() : prevEval.getEvaluation();
+                    displayEvaluation = isWhiteMove ? 10000 : -10000;
                 } else {
-                    // Normal conversion with inversion for white moves
-                    displayEvaluation = isWhiteMove ? -afterEval.getEvaluation() : afterEval.getEvaluation();
-                    displayBestEvaluation = isWhiteMove ? -prevEval.getEvaluation() : prevEval.getEvaluation();
+                    displayEvaluation = toWhitePerspective(afterEval.getEvaluation(), !isWhiteMove);
                 }
 
-                // Create move analysis
+                int displayBestEvaluation = toWhitePerspective(prevEval.getEvaluation(), isWhiteMove);
+
                 MoveAnalysis analysis = new MoveAnalysis(
                     moveNumber,
                     isWhiteMove,
@@ -151,31 +144,33 @@ public class AnalysisService {
                 );
                 analysis.setBestEvaluation(displayBestEvaluation);
 
-                // Don't classify moves as mistakes if:
-                // 1. Mate/checkmate is detected
-                // 2. The move matches the recommended best move
-                // 3. Previous position was in checkmate
-                boolean isBestMove = sanMove.equals(prevEval.getBestMove());
-                int evaluationDelta = 0;
-                
-                if (!afterEval.isMate() && !isBestMove && !prevEval.isMate()) {
-                    // Calculate evaluation loss/gain (from perspective of player who made the move)
-                    evaluationDelta = calculateEvaluationDelta(prevEval.getEvaluation(), 
-                                                                   afterEval.getEvaluation(), 
-                                                                   isWhiteMove);
+                boolean isBestMove = playedUci.equalsIgnoreCase(prevEval.getBestMove());
+                int centipawnLoss = 0;
 
-                    // Classify the move
-                    if (evaluationDelta >= BLUNDER_THRESHOLD) {
+                if (!afterEval.isMate() && !prevEval.isMate() && !isBestMove) {
+                    int evalBeforeMover = prevEval.getEvaluation();
+                    int evalAfterMover = -afterEval.getEvaluation();
+                    centipawnLoss = Math.max(0, evalBeforeMover - evalAfterMover);
+
+                    if (centipawnLoss >= BLUNDER_THRESHOLD) {
                         analysis.setBlunder(true);
                         if (isWhiteMove) whiteBlunders++; else blackBlunders++;
-                    } else if (evaluationDelta >= MISTAKE_THRESHOLD) {
+                    } else if (centipawnLoss >= MISTAKE_THRESHOLD) {
                         analysis.setMistake(true);
                         if (isWhiteMove) whiteMistakes++; else blackMistakes++;
-                    } else if (evaluationDelta >= INACCURACY_THRESHOLD) {
+                    } else if (centipawnLoss >= INACCURACY_THRESHOLD) {
                         analysis.setInaccuracy(true);
                         if (isWhiteMove) whiteInaccuracies++; else blackInaccuracies++;
                     }
+
+                    if (isWhiteMove) {
+                        whiteTotalCpl += centipawnLoss;
+                    } else {
+                        blackTotalCpl += centipawnLoss;
+                    }
                 }
+
+                analysis.setCentipawnLoss(centipawnLoss);
 
                 moveAnalyses.add(analysis);
                 prevEval = afterEval;
@@ -191,16 +186,16 @@ public class AnalysisService {
                 }
 
                 long moveAnalysisTime = System.currentTimeMillis() - moveStartTime;
-                logger.debug("Analyzed move {}: {} (delta: {}cp, time: {}ms)", 
-                            moveNumber, sanMove, evaluationDelta, moveAnalysisTime);
+                logger.debug("Analyzed move {}: {} (cpl: {}cp, time: {}ms)", 
+                            moveNumber, sanMove, centipawnLoss, moveAnalysisTime);
             }
 
             // Calculate accuracies
             int whiteMovesCount = (int) moveAnalyses.stream().filter(MoveAnalysis::isWhiteMove).count();
             int blackMovesCount = (int) moveAnalyses.stream().filter(m -> !m.isWhiteMove()).count();
 
-            double whiteAccuracy = calculateAccuracy(whiteMovesCount, whiteInaccuracies, whiteMistakes, whiteBlunders);
-            double blackAccuracy = calculateAccuracy(blackMovesCount, blackInaccuracies, blackMistakes, blackBlunders);
+            double whiteAccuracy = calculateAccuracyFromAcpl(whiteMovesCount, whiteTotalCpl);
+            double blackAccuracy = calculateAccuracyFromAcpl(blackMovesCount, blackTotalCpl);
 
             // Build response
             AnalysisResponse response = new AnalysisResponse();
@@ -212,6 +207,8 @@ public class AnalysisService {
             response.setBlackMistakes(blackMistakes);
             response.setWhiteBlunders(whiteBlunders);
             response.setBlackBlunders(blackBlunders);
+            response.setWhiteInaccuracies(whiteInaccuracies);
+            response.setBlackInaccuracies(blackInaccuracies);
             response.setMoves(moveAnalyses);
 
             long totalTime = System.currentTimeMillis() - startTime;
@@ -244,32 +241,23 @@ public class AnalysisService {
     }
 
     /**
-     * Calculate evaluation delta - how much the position worsened from player's perspective
+     * Convert Stockfish score (side-to-move POV) to white POV.
      */
-    private int calculateEvaluationDelta(int evalBefore, int evalAfter, boolean isWhiteMove) {
-        int delta;
-        if (isWhiteMove) {
-            // White wants evaluation to increase
-            delta = evalBefore - evalAfter;
-        } else {
-            // Black wants evaluation to decrease
-            delta = evalAfter - evalBefore;
-        }
-        return Math.max(0, delta); // Only count negative changes as mistakes
+    private int toWhitePerspective(int evalSideToMove, boolean whiteToMove) {
+        return whiteToMove ? evalSideToMove : -evalSideToMove;
     }
 
     /**
-     * Calculate accuracy percentage based on move quality
-     * Formula: 100% - penalties for inaccuracies, mistakes, and blunders
+     * Lichess-style accuracy from average centipawn loss (ACPL).
      */
-    private double calculateAccuracy(int totalMoves, int inaccuracies, int mistakes, int blunders) {
-        if (totalMoves == 0) return 100.0;
-        
-        // Weight penalties: inaccuracy = 2%, mistake = 5%, blunder = 10%
-        double penalty = (inaccuracies * 2.0 + mistakes * 5.0 + blunders * 10.0) / totalMoves;
-        double accuracy = Math.max(0, 100.0 - penalty);
-        
-        return Math.round(accuracy * 10) / 10.0; // Round to 1 decimal place
+    private double calculateAccuracyFromAcpl(int totalMoves, int totalCentipawnLoss) {
+        if (totalMoves == 0) {
+            return 100.0;
+        }
+        double acpl = (double) totalCentipawnLoss / totalMoves;
+        double raw = 103.1668 * Math.exp(-0.04354 * acpl) - 3.1669;
+        double accuracy = Math.max(0, Math.min(100, raw));
+        return Math.round(accuracy * 10) / 10.0;
     }
 
     /**

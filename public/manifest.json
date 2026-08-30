@@ -2,12 +2,12 @@
   "name": "OnChess - Online Chess Game",
   "short_name": "OnChess",
   "description": "Play chess online: Player vs Player, Player vs Bot, and solve daily puzzles",
-  "start_url": "/",
+  "start_url": "/login",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "theme_color": "#333333",
-  "background_color": "#333333",
+  "theme_color": "#64748b",
+  "background_color": "#1e2533",
   "categories": ["games", "entertainment"],
   "icons": [
     {
@@ -55,7 +55,7 @@
       "name": "Play Game",
       "short_name": "Play",
       "description": "Start a new chess game",
-      "url": "/dashboard",
+      "url": "/play",
       "icons": [
         {
           "src": "/icons/shortcut-play-96x96.png",
@@ -68,7 +68,7 @@
       "name": "Daily Puzzle",
       "short_name": "Puzzle",
       "description": "Solve today's puzzle",
-      "url": "/puzzles",
+      "url": "/puzzles/daily",
       "icons": [
         {
           "src": "/icons/shortcut-puzzle-96x96.png",

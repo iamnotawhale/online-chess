@@ -36,8 +36,11 @@ const DEFAULT_AVATARS = [
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { t } = useTranslation();
   const { isAuthenticated, isLoading } = useAuth();
+  const location = useLocation();
   if (isLoading) return <div className="loading">{t('loading')}</div>;
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
+  if (isAuthenticated) return <>{children}</>;
+  const redirect = encodeURIComponent(location.pathname + location.search);
+  return <Navigate to={`/login?redirect=${redirect}`} replace />;
 };
 
 type HeaderProps = { themeMode: ThemeMode; onToggleTheme: () => void };

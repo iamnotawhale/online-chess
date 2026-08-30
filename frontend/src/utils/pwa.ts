@@ -19,6 +19,23 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
 
     console.log('[PWA] Service Worker registered successfully', registration);
 
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshing) return;
+      refreshing = true;
+      window.location.reload();
+    });
+
+    registration.addEventListener('updatefound', () => {
+      const installing = registration.installing;
+      if (!installing) return;
+      installing.addEventListener('statechange', () => {
+        if (installing.state === 'installed' && navigator.serviceWorker.controller) {
+          installing.postMessage({ type: 'SKIP_WAITING' });
+        }
+      });
+    });
+
     // Check for updates periodically
     setInterval(async () => {
       try {

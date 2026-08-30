@@ -51,6 +51,7 @@ export const Login: React.FC = () => {
               className="form-input"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
               required
               disabled={loading}
             />
@@ -62,6 +63,7 @@ export const Login: React.FC = () => {
               className="form-input"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
               required
               disabled={loading}
             />
@@ -71,7 +73,7 @@ export const Login: React.FC = () => {
           </button>
         </form>
         <p className="auth-link">
-          {t('noAccount')} <a href={registerLink}>{t('registerLink')}</a>
+          {t('noAccount')} <Link to={registerLink}>{t('registerLink')}</Link>
         </p>
         </div>
       </div>

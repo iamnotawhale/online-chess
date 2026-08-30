@@ -11,6 +11,8 @@ public class AnalysisResponse {
     private int blackMistakes;
     private int whiteBlunders;
     private int blackBlunders;
+    private int whiteInaccuracies;
+    private int blackInaccuracies;
     private List<MoveAnalysis> moves;
 
     public static class MoveAnalysis {
@@ -20,6 +22,7 @@ public class AnalysisResponse {
         private int evaluation;       // in centipawns
         private String bestMove;      // Best move in UCI format
         private Integer bestEvaluation;
+        private int centipawnLoss;
         private boolean isMistake;
         private boolean isInaccuracy;
         private boolean isBlunder;
@@ -53,6 +56,9 @@ public class AnalysisResponse {
 
         public Integer getBestEvaluation() { return bestEvaluation; }
         public void setBestEvaluation(Integer bestEvaluation) { this.bestEvaluation = bestEvaluation; }
+
+        public int getCentipawnLoss() { return centipawnLoss; }
+        public void setCentipawnLoss(int centipawnLoss) { this.centipawnLoss = centipawnLoss; }
 
         public boolean isMistake() { return isMistake; }
         public void setMistake(boolean mistake) { isMistake = mistake; }
@@ -90,6 +96,12 @@ public class AnalysisResponse {
 
     public int getBlackBlunders() { return blackBlunders; }
     public void setBlackBlunders(int blackBlunders) { this.blackBlunders = blackBlunders; }
+
+    public int getWhiteInaccuracies() { return whiteInaccuracies; }
+    public void setWhiteInaccuracies(int whiteInaccuracies) { this.whiteInaccuracies = whiteInaccuracies; }
+
+    public int getBlackInaccuracies() { return blackInaccuracies; }
+    public void setBlackInaccuracies(int blackInaccuracies) { this.blackInaccuracies = blackInaccuracies; }
 
     public List<MoveAnalysis> getMoves() { return moves; }
     public void setMoves(List<MoveAnalysis> moves) { this.moves = moves; }
