@@ -45,6 +45,13 @@ const NAV_ITEMS = [
   { to: '/friends', key: 'navFriends' },
 ] as const;
 
+const DESKTOP_NAV_ITEMS = [
+  { to: '/play', key: 'navPlay' },
+  { to: '/puzzles', key: 'navPuzzles' },
+  { to: '/education', key: 'navLearn' },
+  { to: '/friends', key: 'navFriends' },
+] as const;
+
 const Header: React.FC<HeaderProps> = ({ themeMode, onToggleTheme }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -83,6 +90,8 @@ const Header: React.FC<HeaderProps> = ({ themeMode, onToggleTheme }) => {
 
   const hideBottomNav = /^\/game\//.test(location.pathname);
 
+  const toggleLanguage = () => setLanguage(language === 'en' ? 'ru' : 'en');
+
   return (
     <>
       <header className="header">
@@ -104,11 +113,10 @@ const Header: React.FC<HeaderProps> = ({ themeMode, onToggleTheme }) => {
 
           {isAuthenticated && (
             <nav className="nav-desktop" aria-label="Main">
-              {NAV_ITEMS.map((item) => (
+              {DESKTOP_NAV_ITEMS.map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
-                  end={'end' in item ? item.end : undefined}
                   className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
                 >
                   {t(item.key)}
@@ -126,19 +134,23 @@ const Header: React.FC<HeaderProps> = ({ themeMode, onToggleTheme }) => {
                 🔍
               </button>
             )}
-            <div className="language-switcher">
-              <button type="button" className={`lang-btn ${language === 'en' ? 'active' : ''}`} onClick={() => setLanguage('en')}>EN</button>
-              <button type="button" className={`lang-btn ${language === 'ru' ? 'active' : ''}`} onClick={() => setLanguage('ru')}>RU</button>
-            </div>
+            <button
+              type="button"
+              className="lang-toggle"
+              onClick={toggleLanguage}
+              aria-label={language === 'en' ? 'Switch to Russian' : 'Switch to English'}
+              title={language === 'en' ? 'RU' : 'EN'}
+            >
+              {language.toUpperCase()}
+            </button>
             <button type="button" className="theme-toggle" onClick={onToggleTheme} aria-label={themeMode === 'dark' ? t('themeDark') : t('themeLight')}>
               <span className="theme-icon">{themeMode === 'dark' ? '🌙' : '☀️'}</span>
             </button>
             {isAuthenticated && user && (
               <div className="profile-menu-container">
-                <button type="button" className="profile-avatar-btn" onClick={() => setShowProfileMenu(!showProfileMenu)}>
+                <button type="button" className="profile-avatar-btn" onClick={() => setShowProfileMenu(!showProfileMenu)} title={user.username}>
                   <UserAvatar avatarUrl={user.avatarUrl} username={user.username} />
-                  <span className="username-text">{user.username}</span>
-                  {pendingChallenges > 0 && <span className="nav-badge">{pendingChallenges}</span>}
+                  {pendingChallenges > 0 && <span className="nav-badge profile-badge">{pendingChallenges}</span>}
                 </button>
                 {showProfileMenu && (
                   <div className="profile-dropdown">
