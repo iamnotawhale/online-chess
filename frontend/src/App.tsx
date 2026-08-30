@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { apiService } from './api';
+import { useAuth } from './context/AuthContext';
 import { Login } from './components/Login';
 import { Register } from './components/Register';
 import { Dashboard } from './components/Dashboard';
@@ -42,14 +42,7 @@ const DEFAULT_AVATARS = [
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { t } = useTranslation();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    setIsAuthenticated(!!token);
-    setIsLoading(false);
-  }, []);
+  const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
     return <div className="loading">{t('loading')}</div>;
@@ -66,36 +59,25 @@ type HeaderProps = {
 const Header: React.FC<HeaderProps> = ({ themeMode, onToggleTheme }) => {
   const navigate = useNavigate();
   const { language, setLanguage, t } = useTranslation();
-  const isAuthenticated = !!localStorage.getItem('authToken');
-  const [username, setUsername] = React.useState<string | null>(null);
-  const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null);
+  const { user, isAuthenticated, logout, refreshUser } = useAuth();
   const [showProfileMenu, setShowProfileMenu] = React.useState(false);
 
   React.useEffect(() => {
-    const fetchMe = () => {
-      if (isAuthenticated) {
-        apiService.getMe().then(user => {
-          setUsername(user.username);
-          setAvatarUrl(user.avatarUrl || null);
-        }).catch(() => {
-          setUsername(null);
-          setAvatarUrl(null);
-        });
-      }
+    const handleProfileUpdated = () => {
+      refreshUser().catch(() => undefined);
     };
-
-    fetchMe();
-
-    const handleProfileUpdated = () => fetchMe();
     window.addEventListener('profileUpdated', handleProfileUpdated);
     return () => window.removeEventListener('profileUpdated', handleProfileUpdated);
-  }, [isAuthenticated]);
+  }, [refreshUser]);
 
   const handleLogout = () => {
-    apiService.logout();
+    logout();
     setShowProfileMenu(false);
     navigate('/login');
   };
+
+  const username = user?.username ?? null;
+  const avatarUrl = user?.avatarUrl ?? null;
 
   const getInitials = (name: string) => {
     return name
@@ -254,8 +236,8 @@ function App() {
       <Header themeMode={themeMode} onToggleTheme={handleToggleTheme} />
       <main className="main-content">
         <Routes>
-          <Route path="/login" element={<Login onLoginSuccess={() => {}} />} />
-          <Route path="/register" element={<Register onRegisterSuccess={() => {}} />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route
             path="/"
             element={

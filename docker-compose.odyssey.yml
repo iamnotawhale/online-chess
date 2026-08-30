@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: chess_postgres_prod
+    restart: always
+    environment:
+      POSTGRES_DB: chessonline
+      POSTGRES_USER: chess
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - chess_network
+    ports:
+      - "127.0.0.1:5433:5432"
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile.prebuilt
+    container_name: chess_backend_prod
+    restart: always
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/chessonline
+      SPRING_DATASOURCE_USERNAME: chess
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      APP_FRONTEND_URL: ${FRONTEND_URL}
+      PUZZLE_CSV_PATH: /app/puzzles/lichess_db_puzzle.csv.zst
+      PUZZLE_MAX_LOAD: ${PUZZLE_MAX_LOAD:-250000}
+    volumes:
+      - ./puzzles:/app/puzzles:ro
+    depends_on:
+      - postgres
+    networks:
+      - chess_network
+    ports:
+      - "127.0.0.1:8082:8082"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile.prebuilt
+    container_name: chess_frontend_prod
+    restart: always
+    networks:
+      - chess_network
+    ports:
+      - "127.0.0.1:3000:80"
+
+volumes:
+  postgres_data:
+
+networks:
+  chess_network:
+    driver: bridge

@@ -1,4 +1,4 @@
-name: Deploy to Production
+name: Deploy to Odyssey
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -17,18 +17,24 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Create .env file from secret
+      - name: Create .env from secret
         run: |
-          echo "${{ secrets.ENV_FILE }}" > .env
-        env:
-          ENV_FILE: ${{ secrets.ENV_FILE }}
+          printf '%s\n' "${{ secrets.ENV_FILE }}" > .env
 
-      - name: Deploy via SSH
+      - name: Deploy to Odyssey
         env:
           HOST: ${{ secrets.SERVER_HOST }}
           USER: ${{ secrets.SERVER_USER }}
+          PORT: ${{ secrets.SERVER_PORT }}
         run: |
-          ssh -o StrictHostKeyChecking=no $USER@$HOST '
-            cd /opt/online-chess &&
-            ./deploy.sh
-          '
+          PORT="${PORT:-2222}"
+          scp -P "$PORT" -o StrictHostKeyChecking=no .env "${USER}@${HOST}:/opt/online-chess/.env"
+          ssh -p "$PORT" -o StrictHostKeyChecking=no "${USER}@${HOST}" <<'EOF'
+            set -e
+            cd /opt/online-chess
+            git fetch origin
+            git checkout main
+            git reset --hard origin/main
+            chmod +x deploy-odyssey.sh scripts/*.sh db/apply-migrations.sh
+            DEPLOY_FROM_CI=1 ./deploy-odyssey.sh
+          EOF

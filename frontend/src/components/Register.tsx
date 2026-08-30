@@ -1,15 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { apiService } from '../api';
+import { useAuth } from '../context/AuthContext';
 import { useTranslation } from '../i18n/LanguageContext';
 import './Auth.css';
 
-interface RegisterProps {
-  onRegisterSuccess: () => void;
-}
-
-export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
+export const Register: React.FC = () => {
   const { t } = useTranslation();
+  const { register } = useAuth();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -48,11 +45,10 @@ export const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
 
     setLoading(true);
     try {
-      await apiService.register({ username, email, password });
-      onRegisterSuccess();
+      await register({ username, email, password });
       navigate(redirectTo);
     } catch (err: any) {
-      setError(err.response?.data?.message || t('registerError'));
+      setError(err.response?.data?.message || err.response?.data?.error || t('registerError'));
     } finally {
       setLoading(false);
     }

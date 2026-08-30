@@ -1,9 +1,8 @@
 import axios, { AxiosInstance } from 'axios';
 
-interface LoginResponse {
+interface AuthResponse {
   token: string;
-  userId: string;
-  email: string;
+  user: User;
 }
 
 interface RegisterRequest {
@@ -140,6 +139,7 @@ const API_BASE_URL = getApiBaseUrl();
 class ApiService {
   private client: AxiosInstance;
   private token: string | null = null;
+  private unauthorizedHandler: (() => void) | null = null;
 
   constructor() {
     this.client = axios.create({
@@ -156,19 +156,27 @@ class ApiService {
       this.client.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
     }
 
-    // Interceptor to handle token changes and unauthorized responses
     this.client.interceptors.response.use(
       response => response,
       error => {
         if (error.response?.status === 401) {
-          this.logout();
+          const url = error.config?.url || '';
+          const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/register');
+          if (!isAuthEndpoint) {
+            this.logout();
+            this.unauthorizedHandler?.();
+          }
         }
         return Promise.reject(error);
       }
     );
   }
 
-  login(email: string, password: string): Promise<LoginResponse> {
+  setUnauthorizedHandler(handler: (() => void) | null): void {
+    this.unauthorizedHandler = handler;
+  }
+
+  login(email: string, password: string): Promise<AuthResponse> {
     return this.client.post('/auth/login', { email, password }).then(res => {
       this.token = res.data.token;
       localStorage.setItem('authToken', res.data.token);
@@ -177,7 +185,7 @@ class ApiService {
     });
   }
 
-  register(data: RegisterRequest): Promise<LoginResponse> {
+  register(data: RegisterRequest): Promise<AuthResponse> {
     return this.client.post('/auth/register', data).then(res => {
       this.token = res.data.token;
       localStorage.setItem('authToken', res.data.token);

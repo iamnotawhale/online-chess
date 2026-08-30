@@ -1,15 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { apiService } from '../api';
+import { useAuth } from '../context/AuthContext';
 import { useTranslation } from '../i18n/LanguageContext';
 import './Auth.css';
 
-interface LoginProps {
-  onLoginSuccess: () => void;
-}
-
-export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
+export const Login: React.FC = () => {
   const { t } = useTranslation();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -26,11 +23,10 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setLoading(true);
 
     try {
-      await apiService.login(email, password);
-      onLoginSuccess();
+      await login(email, password);
       navigate(redirectTo);
     } catch (err: any) {
-      setError(err.response?.data?.message || t('loginError'));
+      setError(err.response?.data?.message || err.response?.data?.error || t('loginError'));
     } finally {
       setLoading(false);
     }
