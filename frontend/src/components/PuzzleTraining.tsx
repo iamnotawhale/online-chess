@@ -53,7 +53,8 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
   const { puzzleId: puzzleIdFromPath } = useParams<{ puzzleId?: string }>();
   const puzzleStorageKey = 'puzzleTrainingActive';
   const hintStorageKey = 'puzzleTrainingHintUsed';
-  const [boardWidth, setBoardWidth] = useState(800);
+  const [boardWidth, setBoardWidth] = useState(320);
+  const puzzleStackRef = useRef<HTMLDivElement>(null);
   const [puzzle, setPuzzle] = useState<PuzzleData | null>(null);
   const [loading, setLoading] = useState(false);
   const [hintUsed, setHintUsed] = useState(false);
@@ -415,18 +416,24 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
   }, [isLessonRequested]);
 
   useEffect(() => {
+    const stack = puzzleStackRef.current;
+    if (!stack) return undefined;
+
     const updateBoardWidth = () => {
-      if (typeof window === 'undefined') return;
-      const isMobile = window.innerWidth <= 768;
-      const nextWidth = isMobile
-        ? Math.max(280, window.innerWidth - 24)
-        : Math.min(800, Math.max(280, window.innerWidth - 40));
-      setBoardWidth(nextWidth);
+      const width = stack.clientWidth;
+      if (width > 0) {
+        setBoardWidth(Math.max(280, Math.min(560, width)));
+      }
     };
 
     updateBoardWidth();
+    const observer = new ResizeObserver(updateBoardWidth);
+    observer.observe(stack);
     window.addEventListener('resize', updateBoardWidth);
-    return () => window.removeEventListener('resize', updateBoardWidth);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', updateBoardWidth);
+    };
   }, []);
 
   const loadRandomPuzzle = async (forceNew: boolean) => {
@@ -665,7 +672,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
 
   if (rushFinished && rushMode) {
     return (
-      <div className="page-wrapper puzzle-training-container">
+      <div className="page-wrapper page-wrapper--play puzzle-training-page">
         <h2>{t('puzzleRush')}</h2>
         <p>{t('score')}: <strong>{rushScore}</strong></p>
         <button type="button" className="btn btn-primary" onClick={() => navigate('/puzzles')}>{t('back')}</button>
@@ -675,7 +682,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
 
   if (loading && !puzzle) {
     return (
-      <div className="page-wrapper puzzle-training-container">
+      <div className="page-wrapper page-wrapper--play puzzle-training-page">
         <div className="puzzle-loading">{t('loading')}</div>
       </div>
     );
@@ -683,7 +690,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
 
   if (!puzzle) {
     return (
-      <div className="page-wrapper puzzle-training-container">
+      <div className="page-wrapper page-wrapper--play puzzle-training-page">
         <div className="puzzle-error">{t('puzzleNotAvailable')}</div>
       </div>
     );
@@ -751,7 +758,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
   // Show congratulations screen if lesson is completed
   if (isLessonCompleted) {
     return (
-      <div className="page-wrapper puzzle-training-container">
+      <div className="page-wrapper page-wrapper--play puzzle-training-page">
         <div className="lesson-completion-overlay">
           <div className="lesson-completion-card">
             <div className="completion-confetti">
@@ -812,7 +819,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
 
   if (rushFinished && rushMode) {
     return (
-      <div className="page-wrapper puzzle-training-container">
+      <div className="page-wrapper page-wrapper--play puzzle-training-page">
         <h2>{t('puzzleRush')}</h2>
         <p>{t('score')}: <strong>{rushScore}</strong></p>
         <button type="button" className="btn btn-primary" onClick={() => navigate('/puzzles')}>{t('back')}</button>
@@ -821,68 +828,70 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
   }
 
   return (
-    <div className="page-wrapper puzzle-training-container">
-      <div className="puzzle-header">
-        <h3>{rushMode ? t('puzzleRush') : t('puzzleTraining')}</h3>
-        {rushMode && (
-          <div className="rush-hud">
-            <span>⏱ {Math.floor(rushTimeLeft / 60)}:{String(rushTimeLeft % 60).padStart(2, '0')}</span>
-            <span>❤️ {rushLives}</span>
-            <span>{t('score')}: {rushScore}</span>
-          </div>
-        )}
-        {lessonProgress && lessonProgress.puzzlesTotal > 0 && (
-          <div className="lesson-progress-indicator">
-            <span className="progress-text">
-              {lessonProgress.puzzlesSolved}/{lessonProgress.puzzlesTotal}
-            </span>
-            <div className="progress-bar">
-              <div
-                className="progress-fill"
-                style={{
-                  width: `${(lessonProgress.puzzlesSolved / lessonProgress.puzzlesTotal) * 100}%`
-                }}
-              />
+    <div className="page-wrapper page-wrapper--play puzzle-training-page">
+      <div className="puzzle-page-head">
+        <h1 className="page-title">{rushMode ? t('puzzleRush') : t('puzzleTraining')}</h1>
+        <div className="puzzle-page-head__meta">
+          {rushMode && (
+            <div className="rush-hud">
+              <span>⏱ {Math.floor(rushTimeLeft / 60)}:{String(rushTimeLeft % 60).padStart(2, '0')}</span>
+              <span>❤️ {rushLives}</span>
+              <span>{t('score')}: {rushScore}</span>
             </div>
+          )}
+          {lessonProgress && lessonProgress.puzzlesTotal > 0 && (
+            <div className="lesson-progress-indicator">
+              <span className="progress-text">
+                {lessonProgress.puzzlesSolved}/{lessonProgress.puzzlesTotal}
+              </span>
+              <div className="progress-bar">
+                <div
+                  className="progress-fill"
+                  style={{
+                    width: `${(lessonProgress.puzzlesSolved / lessonProgress.puzzlesTotal) * 100}%`
+                  }}
+                />
+              </div>
+            </div>
+          )}
+          <div className="puzzle-header-actions">
+            {shareCopied && <span className="share-copied-label">{t('linkCopied')}</span>}
+            <button
+              type="button"
+              className="puzzle-share-btn"
+              onClick={handleSharePuzzle}
+              title={t('copy')}
+              aria-label={t('copy')}
+            >
+              🔗
+            </button>
+            <span className="puzzle-streak-badge">
+              🔥 {streak}
+            </span>
           </div>
-        )}
-        <div className="puzzle-header-actions">
-          {shareCopied && <span className="share-copied-label">{t('linkCopied')}</span>}
-          <button
-            type="button"
-            className="puzzle-share-btn"
-            onClick={handleSharePuzzle}
-            title={t('copy')}
-            aria-label={t('copy')}
-          >
-            🔗
-          </button>
-          <span className="puzzle-streak-badge">
-            🔥 {streak}
-          </span>
         </div>
       </div>
 
-      <div className="puzzle-training-layout">
-        <div className="puzzle-board-column">
-          {!rushMode && (
-            <div className="puzzle-board-meta">
-              <span className="puzzle-board-meta__item" title={t('puzzleInfo')}>
-                ⭐ {puzzle.rating}
+      <div className="puzzle-stack" ref={puzzleStackRef}>
+        {!rushMode && (
+          <div className="puzzle-board-meta">
+            <span className="puzzle-board-meta__item" title={t('puzzleInfo')}>
+              ⭐ {puzzle.rating}
+            </span>
+            {!isLessonMode && (
+              <span className="puzzle-board-meta__item puzzle-board-meta__user">
+                🧩 {puzzleElo ?? '—'}
+                {puzzleEloDelta !== 0 && (
+                  <span className={`puzzle-elo-change ${puzzleEloDelta > 0 ? 'positive' : 'negative'}`}>
+                    {puzzleEloDelta > 0 ? `+${puzzleEloDelta}` : puzzleEloDelta}
+                  </span>
+                )}
               </span>
-              {!isLessonMode && (
-                <span className="puzzle-board-meta__item puzzle-board-meta__user">
-                  🧩 {puzzleElo ?? '—'}
-                  {puzzleEloDelta !== 0 && (
-                    <span className={`puzzle-elo-change ${puzzleEloDelta > 0 ? 'positive' : 'negative'}`}>
-                      {puzzleEloDelta > 0 ? `+${puzzleEloDelta}` : puzzleEloDelta}
-                    </span>
-                  )}
-                </span>
-              )}
-            </div>
-          )}
+            )}
+          </div>
+        )}
 
+        <div className="puzzle-board-wrap">
           <ChessBoardWrapper
             position={displayPosition}
             game={game}
@@ -892,14 +901,15 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
             boardWidth={boardWidth}
             isInteractive={status !== 'complete' && !isViewingHistory}
           />
+        </div>
 
-          {messageKey && (
-            <div className={`puzzle-message ${status}`}>
-              {t(messageKey)}
-            </div>
-          )}
+        {messageKey && (
+          <div className={`puzzle-message ${status}`}>
+            {t(messageKey)}
+          </div>
+        )}
 
-          <div className="puzzle-panel puzzle-actions puzzle-actions--under-board">
+        <div className="puzzle-panel puzzle-actions">
             {status === 'complete' && (
               <button
                 type="button"
@@ -910,31 +920,32 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
                 {t('puzzleNext')}
               </button>
             )}
-            <button
-              type="button"
-              onClick={handleHint}
-              className="btn btn-secondary btn-sm"
-              disabled={hintUsed || status === 'complete'}
-            >
-              {t('puzzleShowSolution')}
-            </button>
-            <button
-              type="button"
-              onClick={handleSkip}
-              className="btn btn-secondary btn-sm"
-              disabled={status === 'complete'}
-            >
-              {t('puzzleSkip')}
-            </button>
             {status !== 'complete' && (
-              <button
-                type="button"
-                onClick={handleNextPuzzle}
-                className="btn btn-secondary btn-sm"
-                disabled={loading}
-              >
-                {t('puzzleNext')}
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={handleHint}
+                  className="btn btn-secondary btn-sm"
+                  disabled={hintUsed}
+                >
+                  {t('puzzleShowSolution')}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSkip}
+                  className="btn btn-secondary btn-sm"
+                >
+                  {t('puzzleSkip')}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNextPuzzle}
+                  className="btn btn-secondary btn-sm"
+                  disabled={loading}
+                >
+                  {t('puzzleNext')}
+                </button>
+              </>
             )}
           </div>
 
@@ -1080,7 +1091,6 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
               </div>
             </div>
           )}
-        </div>
       </div>
     </div>
   );
