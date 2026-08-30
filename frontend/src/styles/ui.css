@@ -748,11 +748,17 @@
   font-weight: 700;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 860px) {
   .page-wrapper {
     padding: var(--space-3) var(--space-3) calc(var(--bottom-nav-height) + var(--space-8));
   }
 
+  .page-wrapper--full.game-page {
+    padding-bottom: var(--space-4);
+  }
+}
+
+@media (max-width: 768px) {
   .page-hero {
     flex-direction: column;
     align-items: flex-start;

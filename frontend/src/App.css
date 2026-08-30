@@ -30,7 +30,7 @@
   align-items: center;
   gap: 12px;
   margin: 0;
-  cursor: default;
+  cursor: pointer;
   user-select: none;
   min-width: 0;
   flex: 0 1 auto;

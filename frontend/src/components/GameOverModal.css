@@ -27,8 +27,30 @@
 }
 
 .game-over-actions {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
   margin-top: 8px;
+}
+
+.game-over-actions .btn-primary,
+.game-over-actions .resign-btn,
+.game-over-actions .offer-draw-btn {
+  grid-column: span 2;
+}
+
+@media (max-width: 860px) {
+  .game-over-result {
+    font-size: 1.25rem;
+  }
+
+  .game-over-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .game-over-actions .btn-primary,
+  .game-over-actions .resign-btn,
+  .game-over-actions .offer-draw-btn {
+    grid-column: span 1;
+  }
 }

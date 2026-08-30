@@ -222,6 +222,16 @@
   font-size: 0.875rem;
 }
 
+@media (max-width: 860px) {
+  .layout-2col-board {
+    max-width: 100%;
+  }
+
+  .layout-2col-sidebar {
+    max-width: 100%;
+  }
+}
+
 @media (max-width: 1200px) {
   .layout-2col {
     grid-template-columns: 1fr;

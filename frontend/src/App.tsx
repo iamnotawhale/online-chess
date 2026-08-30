@@ -38,6 +38,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 type HeaderProps = { themeMode: ThemeMode; onToggleTheme: () => void };
 
 const NAV_ITEMS = [
+  { to: '/', key: 'navHome', end: true },
   { to: '/play', key: 'navPlay' },
   { to: '/puzzles', key: 'navPuzzles' },
   { to: '/education', key: 'navLearn' },
@@ -80,6 +81,8 @@ const Header: React.FC<HeaderProps> = ({ themeMode, onToggleTheme }) => {
 
   useEffect(() => setMobileOpen(false), [location.pathname]);
 
+  const hideBottomNav = /^\/game\//.test(location.pathname);
+
   return (
     <>
       <header className="header">
@@ -88,7 +91,7 @@ const Header: React.FC<HeaderProps> = ({ themeMode, onToggleTheme }) => {
             <button type="button" className="menu-toggle" aria-label="Menu" onClick={() => setMobileOpen(true)}>
               ☰
             </button>
-            <div className="logo" onClick={() => navigate(isAuthenticated ? '/play' : '/login')} role="banner">
+            <NavLink to={isAuthenticated ? '/' : '/login'} className="logo" aria-label={t('navHome')}>
               <div className="brand-logo">
                 <img src="/logo.svg" alt="" className="logo-icon" aria-hidden="true" />
               </div>
@@ -96,13 +99,18 @@ const Header: React.FC<HeaderProps> = ({ themeMode, onToggleTheme }) => {
                 <span className="brand-title">{t('onlineChess')}</span>
                 <span className="logo-text brand-subtitle">ONCHESS</span>
               </div>
-            </div>
+            </NavLink>
           </div>
 
           {isAuthenticated && (
             <nav className="nav-desktop" aria-label="Main">
               {NAV_ITEMS.map((item) => (
-                <NavLink key={item.to} to={item.to} className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={'end' in item ? item.end : undefined}
+                  className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
+                >
                   {t(item.key)}
                 </NavLink>
               ))}
@@ -158,13 +166,17 @@ const Header: React.FC<HeaderProps> = ({ themeMode, onToggleTheme }) => {
             {isAuthenticated ? (
               <nav className="mobile-links">
                 {NAV_ITEMS.map((item) => (
-                  <NavLink key={item.to} to={item.to} className={({ isActive }) => `mobile-item${isActive ? ' is-active' : ''}`}>
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    end={'end' in item ? item.end : undefined}
+                    className={({ isActive }) => `mobile-item${isActive ? ' is-active' : ''}`}
+                  >
                     {t(item.key)}
                   </NavLink>
                 ))}
                 <NavLink to="/arena" className={({ isActive }) => `mobile-item${isActive ? ' is-active' : ''}`}>{t('navArena')}</NavLink>
                 <NavLink to="/search" className={({ isActive }) => `mobile-item${isActive ? ' is-active' : ''}`}>{t('searchUsers')}</NavLink>
-                <NavLink to="/" className={({ isActive }) => `mobile-item${isActive ? ' is-active' : ''}`}>{t('overview')}</NavLink>
               </nav>
             ) : (
               <nav className="mobile-links">
@@ -181,11 +193,11 @@ const Header: React.FC<HeaderProps> = ({ themeMode, onToggleTheme }) => {
         <ChallengeInbox isOpen={showChallenges} onClose={() => setShowChallenges(false)} onUpdated={refreshChallenges} />
       )}
 
-      {isAuthenticated && (
+      {isAuthenticated && !hideBottomNav && (
         <nav className="bottom-nav" aria-label="Mobile">
+          <NavLink to="/" end className={({ isActive }) => `bottom-nav-item${isActive ? ' active' : ''}`}>🏠 {t('navHome')}</NavLink>
           <NavLink to="/play" className={({ isActive }) => `bottom-nav-item${isActive ? ' active' : ''}`}>♟ {t('navPlay')}</NavLink>
           <NavLink to="/puzzles" className={({ isActive }) => `bottom-nav-item${isActive ? ' active' : ''}`}>🧩 {t('navPuzzles')}</NavLink>
-          <NavLink to="/education" className={({ isActive }) => `bottom-nav-item${isActive ? ' active' : ''}`}>📚 {t('navLearn')}</NavLink>
           <NavLink to="/profile" className={({ isActive }) => `bottom-nav-item${isActive ? ' active' : ''}`}>👤 {t('profile')}</NavLink>
         </nav>
       )}

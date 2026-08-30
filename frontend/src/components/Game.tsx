@@ -849,7 +849,7 @@ export const GameView: React.FC = () => {
   const incrementSeconds = getIncrementSeconds(game.timeControl);
 
   return (
-    <div className="page-wrapper page-wrapper--full">
+    <div className="page-wrapper page-wrapper--full game-page">
       {toast && (
         <div className={`game-toast ${toast.type || 'info'}`}>
           {toast.message}
@@ -958,7 +958,7 @@ export const GameView: React.FC = () => {
           ) : (
             <div className="player-info black-player">
               <div className="player-name">
-                <strong>♙ {t('blacks')}:</strong> {game.blackPlayerName || game.blackPlayerId}
+                <strong>♚ {t('blacks')}:</strong> {game.blackPlayerName || game.blackPlayerId}
                 {showBlackYouBadge && <span className="you-badge">{t('you')}</span>}
               </div>
               <div className="player-time">{formatTime(blackTimeLeftMs)}</div>
@@ -1122,7 +1122,7 @@ export const GameView: React.FC = () => {
 
         
         </div>
-        
+
         {/* Promotion Modal */}
         <Modal
           isOpen={promotionDialogOpen && !!promotionData && !!game && !!currentUser}
@@ -1165,17 +1165,18 @@ export const GameView: React.FC = () => {
             </div>
           )}
         </Modal>
-        <GameOverModal
-          isOpen={showGameOverModal && !!game.result}
-          gameId={game.id}
-          result={game.result || '*'}
-          resultReason={game.resultReason ? getResultReasonLabel(game.resultReason) : undefined}
-          opponentName={userIsWhite ? game.blackPlayerName : game.whitePlayerName}
-          onRematch={isParticipant && !isBotGame ? handleRematch : undefined}
-          rematchLoading={rematchLoading}
-          onClose={() => setShowGameOverModal(false)}
-        />
       </div>
+
+      <GameOverModal
+        isOpen={showGameOverModal && !!game.result}
+        gameId={game.id}
+        result={game.result || '*'}
+        resultReason={game.resultReason ? getResultReasonLabel(game.resultReason) : undefined}
+        opponentName={userIsWhite ? game.blackPlayerName : game.whitePlayerName}
+        onRematch={isParticipant && !isBotGame ? handleRematch : undefined}
+        rematchLoading={rematchLoading}
+        onClose={() => setShowGameOverModal(false)}
+      />
     </div>
   );
 };

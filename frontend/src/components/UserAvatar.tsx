@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { findAvatarPreset, getInitials, isExternalAvatarUrl } from '../utils/avatars';
 
 type UserAvatarProps = {
@@ -14,6 +14,12 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
   className = 'avatar-circle',
   iconClassName = 'avatar-icon',
 }) => {
+  const [imgFailed, setImgFailed] = useState(false);
+
+  useEffect(() => {
+    setImgFailed(false);
+  }, [avatarUrl]);
+
   const preset = findAvatarPreset(avatarUrl);
 
   if (preset) {
@@ -24,10 +30,10 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
     );
   }
 
-  if (avatarUrl && isExternalAvatarUrl(avatarUrl)) {
+  if (avatarUrl && isExternalAvatarUrl(avatarUrl) && !imgFailed) {
     return (
       <div className={`${className} avatar-image`}>
-        <img src={avatarUrl} alt="" />
+        <img src={avatarUrl} alt="" onError={() => setImgFailed(true)} />
       </div>
     );
   }
