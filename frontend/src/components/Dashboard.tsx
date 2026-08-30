@@ -59,10 +59,16 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  const formatDateTime = (dateString?: string) => {
+  const formatGameDate = (dateString?: string) => {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleString();
+    return date.toLocaleString(undefined, {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
   const getResultReasonLabel = (reason?: string): string => {
@@ -121,11 +127,13 @@ export const Dashboard: React.FC = () => {
                       const opponentName = isWhite ? game.blackUsername : game.whiteUsername;
                       return (
                         <div key={game.id} className="game-card game-card--active">
-                          <span className="game-card__result game-card__status" aria-label={t('active')}>●</span>
-                          <div className="game-card__player">
-                            <span className="game-card__opponent">{t('vs')} {opponentName || t('waiting')}</span>
+                          <span className="game-card__badge game-card__badge--live" aria-label={t('active')}>●</span>
+                          <div className="game-card__body">
+                            <div className="game-card__line1">
+                              <span className="game-card__opponent">{t('vs')} {opponentName || t('waiting')}</span>
+                              <span className="game-card__meta">{game.timeControl}</span>
+                            </div>
                           </div>
-                          <span className="game-card__meta">{game.timeControl}</span>
                           <button type="button" className="btn btn-primary btn-sm game-card__action" onClick={() => navigate(`/game/${game.id}`)}>{t('play')}</button>
                         </div>
                       );
@@ -148,22 +156,26 @@ export const Dashboard: React.FC = () => {
                       const cardClass = won ? 'game-card--won' : lost ? 'game-card--lost' : 'game-card--draw';
                       return (
                         <div key={game.id} className={`game-card ${cardClass}`}>
-                          <span className="game-card__result">{game.result === '1/2-1/2' ? '½' : game.result?.charAt(0)}</span>
-                          <div className="game-card__player">
-                            <span className="game-card__opponent">{opponentName}</span>
-                            {game.resultReason && (
-                              <span className="game-card__reason">{getResultReasonLabel(game.resultReason)}</span>
-                            )}
+                          <span className="game-card__badge">
+                            {game.result === '1/2-1/2' ? '½' : game.result?.charAt(0)}
+                          </span>
+                          <div className="game-card__body">
+                            <div className="game-card__line1">
+                              <span className="game-card__opponent">{opponentName}</span>
+                              {game.ratingChange != null && (
+                                <span className={`rating-delta ${game.ratingChange >= 0 ? 'positive' : 'negative'}`}>
+                                  {game.ratingChange >= 0 ? '+' : ''}{game.ratingChange}
+                                </span>
+                              )}
+                            </div>
+                            <div className="game-card__line2">
+                              {game.resultReason && (
+                                <span>{getResultReasonLabel(game.resultReason)}</span>
+                              )}
+                              {game.timeControl && <span>{game.timeControl}</span>}
+                              <span className="game-card__date">{formatGameDate(game.finishedAt)}</span>
+                            </div>
                           </div>
-                          {game.ratingChange != null ? (
-                            <span className={`rating-delta ${game.ratingChange >= 0 ? 'positive' : 'negative'}`}>
-                              {game.ratingChange >= 0 ? '+' : ''}{game.ratingChange}
-                            </span>
-                          ) : (
-                            <span className="game-card__meta-spacer" aria-hidden="true" />
-                          )}
-                          <span className="game-card__meta">{game.timeControl}</span>
-                          <span className="game-card__date">{formatDateTime(game.finishedAt)}</span>
                           <button type="button" className="btn btn-ghost btn-sm game-card__action" onClick={() => navigate(`/analysis/${game.id}`)}>{t('analysis')}</button>
                         </div>
                       );

@@ -57,6 +57,39 @@
 .auth-box .form-group input,
 .auth-box .form-input {
   width: 100%;
+  box-sizing: border-box;
+  height: 44px;
+  padding: 0 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  transition: border-color var(--trans-fast), box-shadow var(--trans-fast), background-color var(--trans-fast);
+}
+
+.auth-box .form-input:hover {
+  border-color: var(--accent-ink);
+}
+
+.auth-box .form-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--focus-ring-tight);
+  background: var(--surface);
+}
+
+.auth-box .form-input::placeholder {
+  color: var(--muted-2);
+}
+
+.auth-box .form-input:-webkit-autofill,
+.auth-box .form-input:-webkit-autofill:hover,
+.auth-box .form-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text);
+  box-shadow: 0 0 0 1000px var(--surface) inset;
+  transition: background-color 9999s ease-out 0s;
 }
 
 .auth-box button[type='submit'] {
@@ -104,7 +137,8 @@
 
 @media (max-width: 768px) {
   .auth-layout { grid-template-columns: 1fr; }
-  .auth-pitch { text-align: center; }
+  .auth-pitch { display: none; }
+  .auth-box { max-width: 100%; }
 }
 
 @media (max-width: 480px) {

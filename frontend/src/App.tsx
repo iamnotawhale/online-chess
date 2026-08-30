@@ -20,18 +20,10 @@ import { ArenaPage } from './components/ArenaPage';
 import { ChallengeInbox } from './components/ChallengeInbox';
 import { useTranslation } from './i18n/LanguageContext';
 import { apiService } from './api';
+import { UserAvatar } from './components/UserAvatar';
 import './App.css';
 
 type ThemeMode = 'light' | 'dark';
-
-const DEFAULT_AVATARS = [
-  { id: 'king-gold', icon: '♔', gradient: 'linear-gradient(135deg, #C9A46A, #B58B52)' },
-  { id: 'queen-purple', icon: '♕', gradient: 'linear-gradient(135deg, #9B8CCB, #7E6FB1)' },
-  { id: 'rook-blue', icon: '♖', gradient: 'linear-gradient(135deg, #7C93B8, #5F779C)' },
-  { id: 'bishop-green', icon: '♗', gradient: 'linear-gradient(135deg, #7FAF9B, #5E8F7C)' },
-  { id: 'knight-red', icon: '♘', gradient: 'linear-gradient(135deg, #C98686, #AA6A6A)' },
-  { id: 'pawn-gray', icon: '♙', gradient: 'linear-gradient(135deg, #808895, #6B7380)' },
-];
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { t } = useTranslation();
@@ -88,26 +80,6 @@ const Header: React.FC<HeaderProps> = ({ themeMode, onToggleTheme }) => {
 
   useEffect(() => setMobileOpen(false), [location.pathname]);
 
-  const renderAvatar = () => {
-    const defaultAvatar = DEFAULT_AVATARS.find((a) => a.id === user?.avatarUrl);
-    if (defaultAvatar) {
-      return (
-        <div className="avatar-circle" style={{ background: defaultAvatar.gradient }}>
-          <span className="avatar-icon">{defaultAvatar.icon}</span>
-        </div>
-      );
-    }
-    if (user?.avatarUrl) {
-      return (
-        <div className="avatar-circle avatar-image">
-          <img src={user.avatarUrl} alt="" />
-        </div>
-      );
-    }
-    const initials = (user?.username || '').split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2);
-    return <div className="avatar-circle">{initials}</div>;
-  };
-
   return (
     <>
       <header className="header">
@@ -156,7 +128,7 @@ const Header: React.FC<HeaderProps> = ({ themeMode, onToggleTheme }) => {
             {isAuthenticated && user && (
               <div className="profile-menu-container">
                 <button type="button" className="profile-avatar-btn" onClick={() => setShowProfileMenu(!showProfileMenu)}>
-                  {renderAvatar()}
+                  <UserAvatar avatarUrl={user.avatarUrl} username={user.username} />
                   <span className="username-text">{user.username}</span>
                   {pendingChallenges > 0 && <span className="nav-badge">{pendingChallenges}</span>}
                 </button>

@@ -30,13 +30,7 @@ interface FriendshipStatus {
   status: string;
 }
 
-const DEFAULT_AVATARS = [
-  { id: 'king-gold', icon: '♔', gradient: 'linear-gradient(135deg, #C9A46A, #B58B52)' },
-  { id: 'queen-purple', icon: '♕', gradient: 'linear-gradient(135deg, #9B8CCB, #7E6FB1)' },
-  { id: 'rook-blue', icon: '♖', gradient: 'linear-gradient(135deg, #7C93B8, #5F779C)' },
-  { id: 'bishop-green', icon: '♗', gradient: 'linear-gradient(135deg, #7FAF9B, #5E8F7C)' },
-  { id: 'knight-red', icon: '♘', gradient: 'linear-gradient(135deg, #C98686, #AA6A6A)' },
-];
+import { DEFAULT_AVATARS, isExternalAvatarUrl } from '../utils/avatars';
 
 export const PublicProfile: React.FC = () => {
   const { username } = useParams<{ username: string }>();
@@ -225,13 +219,12 @@ export const PublicProfile: React.FC = () => {
   };
 
   const getAvatarDisplay = () => {
-    if (profile?.avatarUrl?.startsWith('http')) {
+    if (profile?.avatarUrl && isExternalAvatarUrl(profile.avatarUrl)) {
       return <img src={profile.avatarUrl} alt={profile.username} className="avatar-image" />;
     }
-    
-    const avatarId = profile?.avatarUrl;
-    const defaultAvatar = DEFAULT_AVATARS.find(a => a.id === avatarId);
-    
+
+    const defaultAvatar = DEFAULT_AVATARS.find((a) => a.id === profile?.avatarUrl);
+
     if (defaultAvatar) {
       return (
         <div className="avatar-placeholder" style={{ background: defaultAvatar.gradient }}>
@@ -239,7 +232,7 @@ export const PublicProfile: React.FC = () => {
         </div>
       );
     }
-    
+
     return (
       <div className="avatar-placeholder" style={{ background: 'linear-gradient(135deg, #808895, #6B7380)' }}>
         <span>♙</span>

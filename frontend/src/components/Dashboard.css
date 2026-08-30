@@ -36,31 +36,30 @@
 
 .game-card__result {
   font-weight: 800;
-  font-size: 1rem;
+  font-size: 0.875rem;
   color: var(--text);
-  width: 1.25rem;
-  text-align: center;
   flex-shrink: 0;
 }
 
 .game-card__opponent {
   font-weight: 600;
   color: var(--text);
-  flex: 1;
   min-width: 0;
 }
 
 .game-card__date {
   color: var(--muted-2);
-  font-size: 0.75rem;
+  font-size: inherit;
   white-space: nowrap;
 }
 
 .rating-delta {
   font-weight: 700;
-  font-size: 0.8125rem;
-  padding: 2px var(--space-2);
+  font-size: 0.72rem;
+  padding: 1px 6px;
   border-radius: var(--r-sm);
+  flex-shrink: 0;
+  line-height: 1.4;
 }
 
 .rating-delta.positive {
