@@ -46,8 +46,6 @@ function normalizeRatingFilter(filter: { min: number; max: number }) {
   return { min: clampedMin, max: clampedMax };
 }
 
-const THEME_OPTIONS = ['fork', 'pin', 'mate', 'skewer', 'discoveredAttack', 'sacrifice'];
-
 export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = false }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -80,7 +78,6 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
   const [currentMoveIndex, setCurrentMoveIndex] = useState<number>(-1);
   const [isViewingHistory, setIsViewingHistory] = useState(false);
   const [displayPosition, setDisplayPosition] = useState<string>('start');
-  const [selectedThemes, setSelectedThemes] = useState<string[]>([]);
   const [, setRushSessionId] = useState<string | null>(null);
   const [rushScore, setRushScore] = useState(0);
   const [rushLives, setRushLives] = useState(3);
@@ -525,7 +522,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
       const data = await apiService.getRandomPuzzle(
         ratingFilter.min,
         ratingFilter.max,
-        selectedThemes.length > 0 ? selectedThemes : undefined
+        undefined
       );
       setPuzzle(data);
       setPuzzleElo(typeof data.userPuzzleRating === 'number' ? data.userPuzzleRating : null);
@@ -668,7 +665,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
 
   if (rushFinished && rushMode) {
     return (
-      <div className="page-wrapper page-wrapper--full puzzle-training-container">
+      <div className="page-wrapper puzzle-training-container">
         <h2>{t('puzzleRush')}</h2>
         <p>{t('score')}: <strong>{rushScore}</strong></p>
         <button type="button" className="btn btn-primary" onClick={() => navigate('/puzzles')}>{t('back')}</button>
@@ -678,7 +675,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
 
   if (loading && !puzzle) {
     return (
-      <div className="page-wrapper page-wrapper--full puzzle-training-container">
+      <div className="page-wrapper puzzle-training-container">
         <div className="puzzle-loading">{t('loading')}</div>
       </div>
     );
@@ -686,7 +683,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
 
   if (!puzzle) {
     return (
-      <div className="page-wrapper page-wrapper--full puzzle-training-container">
+      <div className="page-wrapper puzzle-training-container">
         <div className="puzzle-error">{t('puzzleNotAvailable')}</div>
       </div>
     );
@@ -754,7 +751,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
   // Show congratulations screen if lesson is completed
   if (isLessonCompleted) {
     return (
-      <div className="page-wrapper page-wrapper--full puzzle-training-container">
+      <div className="page-wrapper puzzle-training-container">
         <div className="lesson-completion-overlay">
           <div className="lesson-completion-card">
             <div className="completion-confetti">
@@ -815,7 +812,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
 
   if (rushFinished && rushMode) {
     return (
-      <div className="page-wrapper page-wrapper--full puzzle-training-container">
+      <div className="page-wrapper puzzle-training-container">
         <h2>{t('puzzleRush')}</h2>
         <p>{t('score')}: <strong>{rushScore}</strong></p>
         <button type="button" className="btn btn-primary" onClick={() => navigate('/puzzles')}>{t('back')}</button>
@@ -824,7 +821,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
   }
 
   return (
-    <div className="page-wrapper page-wrapper--full puzzle-training-container">
+    <div className="page-wrapper puzzle-training-container">
       <div className="puzzle-header">
         <h3>{rushMode ? t('puzzleRush') : t('puzzleTraining')}</h3>
         {rushMode && (
@@ -840,10 +837,10 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
               {lessonProgress.puzzlesSolved}/{lessonProgress.puzzlesTotal}
             </span>
             <div className="progress-bar">
-              <div 
-                className="progress-fill" 
-                style={{ 
-                  width: `${(lessonProgress.puzzlesSolved / lessonProgress.puzzlesTotal) * 100}%` 
+              <div
+                className="progress-fill"
+                style={{
+                  width: `${(lessonProgress.puzzlesSolved / lessonProgress.puzzlesTotal) * 100}%`
                 }}
               />
             </div>
@@ -866,8 +863,26 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
         </div>
       </div>
 
-      <div className="puzzle-training-grid">
-        <div className="puzzle-board-section">
+      <div className="puzzle-training-layout">
+        <div className="puzzle-board-column">
+          {!rushMode && (
+            <div className="puzzle-board-meta">
+              <span className="puzzle-board-meta__item" title={t('puzzleInfo')}>
+                ⭐ {puzzle.rating}
+              </span>
+              {!isLessonMode && (
+                <span className="puzzle-board-meta__item puzzle-board-meta__user">
+                  🧩 {puzzleElo ?? '—'}
+                  {puzzleEloDelta !== 0 && (
+                    <span className={`puzzle-elo-change ${puzzleEloDelta > 0 ? 'positive' : 'negative'}`}>
+                      {puzzleEloDelta > 0 ? `+${puzzleEloDelta}` : puzzleEloDelta}
+                    </span>
+                  )}
+                </span>
+              )}
+            </div>
+          )}
+
           <ChessBoardWrapper
             position={displayPosition}
             game={game}
@@ -883,29 +898,8 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
               {t(messageKey)}
             </div>
           )}
-        </div>
 
-        <div className="puzzle-sidebar">
-          <div className="puzzle-container puzzle-info-section">
-            <div className="puzzle-rating">⭐ {puzzle.rating}</div>
-            
-            <div className="puzzle-themes">
-              <span className="puzzle-theme-tag">
-                {playerColor === 'white' ? 'white' : 'black'}
-              </span>
-              {puzzle.themes.map((theme, idx) => (
-                <span key={idx} className="puzzle-theme-tag">{theme}</span>
-              ))}
-            </div>
-
-            {puzzle.alreadySolved && (
-              <div className="puzzle-solved-badge">
-                ✓ {t('puzzleAlreadySolved')}
-              </div>
-            )}
-          </div>
-
-          <div className="puzzle-container puzzle-actions">
+          <div className="puzzle-panel puzzle-actions puzzle-actions--under-board">
             {status === 'complete' && (
               <button
                 type="button"
@@ -916,24 +910,26 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
                 {t('puzzleNext')}
               </button>
             )}
-            <button 
-              onClick={handleHint} 
+            <button
+              type="button"
+              onClick={handleHint}
               className="btn btn-secondary btn-sm"
               disabled={hintUsed || status === 'complete'}
             >
               {t('puzzleShowSolution')}
             </button>
-            <button 
-              onClick={handleSkip} 
+            <button
+              type="button"
+              onClick={handleSkip}
               className="btn btn-secondary btn-sm"
               disabled={status === 'complete'}
             >
               {t('puzzleSkip')}
             </button>
             {status !== 'complete' && (
-              <button 
+              <button
                 type="button"
-                onClick={handleNextPuzzle} 
+                onClick={handleNextPuzzle}
                 className="btn btn-secondary btn-sm"
                 disabled={loading}
               >
@@ -943,31 +939,35 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
           </div>
 
           {moveHistory.length > 0 && (
-            <div className="puzzle-container puzzle-moves-history">
+            <div className="puzzle-panel puzzle-moves-history">
               <div className="moves-controls">
-                <button 
-                  onClick={goToStart} 
+                <button
+                  type="button"
+                  onClick={goToStart}
                   disabled={currentMoveIndex === -1}
                   title={t('toStart')}
                 >
                   ⏮
                 </button>
-                <button 
-                  onClick={goToPreviousMove} 
+                <button
+                  type="button"
+                  onClick={goToPreviousMove}
                   disabled={currentMoveIndex <= -1}
                   title={t('previous')}
                 >
                   ◀
                 </button>
-                <button 
-                  onClick={goToNextMove} 
+                <button
+                  type="button"
+                  onClick={goToNextMove}
                   disabled={currentMoveIndex >= moveHistory.length - 1}
                   title={t('next')}
                 >
                   ▶
                 </button>
-                <button 
-                  onClick={goToLatest} 
+                <button
+                  type="button"
+                  onClick={goToLatest}
                   disabled={!isViewingHistory}
                   title={t('toLatest')}
                 >
@@ -1007,86 +1007,72 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
               </div>
             </div>
           )}
-          {!isLessonMode && !rushMode && (
-            <div className="puzzle-container puzzle-theme-filter">
-              <label>{t('puzzleDifficulty')}</label>
-              <div className="theme-chips">
-                {THEME_OPTIONS.map((theme) => (
-                  <button
-                    key={theme}
-                    type="button"
-                    className={`theme-chip ${selectedThemes.includes(theme) ? 'active' : ''}`}
-                    onClick={() => setSelectedThemes((prev) =>
-                      prev.includes(theme) ? prev.filter((x) => x !== theme) : [...prev, theme]
-                    )}
-                  >
-                    {theme}
-                  </button>
+
+          <div className="puzzle-panel puzzle-tags">
+            <div className="puzzle-themes">
+              <span className="puzzle-theme-tag">
+                {playerColor === 'white' ? 'white' : 'black'}
+              </span>
+              {puzzle.themes.map((theme, idx) => (
+                <span key={idx} className="puzzle-theme-tag">{theme}</span>
+              ))}
+            </div>
+            {puzzle.alreadySolved && (
+              <div className="puzzle-solved-badge">
+                ✓ {t('puzzleAlreadySolved')}
+              </div>
+            )}
+          </div>
+
+          {!isLessonMode && !rushMode && ratingHistory.length > 0 && (
+            <div className="puzzle-panel puzzle-elo-history-panel">
+              <span className="puzzle-elo-history-label">{t('puzzleYourStats')}</span>
+              <div className="puzzle-elo-history">
+                {ratingHistory.map((delta, idx) => (
+                  <span key={`${delta}-${idx}`} className={`puzzle-elo-pill ${getDeltaTone(delta)}`}>
+                    {delta > 0 ? `+${delta}` : delta}
+                  </span>
                 ))}
               </div>
             </div>
           )}
-          {!isLessonMode && (
-            <div className="puzzle-container puzzle-stats">
-              <div className="stats-row">
-                <div className="stat">
-                  <span className="stat-value">{puzzleElo ?? '-'}</span>
-                  <span className="stat-label">{t('puzzleElo')}</span>
-                  {puzzleEloDelta !== 0 && (
-                    <span className={`puzzle-elo-change ${puzzleEloDelta > 0 ? 'positive' : 'negative'}`}>
-                      {puzzleEloDelta > 0 ? `+${puzzleEloDelta}` : puzzleEloDelta}
-                    </span>
-                  )}
-                </div>
-              </div>
-              {ratingHistory.length > 0 && (
-                <div className="puzzle-elo-history">
-                  {ratingHistory.map((delta, idx) => (
-                    <span key={`${delta}-${idx}`} className={`puzzle-elo-pill ${getDeltaTone(delta)}`}>
-                      {delta > 0 ? `+${delta}` : delta}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
 
-          {!isLessonMode && (
-            <div className="puzzle-container puzzle-difficulty">
+          {!isLessonMode && !rushMode && (
+            <div className="puzzle-panel puzzle-rating-filter">
+              <p className="puzzle-panel__label">{t('puzzleRatingRange')}</p>
               <div className="filter-group">
                 <label>
                   {t('puzzleMinRating')}: <strong>{ratingFilter.min}</strong>
                 </label>
-                <input 
-                  type="range" 
-                  min="800" 
-                  max="2500" 
+                <input
+                  type="range"
+                  min="800"
+                  max="2500"
                   step="100"
                   value={ratingFilter.min}
                   onChange={(e) =>
                     setRatingFilter(
                       normalizeRatingFilter({
                         ...ratingFilter,
-                        min: parseInt(e.target.value)
+                        min: parseInt(e.target.value, 10)
                       })
                     )
                   }
                 />
-                
                 <label>
                   {t('puzzleMaxRating')}: <strong>{ratingFilter.max}</strong>
                 </label>
-                <input 
-                  type="range" 
-                  min="800" 
-                  max="2500" 
+                <input
+                  type="range"
+                  min="800"
+                  max="2500"
                   step="100"
                   value={ratingFilter.max}
                   onChange={(e) =>
                     setRatingFilter(
                       normalizeRatingFilter({
                         ...ratingFilter,
-                        max: parseInt(e.target.value)
+                        max: parseInt(e.target.value, 10)
                       })
                     )
                   }

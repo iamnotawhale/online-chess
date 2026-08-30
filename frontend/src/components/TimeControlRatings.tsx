@@ -15,19 +15,23 @@ const CATEGORY_ORDER = ['bullet', 'blitz', 'rapid', 'classical', 'classic'];
 
 type Props = {
   ratings: TimeControlRating[];
+  puzzleRating?: number | null;
   compact?: boolean;
 };
 
-export const TimeControlRatings: React.FC<Props> = ({ ratings, compact = false }) => {
+export const TimeControlRatings: React.FC<Props> = ({ ratings, puzzleRating, compact = false }) => {
   const { t } = useTranslation();
-
-  if (!ratings.length) {
-    return null;
-  }
 
   const sorted = [...ratings].sort(
     (a, b) => CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category),
   );
+
+  const hasTcRatings = sorted.length > 0;
+  const hasPuzzleRating = typeof puzzleRating === 'number';
+
+  if (!hasTcRatings && !hasPuzzleRating) {
+    return null;
+  }
 
   return (
     <div className={`tc-ratings${compact ? ' tc-ratings--compact' : ''}`}>
@@ -40,6 +44,12 @@ export const TimeControlRatings: React.FC<Props> = ({ ratings, compact = false }
           </span>
         );
       })}
+      {hasPuzzleRating && (
+        <span className="tc-rating-badge tc-rating-badge--puzzle">
+          <span className="tc-rating-badge__label">{t('navPuzzles')}</span>
+          <span className="tc-rating-badge__value">{puzzleRating}</span>
+        </span>
+      )}
     </div>
   );
 };

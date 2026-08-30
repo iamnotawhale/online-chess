@@ -163,6 +163,7 @@ export const Profile: React.FC = () => {
   const [pieceSet, setPieceSetState] = useState<PieceSet>(getPieceSet());
   const [canInstall, setCanInstall] = useState(false);
   const [tcRatings, setTcRatings] = useState<TimeControlRating[]>([]);
+  const [puzzleRating, setPuzzleRating] = useState<number | null>(null);
   const [editData, setEditData] = useState({
     username: '',
     password: '',
@@ -174,6 +175,9 @@ export const Profile: React.FC = () => {
   useEffect(() => {
     loadProfile();
     apiService.getAllRatings().then(setTcRatings).catch(() => undefined);
+    apiService.getPuzzleRating().then((r) => {
+      if (typeof r?.rating === 'number') setPuzzleRating(r.rating);
+    }).catch(() => undefined);
     if (!isPWAInstalled()) {
       return setupInstallPrompt(setCanInstall);
     }
@@ -329,7 +333,7 @@ export const Profile: React.FC = () => {
             </div>
 
             <div className="rating-section">
-              <TimeControlRatings ratings={tcRatings} />
+              <TimeControlRatings ratings={tcRatings} puzzleRating={puzzleRating} />
             </div>
 
             <div className="profile-preferences">

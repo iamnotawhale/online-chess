@@ -334,6 +334,7 @@ export const translations = {
     puzzleDifficulty: 'Difficulty',
     puzzleMinRating: 'Min Rating',
     puzzleMaxRating: 'Max Rating',
+    puzzleRatingRange: 'Puzzle rating range',
     puzzleInfo: 'Puzzle Info',
     actions: 'Actions',
 
@@ -744,6 +745,7 @@ export const translations = {
     puzzleDifficulty: 'Сложность',
     puzzleMinRating: 'Мин. рейтинг',
     puzzleMaxRating: 'Макс. рейтинг',
+    puzzleRatingRange: 'Диапазон рейтинга задач',
     puzzleInfo: 'Информация о пазле',
     actions: 'Действия',
 

@@ -26,6 +26,7 @@ export const Dashboard: React.FC = () => {
   const { t } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
   const [tcRatings, setTcRatings] = useState<TimeControlRating[]>([]);
+  const [puzzleRating, setPuzzleRating] = useState<number | null>(null);
   const [games, setGames] = useState<Game[]>([]);
   const [finishedGames, setFinishedGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,14 +41,16 @@ export const Dashboard: React.FC = () => {
   const loadDashboard = async () => {
     try {
       setLoading(true);
-      const [userData, ratingsData, gamesData, finishedGamesData] = await Promise.all([
+      const [userData, ratingsData, puzzleRatingData, gamesData, finishedGamesData] = await Promise.all([
         apiService.getMe(),
         apiService.getAllRatings(),
+        apiService.getPuzzleRating().catch(() => ({ rating: null as number | null })),
         apiService.getMyGames(),
         apiService.getMyFinishedGames(),
       ]);
       setUser(userData);
       setTcRatings(ratingsData);
+      setPuzzleRating(typeof puzzleRatingData.rating === 'number' ? puzzleRatingData.rating : null);
       setGames(gamesData);
       const sorted = [...finishedGamesData].sort((a, b) =>
         new Date(b.finishedAt || b.createdAt || 0).getTime() - new Date(a.finishedAt || a.createdAt || 0).getTime()
@@ -101,7 +104,7 @@ export const Dashboard: React.FC = () => {
             />
           )}
         </h1>
-        <TimeControlRatings ratings={tcRatings} compact />
+        <TimeControlRatings ratings={tcRatings} puzzleRating={puzzleRating} compact />
       </div>
 
       <div className="dashboard-layout">
