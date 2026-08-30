@@ -180,7 +180,11 @@ class ApiService {
   login(email: string, password: string): Promise<AuthResponse> {
     return this.client.post('/auth/login', { email, password }).then(res => {
       this.token = res.data.token;
-      localStorage.setItem('authToken', res.data.token);
+      try {
+        localStorage.setItem('authToken', res.data.token);
+      } catch {
+        throw new Error('STORAGE_UNAVAILABLE');
+      }
       this.client.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
       return res.data;
     });
@@ -189,7 +193,11 @@ class ApiService {
   register(data: RegisterRequest): Promise<AuthResponse> {
     return this.client.post('/auth/register', data).then(res => {
       this.token = res.data.token;
-      localStorage.setItem('authToken', res.data.token);
+      try {
+        localStorage.setItem('authToken', res.data.token);
+      } catch {
+        throw new Error('STORAGE_UNAVAILABLE');
+      }
       this.client.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
       return res.data;
     });

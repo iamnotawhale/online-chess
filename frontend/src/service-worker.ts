@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-const CACHE_VERSION = '3';
+const CACHE_VERSION = '4';
 const STATIC_CACHE = `onchess-static-${CACHE_VERSION}`;
 
 const PRECACHE_ASSETS = [
@@ -98,19 +98,22 @@ self.addEventListener('fetch', ((event: FetchEvent) => {
     return;
   }
 
-  // Hashed build assets: cache-first
+  // Hashed build assets: network-first (never serve stale JS/CSS)
   if (isHashedAsset(url)) {
     event.respondWith(
       (async () => {
-        const cached = await caches.match(request);
-        if (cached) return cached;
-
-        const networkResponse = await fetch(request);
-        if (networkResponse.ok) {
-          const cache = await caches.open(STATIC_CACHE);
-          cache.put(request, networkResponse.clone());
+        try {
+          const networkResponse = await fetch(request);
+          if (networkResponse.ok) {
+            const cache = await caches.open(STATIC_CACHE);
+            cache.put(request, networkResponse.clone());
+          }
+          return networkResponse;
+        } catch {
+          const cached = await caches.match(request);
+          if (cached) return cached;
+          throw new Error('Asset unavailable offline');
         }
-        return networkResponse;
       })()
     );
     return;

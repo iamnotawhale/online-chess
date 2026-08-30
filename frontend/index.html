@@ -46,10 +46,43 @@
     
     <title>OnChess - Online Chess Game</title>
     <script>
-      try {
-        var t = localStorage.getItem('themeMode') || 'light';
-        document.documentElement.setAttribute('data-theme', t);
-      } catch (e) {}
+      (function () {
+        var SW_MIGRATE = '4';
+        try {
+          var t = localStorage.getItem('themeMode') || 'light';
+          document.documentElement.setAttribute('data-theme', t);
+        } catch (e) {}
+
+        try {
+          if (localStorage.getItem('onchess-sw-migrate') === SW_MIGRATE) return;
+
+          var reloadKey = 'onchess-sw-migrate-reload-' + SW_MIGRATE;
+          var done = function () {
+            try { localStorage.setItem('onchess-sw-migrate', SW_MIGRATE); } catch (e) {}
+            if (!sessionStorage.getItem(reloadKey)) {
+              try { sessionStorage.setItem(reloadKey, '1'); } catch (e) {}
+              location.reload();
+            }
+          };
+
+          var tasks = [];
+          if ('serviceWorker' in navigator) {
+            tasks.push(navigator.serviceWorker.getRegistrations().then(function (regs) {
+              return Promise.all(regs.map(function (r) { return r.unregister(); }));
+            }));
+          }
+          if ('caches' in window) {
+            tasks.push(caches.keys().then(function (keys) {
+              return Promise.all(keys.map(function (k) { return caches.delete(k); }));
+            }));
+          }
+          if (tasks.length) {
+            Promise.all(tasks).then(done).catch(done);
+          } else {
+            done();
+          }
+        } catch (e) {}
+      })();
     </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />

@@ -1,7 +1,20 @@
 /**
- * Register PWA service worker
- * Enables offline support, caching, and push notifications
+ * PWA helpers — service worker + notifications
  */
+
+const SW_MIGRATE_KEY = 'onchess-sw-migrate';
+const SW_MIGRATE_VERSION = '4';
+
+export async function purgePwaCaches(): Promise<void> {
+  if ('serviceWorker' in navigator) {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(registrations.map((registration) => registration.unregister()));
+  }
+  if ('caches' in window) {
+    const keys = await caches.keys();
+    await Promise.all(keys.map((key) => caches.delete(key)));
+  }
+}
 
 export async function registerServiceWorker(): Promise<ServiceWorkerRegistration | null> {
   if (!('serviceWorker' in navigator)) {
@@ -10,12 +23,15 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
   }
 
   try {
-    const registration = await navigator.serviceWorker.register(
-      '/service-worker.js',
-      {
-        scope: '/',
-      }
-    );
+    const migrated = localStorage.getItem(SW_MIGRATE_KEY) === SW_MIGRATE_VERSION;
+    if (!migrated) {
+      await purgePwaCaches();
+      localStorage.setItem(SW_MIGRATE_KEY, SW_MIGRATE_VERSION);
+    }
+
+    const registration = await navigator.serviceWorker.register('/service-worker.js', {
+      scope: '/',
+    });
 
     console.log('[PWA] Service Worker registered successfully', registration);
 
@@ -36,21 +52,18 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
       });
     });
 
-    // Check for updates periodically
     setInterval(async () => {
       try {
-        // Only check if registration still has an active worker
         if (registration.active || registration.waiting || registration.installing) {
           await registration.update();
         }
-      } catch (error: any) {
-        // Silently ignore update check errors in development
-        // (service-worker.js might return 404 in dev server)
-        if (error?.name !== 'TypeError' && !error?.message?.includes('MIME type')) {
-          console.debug('[PWA] Update check skipped:', error?.message || error);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        if (!message.includes('MIME type')) {
+          console.debug('[PWA] Update check skipped:', message);
         }
       }
-    }, 60000); // Check every 60 seconds
+    }, 60000);
 
     return registration;
   } catch (error) {
@@ -59,9 +72,6 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
   }
 }
 
-/**
- * Request permission for push notifications
- */
 export async function requestNotificationPermission(): Promise<NotificationPermission> {
   if (!('Notification' in window)) {
     console.log('[PWA] Notifications are not supported');
@@ -81,9 +91,6 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
   return permission;
 }
 
-/**
- * Send a local notification
- */
 export async function sendNotification(
   title: string,
   options?: NotificationOptions
@@ -94,14 +101,12 @@ export async function sendNotification(
   }
 
   if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-    // Use service worker to show notification (more reliable)
     navigator.serviceWorker.controller.postMessage({
       type: 'SHOW_NOTIFICATION',
       title,
       options,
     });
   } else {
-    // Fallback to direct notification
     new Notification(title, {
       icon: '/icons/favicon-192x192.png',
       badge: '/icons/favicon-192x192.png',
@@ -110,42 +115,28 @@ export async function sendNotification(
   }
 }
 
-/**
- * Check if PWA is installed (launched as standalone)
- */
 export function isPWAInstalled(): boolean {
-  // Check if running in standalone mode (PWA installed)
   const isStandalone =
-    (window.navigator as any).standalone === true ||
+    (window.navigator as Navigator & { standalone?: boolean }).standalone === true ||
     window.matchMedia('(display-mode: standalone)').matches;
 
   return isStandalone;
 }
 
-/**
- * Check if the "install" prompt can be shown
- * Use this in your app to show a custom install button
- */
 export function setupInstallPrompt(callback: (canInstall: boolean) => void): () => void {
-  // @ts-expect-error - deferredPrompt is used in the event handlers through closure
-  let deferredPrompt: any;
-
   const handleBeforeInstallPrompt = (e: Event) => {
     e.preventDefault();
-    deferredPrompt = e;
     callback(true);
   };
 
   const handleAppInstalled = () => {
     console.log('[PWA] App installed');
-    deferredPrompt = null;
     callback(false);
   };
 
   window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   window.addEventListener('appinstalled', handleAppInstalled);
 
-  // Return cleanup function
   return () => {
     window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.removeEventListener('appinstalled', handleAppInstalled);
@@ -155,15 +146,13 @@ export function setupInstallPrompt(callback: (canInstall: boolean) => void): () 
 export async function promptInstall(): Promise<boolean> {
   return new Promise((resolve) => {
     const handler = (e: Event) => {
-      (e as any).prompt();
-      (e as any).userChoice.then((choiceResult: any) => {
-        if (choiceResult.outcome === 'accepted') {
-          console.log('[PWA] User accepted install');
-          resolve(true);
-        } else {
-          console.log('[PWA] User declined install');
-          resolve(false);
-        }
+      const promptEvent = e as Event & {
+        prompt: () => void;
+        userChoice: Promise<{ outcome: string }>;
+      };
+      promptEvent.prompt();
+      promptEvent.userChoice.then((choiceResult) => {
+        resolve(choiceResult.outcome === 'accepted');
         window.removeEventListener('beforeinstallprompt', handler);
       });
     };

@@ -26,7 +26,11 @@ export const Login: React.FC = () => {
       await login(email, password);
       navigate(redirectTo);
     } catch (err: any) {
-      setError(err.response?.data?.message || err.response?.data?.error || t('loginError'));
+      if (err?.message === 'STORAGE_UNAVAILABLE') {
+        setError(t('loginError') + ' (storage blocked — disable private mode)');
+      } else {
+        setError(err.response?.data?.message || err.response?.data?.error || t('loginError'));
+      }
     } finally {
       setLoading(false);
     }
