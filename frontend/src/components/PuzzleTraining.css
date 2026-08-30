@@ -1,20 +1,16 @@
 .puzzle-training-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-  min-height: 100vh;
-  background: var(--bg);
+  /* shell padding from .page-wrapper when combined in TSX */
 }
 
 .puzzle-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 12px;
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid var(--line-soft);
+  padding-bottom: var(--space-3);
   flex-wrap: nowrap;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .puzzle-header h3 {

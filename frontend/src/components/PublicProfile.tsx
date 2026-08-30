@@ -253,23 +253,23 @@ export const PublicProfile: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="profile-container">{t('loading')}</div>;
+    return <div className="page-wrapper page-loading">{t('loading')}</div>;
   }
 
   if (error) {
     return (
-      <div className="profile-container">
+      <div className="page-wrapper">
         <div className="error-message">{error}</div>
-        <button onClick={() => navigate(-1)} className="back-btn">{t('back')}</button>
+        <button type="button" onClick={() => navigate(-1)} className="btn btn-secondary">{t('back')}</button>
       </div>
     );
   }
 
   if (!profile) {
     return (
-      <div className="profile-container">
+      <div className="page-wrapper">
         <div className="error-message">{t('inviteNotFound')}</div>
-        <button onClick={() => navigate(-1)} className="back-btn">{t('back')}</button>
+        <button type="button" onClick={() => navigate(-1)} className="btn btn-secondary">{t('back')}</button>
       </div>
     );
   }
@@ -313,9 +313,9 @@ export const PublicProfile: React.FC = () => {
   const paginatedGames = filteredGames.slice(startIndex, endIndex);
 
   return (
-    <div className="profile-container">
+    <div className="page-wrapper profile-page">
       <div className="profile-content">
-        <div className="profile-header">
+        <div className="profile-header section">
           <div className="profile-avatar">
             {getAvatarDisplay()}
           </div>
@@ -348,16 +348,18 @@ export const PublicProfile: React.FC = () => {
               {getIncomingRequest() ? (
                 <>
                   <button
+                    type="button"
                     onClick={handleAcceptFriendRequest}
                     disabled={friendshipLoading}
-                    className="friend-btn add"
+                    className="btn btn-primary"
                   >
                     {t('acceptRequest')}
                   </button>
                   <button
+                    type="button"
                     onClick={handleDeclineFriendRequest}
                     disabled={friendshipLoading}
-                    className="friend-btn remove"
+                    className="btn btn-danger"
                   >
                     {t('declineRequest')}
                   </button>
@@ -365,14 +367,15 @@ export const PublicProfile: React.FC = () => {
               ) : (
                 <>
                   <button
+                    type="button"
                     onClick={handleFriendshipAction}
                     disabled={friendshipLoading}
-                    className={`friend-btn ${friendshipStatus?.status === 'accepted' ? 'remove' : friendshipStatus?.status === 'pending' ? 'pending' : 'add'}`}
+                    className={`btn ${friendshipStatus?.status === 'accepted' ? 'btn-danger' : friendshipStatus?.status === 'pending' ? 'btn-secondary' : 'btn-primary'}`}
                   >
                     {getFriendshipButtonLabel()}
                   </button>
                   {currentUser && (
-                    <button type="button" onClick={handleChallenge} disabled={challengeLoading} className="friend-btn add">
+                    <button type="button" onClick={handleChallenge} disabled={challengeLoading} className="btn btn-primary">
                       {t('challenge')}
                     </button>
                   )}
@@ -382,8 +385,8 @@ export const PublicProfile: React.FC = () => {
           </div>
         </div>
 
-        <div className="profile-stats">
-          <h2>{t('statistics')}</h2>
+        <div className="section profile-stats page-section">
+          <h2 className="section-title">{t('statistics')}</h2>
           <div className="stats-grid">
             <div className="stat-card">
               <span className="stat-label">{t('games')}</span>
@@ -408,13 +411,14 @@ export const PublicProfile: React.FC = () => {
           </div>
         </div>
 
-        <div className="games-section">
-          <h2>{t('gameHistory')}</h2>
+        <div className="section games-section page-section">
+          <h2 className="section-title">{t('gameHistory')}</h2>
           
           {currentUser && profile && currentUser.id !== profile.id && (
             <div className="games-section-header">
               <button
-                className={`filter-btn ${showOnlyAgainstMe ? 'active' : ''}`}
+                type="button"
+                className={`chip ${showOnlyAgainstMe ? 'active' : ''}`}
                 onClick={() => {
                   setShowOnlyAgainstMe(!showOnlyAgainstMe);
                   setCurrentPage(1);
@@ -426,37 +430,34 @@ export const PublicProfile: React.FC = () => {
           )}
 
           {gamesLoading ? (
-            <div className="loading">{t('loading')}</div>
+            <div className="page-loading">{t('loading')}</div>
           ) : games.length === 0 ? (
-            <div className="no-games">{t('noGames')}</div>
+            <div className="empty-state">{t('noGames')}</div>
           ) : (
             <>
               <div className="games-list">
                 {paginatedGames.map(game => {
                   const isWin = (profile.id === game.whitePlayerId && game.result === '1-0') ||
                                 (profile.id === game.blackPlayerId && game.result === '0-1');
-                  const isDraw = game.result === '1/2-1/2';
                   const isLoss = (profile.id === game.whitePlayerId && game.result === '0-1') ||
                                  (profile.id === game.blackPlayerId && game.result === '1-0');
-                  
-                  let borderColor = 'var(--muted)';
-                  if (isWin) borderColor = 'var(--success-text)';
-                  else if (isLoss) borderColor = 'var(--danger-text)';
-                  else if (isDraw) borderColor = 'var(--muted)';
+                  const resultClass = isWin ? 'game-card--won' : isLoss ? 'game-card--lost' : 'game-card--draw';
 
                   return (
                     <div
                       key={game.id}
-                      className="game-item"
+                      className={`game-card ${resultClass}`}
                       onClick={() => navigate(`/game/${game.id}`)}
-                      style={{ borderLeftColor: borderColor }}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => { if (e.key === 'Enter') navigate(`/game/${game.id}`); }}
                     >
-                      <div className="game-players">
+                      <div className="game-card__row game-players">
                         <span className="player">{game.whiteUsername}</span>
                         <span className="vs">vs</span>
                         <span className="player">{game.blackUsername}</span>
                       </div>
-                      <div className="game-details">
+                      <div className="game-card__row game-details">
                         <span className="time-control">{game.timeControl}</span>
                         <span className="status">{game.status}</span>
                         {game.result && <span className="result">{game.result}</span>}
@@ -494,7 +495,7 @@ export const PublicProfile: React.FC = () => {
           )}
         </div>
 
-        <button onClick={() => navigate(-1)} className="back-btn">{t('back')}</button>
+        <button type="button" onClick={() => navigate(-1)} className="btn btn-secondary profile-back">{t('back')}</button>
       </div>
     </div>
   );

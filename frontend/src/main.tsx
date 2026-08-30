@@ -5,7 +5,9 @@ import { LanguageProvider } from './i18n/LanguageContext'
 import { AuthProvider } from './context/AuthContext'
 import { registerServiceWorker, requestNotificationPermission } from './utils/pwa'
 import './index.css'
+import './styles/architect.css'
 import './styles/common.css'
+import './styles/ui.css'
 
 // Register PWA service worker
 (async () => {

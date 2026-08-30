@@ -441,11 +441,11 @@ export const Education: React.FC = () => {
   // View: Category selection
   if (!selectedCategory) {
     return (
-      <div className="education-container">
-        <div className="education-header">
+      <div className="page-wrapper education-page">
+        <div className="page-hero education-header">
           <div className="header-info">
-            <h1>{t('educationTitle')}</h1>
-            <p>{t('educationSubtitle')}</p>
+            <h1 className="page-title">{t('educationTitle')}</h1>
+            <p className="page-subtitle">{t('educationSubtitle')}</p>
           </div>
           <div className="header-stats">
             <div className="stat-badge">
@@ -488,7 +488,7 @@ export const Education: React.FC = () => {
   // View: Opening selection within category
   if (!selectedSubtopic) {
     return (
-      <div className="education-container">
+      <div className="page-wrapper education-page">
         <div className="category-header">
           <h1>
             <span className="icon">{selectedCategory.icon}</span>
@@ -538,7 +538,7 @@ export const Education: React.FC = () => {
 
   // View: Lesson page
   return (
-    <div className="education-container">
+    <div className="page-wrapper education-page">
       <div className="lesson-header">
         <h1>
           <span className="icon">{selectedSubtopic.icon}</span>

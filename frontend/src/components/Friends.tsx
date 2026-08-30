@@ -88,22 +88,24 @@ export const Friends: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="loading">{t('loading')}</div>;
+    return <div className="page-wrapper page-loading">{t('loading')}</div>;
   }
 
   return (
-    <div className="friends-container">
-      <h1>{t('friends')}</h1>
+    <div className="page-wrapper friends-page">
+      <h1 className="page-title">{t('friends')}</h1>
 
-      <div className="friends-tabs">
+      <div className="tabs">
         <button
-          className={`tab-btn ${activeTab === 'friends' ? 'active' : ''}`}
+          type="button"
+          className={`tab ${activeTab === 'friends' ? 'active' : ''}`}
           onClick={() => setActiveTab('friends')}
         >
           {t('friends')} ({friends.length})
         </button>
         <button
-          className={`tab-btn ${activeTab === 'pending' ? 'active' : ''}`}
+          type="button"
+          className={`tab ${activeTab === 'pending' ? 'active' : ''}`}
           onClick={() => setActiveTab('pending')}
         >
           {t('friendRequests')} ({pendingRequests.length})
@@ -112,36 +114,27 @@ export const Friends: React.FC = () => {
 
       <div className="friends-content">
         {activeTab === 'pending' && (
-          <div className="pending-requests">
+          <div className="list-stack">
             {pendingRequests.length === 0 ? (
-              <p className="empty-message">{t('noFriendRequests')}</p>
+              <p className="empty-state">{t('noFriendRequests')}</p>
             ) : (
               pendingRequests.map(req => (
-                <div key={req.id} className="request-item">
-                  <div className="request-header">
-                    <div className="user-info">
-                      <span className="username">{req.friend.username}</span>
-                      <span className="rating">Rating: {req.friend.rating}</span>
+                <div key={req.id} className="list-card">
+                  <div className="list-card__row">
+                    <div className="list-card__main">
+                      <span className="list-card__title">{req.friend.username}</span>
+                      <span className="list-card__meta">{t('rating')}: {req.friend.rating}</span>
                     </div>
-                    <span className="date">{formatDate(req.createdAt)}</span>
+                    <span className="list-card__meta">{formatDate(req.createdAt)}</span>
                   </div>
-                  <div className="request-actions">
-                    <button
-                      className="btn btn-accept"
-                      onClick={() => handleAccept(req.id)}
-                    >
+                  <div className="list-card__actions">
+                    <button type="button" className="btn btn-success btn-sm" onClick={() => handleAccept(req.id)}>
                       {t('acceptRequest')}
                     </button>
-                    <button
-                      className="btn btn-decline"
-                      onClick={() => handleDecline(req.id)}
-                    >
+                    <button type="button" className="btn btn-danger btn-sm" onClick={() => handleDecline(req.id)}>
                       {t('declineRequest')}
                     </button>
-                    <button
-                      className="btn btn-profile"
-                      onClick={() => handleViewProfile(req.friend.username)}
-                    >
+                    <button type="button" className="btn btn-ghost btn-sm" onClick={() => handleViewProfile(req.friend.username)}>
                       {t('view')}
                     </button>
                   </div>
@@ -152,39 +145,30 @@ export const Friends: React.FC = () => {
         )}
 
         {activeTab === 'friends' && (
-          <div className="friends-list">
+          <div className="list-stack">
             {friends.length === 0 ? (
-              <p className="empty-message">{t('noFriends')}</p>
+              <p className="empty-state">{t('noFriends')}</p>
             ) : (
               friends.map(friend => (
-                <div key={friend.id} className="friend-item">
-                  <div className="friend-header">
-                    <div className="user-info">
-                      <span className="username">
+                <div key={friend.id} className="list-card">
+                  <div className="list-card__row">
+                    <div className="list-card__main">
+                      <span className="list-card__title">
                         {friend.friend.online && <span className="online-dot" title={t('online')} />}
                         {friend.friend.username}
                       </span>
-                      <span className="rating">Rating: {friend.friend.rating}</span>
+                      <span className="list-card__meta">{t('rating')}: {friend.friend.rating}</span>
                     </div>
-                    <span className="date">{formatDate(friend.createdAt)}</span>
+                    <span className="list-card__meta">{formatDate(friend.createdAt)}</span>
                   </div>
-                  <div className="friend-actions">
-                    <button
-                      className="btn btn-profile"
-                      onClick={() => handleViewProfile(friend.friend.username)}
-                    >
+                  <div className="list-card__actions">
+                    <button type="button" className="btn btn-ghost btn-sm" onClick={() => handleViewProfile(friend.friend.username)}>
                       {t('view')}
                     </button>
-                    <button
-                      className="btn btn-accept"
-                      onClick={() => handleChallenge(friend.friend.id)}
-                    >
+                    <button type="button" className="btn btn-primary btn-sm" onClick={() => handleChallenge(friend.friend.id)}>
                       {t('challenge')}
                     </button>
-                    <button
-                      className="btn btn-remove"
-                      onClick={() => handleRemoveFriend(friend.friend.id)}
-                    >
+                    <button type="button" className="btn btn-danger btn-sm" onClick={() => handleRemoveFriend(friend.friend.id)}>
                       {t('removeFriend')}
                     </button>
                   </div>

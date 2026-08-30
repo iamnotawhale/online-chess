@@ -27,7 +27,7 @@ export const UserSearch: React.FC = () => {
 
   return (
     <div className="user-search page-wrapper">
-      <h1>{t('searchUsers')}</h1>
+      <h1 className="page-title">{t('searchUsers')}</h1>
       <form onSubmit={handleSearch} className="search-form">
         <input className="form-input" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t('username')} />
         <button type="submit" className="btn btn-primary" disabled={loading}>{loading ? t('loading') : t('search')}</button>

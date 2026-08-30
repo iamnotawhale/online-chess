@@ -17,7 +17,22 @@
   --trans-norm: 0.25s var(--ease);
 
   --header-height: 72px;
+  --bottom-nav-height: 56px;
   --container: min(1200px, calc(100vw - 32px));
+
+  /* Spacing scale (4px base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --gap-page: var(--space-4);
+  --gap-section: var(--space-5);
+  --gap-card: var(--space-3);
+  --gap-inline: var(--space-2);
 
   --accent-rgb: 71 85 105;
   --accent-lift-rgb: 100 116 139;
@@ -144,6 +159,43 @@
   --shadow-md: 0 4px 12px rgb(0 0 0 / 0.4), 0 1px 4px rgb(0 0 0 / 0.2);
   --shadow-lg: 0 8px 32px rgb(0 0 0 / 0.5), 0 2px 8px rgb(0 0 0 / 0.3);
   --shadow-glow: 0 0 60px rgb(var(--accent-rgb) / 0.04);
+}
+
+/* Architect design-system extras (from architect.vai-rice.space) */
+:root,
+:root[data-theme='light'],
+:root[data-theme='dark'] {
+  --rule: 1px;
+  --rule-heavy: 2px;
+  --draw-soft: light-dark(
+    rgb(var(--accent-deep-rgb) / 0.26),
+    rgb(var(--accent-rgb) / 0.2)
+  );
+  --hatch: repeating-linear-gradient(
+    45deg,
+    var(--draw-soft) 0 1px,
+    transparent 1px 7px
+  );
+  --surface-solid: color-mix(in oklab, rgb(var(--accent-rgb)) 6%, var(--ground-2));
+  --surface-hover: light-dark(
+    rgb(var(--accent-rgb) / 0.11),
+    rgb(var(--accent-rgb) / 0.06)
+  );
+  --surface-active: light-dark(
+    rgb(var(--accent-rgb) / 0.16),
+    rgb(var(--accent-rgb) / 0.09)
+  );
+  --rd: light-dark(rgb(176 58 38 / 0.16), rgb(212 96 74 / 0.12));
+  --gd: rgb(var(--counter-rgb) / 0.15);
+  --focus-ring-tight: 0 0 0 2px rgb(var(--accent-rgb) / 0.7);
+  --track-label: 0.08em;
+  --t-sm: 0.8125rem;
+  --t-xs: 0.75rem;
+  --t-base: 0.9375rem;
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --dur-2: 0.15s;
+  --z-modal: 500;
+  --z-backdrop: 400;
 }
 
 /* Map architect tokens → existing OnChess variables */

@@ -52,16 +52,20 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 a {
-  font-weight: 600;
-  color: var(--accent-ink);
+  color: inherit;
+  font-weight: inherit;
   text-decoration: none;
   transition: color var(--trans-fast);
 }
 
 a:hover {
-  color: var(--accent-lift);
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  color: var(--accent-ink);
+}
+
+a.link:hover,
+.nav-link:hover,
+.text-link:hover {
+  text-decoration: none;
 }
 
 code, pre, .mono {

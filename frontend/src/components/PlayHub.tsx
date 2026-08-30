@@ -17,40 +17,38 @@ export const PlayHub: React.FC = () => {
   const [lobbyKey, setLobbyKey] = useState(0);
 
   return (
-    <div className="play-hub">
-      <div className="play-hub-header">
-        <h1>{t('navPlay')}</h1>
-        <p>{t('playHubSubtitle')}</p>
+    <div className="page-wrapper play-hub">
+      <h1 className="page-title">{t('navPlay')}</h1>
+      <p className="page-subtitle">{t('playHubSubtitle')}</p>
+
+      <div className="cta-grid">
+        <button type="button" className="cta-card cta-card--primary" onClick={() => document.getElementById('quick-play')?.scrollIntoView({ behavior: 'smooth' })}>
+          <span className="cta-card__icon">⚡</span>
+          <span className="cta-card__title">{t('quickPlay')}</span>
+          <span className="cta-card__desc">{t('quickPlayDesc')}</span>
+        </button>
+        <button type="button" className="cta-card" onClick={() => setIsLobbyOpen(true)}>
+          <span className="cta-card__icon">♟</span>
+          <span className="cta-card__title">{t('createLobby')}</span>
+          <span className="cta-card__desc">{t('createLobbyDesc')}</span>
+        </button>
+        <button type="button" className="cta-card" onClick={() => setIsBotOpen(true)}>
+          <span className="cta-card__icon">🤖</span>
+          <span className="cta-card__title">{t('playVsComputer')}</span>
+          <span className="cta-card__desc">{t('playVsComputerDesc')}</span>
+        </button>
+        <button type="button" className="cta-card" onClick={() => setIsInviteOpen(true)}>
+          <span className="cta-card__icon">🔗</span>
+          <span className="cta-card__title">{t('inviteByLink')}</span>
+          <span className="cta-card__desc">{t('inviteByLinkDesc')}</span>
+        </button>
       </div>
 
-      <div className="play-cta-grid">
-        <button type="button" className="play-cta-card play-cta-primary" onClick={() => document.getElementById('quick-play')?.scrollIntoView({ behavior: 'smooth' })}>
-          <span className="play-cta-icon">⚡</span>
-          <span className="play-cta-title">{t('quickPlay')}</span>
-          <span className="play-cta-desc">{t('quickPlayDesc')}</span>
-        </button>
-        <button type="button" className="play-cta-card" onClick={() => setIsLobbyOpen(true)}>
-          <span className="play-cta-icon">♟</span>
-          <span className="play-cta-title">{t('createLobby')}</span>
-          <span className="play-cta-desc">{t('createLobbyDesc')}</span>
-        </button>
-        <button type="button" className="play-cta-card" onClick={() => setIsBotOpen(true)}>
-          <span className="play-cta-icon">🤖</span>
-          <span className="play-cta-title">{t('playVsComputer')}</span>
-          <span className="play-cta-desc">{t('playVsComputerDesc')}</span>
-        </button>
-        <button type="button" className="play-cta-card" onClick={() => setIsInviteOpen(true)}>
-          <span className="play-cta-icon">🔗</span>
-          <span className="play-cta-title">{t('inviteByLink')}</span>
-          <span className="play-cta-desc">{t('inviteByLinkDesc')}</span>
-        </button>
-      </div>
-
-      <div className="play-hub-grid">
+      <div className="layout-split">
         <div id="quick-play" className="play-hub-main">
           <MatchmakingPanel />
         </div>
-        <div className="play-hub-sidebar section">
+        <div className="layout-sticky-side section">
           <Lobby
             key={lobbyKey}
             onGameStart={(id) => navigate(`/game/${id}`)}

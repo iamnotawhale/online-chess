@@ -24,7 +24,7 @@ export const PuzzleHub: React.FC<PuzzleHubProps> = ({ guestMode = false }) => {
   if (guestMode) {
     return (
       <div className="puzzle-hub page-wrapper">
-        <h1>{t('dailyPuzzle')}</h1>
+        <h1 className="page-title">{t('dailyPuzzle')}</h1>
         <DailyPuzzle />
         <p className="puzzle-hub-guest-note">
           <Link to="/login">{t('login')}</Link> {t('loginToSavePuzzleProgress')}
@@ -35,29 +35,29 @@ export const PuzzleHub: React.FC<PuzzleHubProps> = ({ guestMode = false }) => {
 
   return (
     <div className="puzzle-hub page-wrapper">
-      <h1>{t('navPuzzles')}</h1>
+      <h1 className="page-title">{t('navPuzzles')}</h1>
       {puzzleRating !== null && (
-        <p className="puzzle-hub-rating">{t('puzzleRating')}: <strong>{puzzleRating}</strong></p>
+        <p className="page-subtitle">{t('puzzleRating')}: <strong>{puzzleRating}</strong></p>
       )}
-      <div className="puzzle-hub-grid">
+      <div className="layout-cards">
         <section className="puzzle-hub-card section">
-          <h2>{t('dailyPuzzle')}</h2>
+          <h2 className="section-title">{t('dailyPuzzle')}</h2>
           <DailyPuzzle />
         </section>
         <section className="puzzle-hub-card section">
-          <h2>{t('puzzleTraining')}</h2>
-          <p>{t('puzzleTrainingDesc')}</p>
-          <button type="button" className="btn btn-primary" onClick={() => navigate('/puzzles/train')}>{t('startTraining')}</button>
+          <h2 className="section-title">{t('puzzleTraining')}</h2>
+          <p className="section-desc">{t('puzzleTrainingDesc')}</p>
+          <button type="button" className="btn btn-primary btn-block" onClick={() => navigate('/puzzles/train')}>{t('startTraining')}</button>
         </section>
         <section className="puzzle-hub-card section">
-          <h2>{t('puzzleRush')}</h2>
-          <p>{t('puzzleRushDesc')}</p>
-          <button type="button" className="btn btn-primary" onClick={() => navigate('/puzzles/rush')}>{t('startRush')}</button>
+          <h2 className="section-title">{t('puzzleRush')}</h2>
+          <p className="section-desc">{t('puzzleRushDesc')}</p>
+          <button type="button" className="btn btn-primary btn-block" onClick={() => navigate('/puzzles/rush')}>{t('startRush')}</button>
         </section>
         <section className="puzzle-hub-card section">
-          <h2>{t('navLearn')}</h2>
-          <p>{t('educationFeatureStructured')}</p>
-          <button type="button" className="btn btn-secondary" onClick={() => navigate('/education')}>{t('openEducation')}</button>
+          <h2 className="section-title">{t('navLearn')}</h2>
+          <p className="section-desc">{t('educationFeatureStructured')}</p>
+          <button type="button" className="btn btn-secondary btn-block" onClick={() => navigate('/education')}>{t('openEducation')}</button>
         </section>
       </div>
     </div>

@@ -72,7 +72,7 @@ export const ChallengeInbox: React.FC<ChallengeInboxProps> = ({ isOpen, onClose,
     <Modal isOpen={isOpen} onClose={onClose} title={t('challenge')}>
       <div className="challenge-inbox">
         {loading && <p>{t('loading')}</p>}
-        {!loading && challenges.length === 0 && <p className="empty-message">{t('noChallenges')}</p>}
+        {!loading && challenges.length === 0 && <p className="empty-state">{t('noChallenges')}</p>}
         {!loading && challenges.map((c) => (
           <div key={c.id} className="challenge-item">
             <div>

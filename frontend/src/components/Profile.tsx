@@ -283,23 +283,23 @@ export const Profile: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="profile-container">{t('loading')}</div>;
+    return <div className="page-wrapper page-loading">{t('loading')}</div>;
   }
 
   if (error) {
     return (
-      <div className="profile-container">
+      <div className="page-wrapper">
         <div className="error-message">{error}</div>
-        <button onClick={() => navigate(-1)} className="back-btn">{t('back')}</button>
+        <button type="button" onClick={() => navigate(-1)} className="btn btn-secondary">{t('back')}</button>
       </div>
     );
   }
 
   if (!profile) {
     return (
-      <div className="profile-container">
+      <div className="page-wrapper">
         <div className="error-message">Profile not found</div>
-        <button onClick={() => navigate(-1)} className="back-btn">{t('back')}</button>
+        <button type="button" onClick={() => navigate(-1)} className="btn btn-secondary">{t('back')}</button>
       </div>
     );
   }
@@ -325,9 +325,9 @@ export const Profile: React.FC = () => {
   };
 
   return (
-    <div className="profile-container">
+    <div className="page-wrapper profile-page">
       <div className="profile-content">
-        <div className="profile-header">
+        <div className="profile-header section">
           <div className="profile-avatar">
             {getAvatarDisplay()}
           </div>
@@ -486,14 +486,14 @@ export const Profile: React.FC = () => {
                   className="edit-textarea"
                 />
                 <div className="edit-actions">
-                  <button onClick={handleSaveProfile} className="save-btn">{t('save')}</button>
-                  <button onClick={() => setIsEditing(false)} className="cancel-btn">{t('cancel')}</button>
+                  <button type="button" onClick={handleSaveProfile} className="btn btn-primary">{t('save')}</button>
+                  <button type="button" onClick={() => setIsEditing(false)} className="btn btn-secondary">{t('cancel')}</button>
                 </div>
               </div>
             )}
 
             {!isEditing && (
-              <button onClick={() => setIsEditing(true)} className="edit-profile-btn">
+              <button type="button" onClick={() => setIsEditing(true)} className="btn btn-primary">
                 {t('editProfile')}
               </button>
             )}
@@ -502,8 +502,8 @@ export const Profile: React.FC = () => {
 
         <RatingChart />
 
-        <div className="profile-stats">
-          <h2>{t('statistics')}</h2>
+        <div className="section profile-stats page-section">
+          <h2 className="section-title">{t('statistics')}</h2>
           <div className="stats-grid">
             <div className="stat-card">
               <span className="stat-label">{t('games')}</span>
@@ -528,7 +528,7 @@ export const Profile: React.FC = () => {
           </div>
         </div>
 
-        <button onClick={() => navigate(-1)} className="back-btn">{t('back')}</button>
+        <button type="button" onClick={() => navigate(-1)} className="btn btn-secondary profile-back">{t('back')}</button>
       </div>
     </div>
   );
