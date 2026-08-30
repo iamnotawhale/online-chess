@@ -36,3 +36,51 @@ export const getPlayerColorFromPuzzle = (data: PuzzleData): 'white' | 'black' =>
   }
   return chess.turn() === 'w' ? 'white' : 'black';
 };
+
+export type PuzzleMoveRow = {
+  moveNumber: number;
+  white?: string;
+  black?: string;
+  whiteIndex?: number;
+  blackIndex?: number;
+};
+
+export const buildPuzzleMoveRows = (startFen: string, notations: string[]): PuzzleMoveRow[] => {
+  if (notations.length === 0) return [];
+
+  const startsWithBlack = new Chess(startFen).turn() === 'b';
+  const rows: PuzzleMoveRow[] = [];
+  let index = 0;
+  let moveNumber = 1;
+
+  if (startsWithBlack) {
+    rows.push({
+      moveNumber: 1,
+      black: notations[0],
+      blackIndex: 0,
+    });
+    index = 1;
+    moveNumber = 2;
+  }
+
+  while (index < notations.length) {
+    const whiteIndex = index;
+    const white = notations[index];
+    index += 1;
+    const hasBlack = index < notations.length;
+    const blackIndex = hasBlack ? index : undefined;
+    const black = hasBlack ? notations[index] : undefined;
+    if (hasBlack) index += 1;
+
+    rows.push({
+      moveNumber,
+      white,
+      whiteIndex,
+      black,
+      blackIndex,
+    });
+    moveNumber += 1;
+  }
+
+  return rows;
+};

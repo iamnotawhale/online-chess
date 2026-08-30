@@ -230,9 +230,20 @@
 
 .puzzle-actions {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: var(--space-2);
   margin: 0;
+}
+
+.puzzle-next-btn {
+  flex: 1 1 100%;
+  min-height: 44px;
+  font-weight: 700;
+}
+
+.puzzle-actions .btn-sm {
+  flex: 1 1 calc(33% - var(--space-2));
+  min-width: 0;
 }
 
 .puzzle-stats {
@@ -418,19 +429,80 @@
 .moves-list {
   border-top: 1px solid var(--border);
   padding-top: 12px;
-  max-height: 300px;
+  max-height: 220px;
   overflow-y: auto;
 }
 
-.moves-grid {
+.puzzle-moves-history .moves-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.puzzle-moves-history .move-row {
   display: grid;
-  grid-template-columns: auto 1fr 1fr;
-  gap: 6px;
+  grid-template-columns: 1.75rem 1fr 1fr;
+  gap: 4px;
+  align-items: stretch;
+}
+
+.puzzle-moves-history .move-number {
+  display: flex;
   align-items: center;
+  justify-content: flex-end;
+  padding-right: 4px;
+  color: var(--muted-2);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.puzzle-moves-history .move-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  color: var(--muted-2);
+  font-size: 0.75rem;
+}
+
+.puzzle-moves-history .move-button {
+  padding: 6px 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.75rem;
+  min-height: 28px;
+}
+
+.puzzle-moves-history .move-button:hover {
+  background: var(--surface-4);
+  border-color: var(--muted-2);
+}
+
+.puzzle-moves-history .move-button.current {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border-color: var(--accent);
+  font-weight: 700;
+}
+
+/* Legacy move styles (kept for compatibility) */
+.moves-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .move-row {
-  display: contents;
+  display: grid;
+  grid-template-columns: 1.75rem 1fr 1fr;
+  gap: 4px;
+  align-items: stretch;
 }
 
 .move-number {

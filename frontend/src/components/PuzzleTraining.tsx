@@ -5,7 +5,7 @@ import { apiService } from '../api';
 import { useTranslation } from '../i18n/LanguageContext';
 import { ChessBoardWrapper } from './common';
 import './PuzzleTraining.css';
-import { PuzzleData, applyUciMove } from './puzzleUtils';
+import { PuzzleData, applyUciMove, buildPuzzleMoveRows } from './puzzleUtils';
 import { usePuzzleGame } from './usePuzzleGame';
 
 const FILTER_STORAGE_KEY = 'puzzleTrainingRatingFilter';
@@ -150,11 +150,6 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
       }
       updateLessonProgressAfterSolve();
       setStreak(prev => prev + 1);
-      setTimeout(() => {
-        clearStoredPuzzle();
-        clearHintUsed();
-        loadRandomPuzzle(true);
-      }, 2000);
     },
     onCorrect: () => {},
     onWrong: () => {
@@ -587,6 +582,12 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
     loadRandomPuzzle(true);
   };
 
+  const handleNextPuzzle = () => {
+    clearStoredPuzzle();
+    clearHintUsed();
+    loadRandomPuzzle(true);
+  };
+
   // Generate move history from userMoves
   useEffect(() => {
     if (!puzzle || !game) {
@@ -905,6 +906,16 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
           </div>
 
           <div className="puzzle-container puzzle-actions">
+            {status === 'complete' && (
+              <button
+                type="button"
+                onClick={handleNextPuzzle}
+                className="btn btn-primary puzzle-next-btn"
+                disabled={loading}
+              >
+                {t('puzzleNext')}
+              </button>
+            )}
             <button 
               onClick={handleHint} 
               className="btn btn-secondary btn-sm"
@@ -915,20 +926,20 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
             <button 
               onClick={handleSkip} 
               className="btn btn-secondary btn-sm"
+              disabled={status === 'complete'}
             >
               {t('puzzleSkip')}
             </button>
-            <button 
-              onClick={() => {
-                clearStoredPuzzle();
-                clearHintUsed();
-                loadRandomPuzzle(true);
-              }} 
-              className="btn btn-primary btn-sm"
-              disabled={loading}
-            >
-              {t('puzzleNext')}
-            </button>
+            {status !== 'complete' && (
+              <button 
+                type="button"
+                onClick={handleNextPuzzle} 
+                className="btn btn-secondary btn-sm"
+                disabled={loading}
+              >
+                {t('puzzleNext')}
+              </button>
+            )}
           </div>
 
           {moveHistory.length > 0 && (
@@ -965,34 +976,33 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
               </div>
               <div className="moves-list">
                 <div className="moves-grid">
-                  {Array.from({ length: Math.ceil(moveHistory.length / 2) }).map((_, pairIndex) => {
-                    const whiteIndex = pairIndex * 2;
-                    const blackIndex = pairIndex * 2 + 1;
-                    const whiteMove = moveHistory[whiteIndex];
-                    const blackMove = blackIndex < moveHistory.length ? moveHistory[blackIndex] : null;
-                    
-                    return (
-                      <div key={pairIndex} className="move-row">
-                        <span className="move-number">{pairIndex + 1}.</span>
+                  {buildPuzzleMoveRows(puzzle.fen, moveHistory).map((row) => (
+                    <div key={row.moveNumber} className="move-row">
+                      <span className="move-number">{row.moveNumber}.</span>
+                      {row.white ? (
                         <button
-                          className={`move-button ${whiteIndex === currentMoveIndex ? 'current' : ''}`}
-                          onClick={() => goToMove(whiteIndex)}
+                          type="button"
+                          className={`move-button ${row.whiteIndex === currentMoveIndex ? 'current' : ''}`}
+                          onClick={() => goToMove(row.whiteIndex!)}
                         >
-                          {whiteMove}
+                          {row.white}
                         </button>
-                        {blackMove ? (
-                          <button
-                            className={`move-button ${blackIndex === currentMoveIndex ? 'current' : ''}`}
-                            onClick={() => goToMove(blackIndex)}
-                          >
-                            {blackMove}
-                          </button>
-                        ) : (
-                          <div></div>
-                        )}
-                      </div>
-                    );  
-                  })}
+                      ) : (
+                        <span className="move-empty">…</span>
+                      )}
+                      {row.black ? (
+                        <button
+                          type="button"
+                          className={`move-button ${row.blackIndex === currentMoveIndex ? 'current' : ''}`}
+                          onClick={() => goToMove(row.blackIndex!)}
+                        >
+                          {row.black}
+                        </button>
+                      ) : (
+                        <span className="move-empty" aria-hidden="true" />
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
