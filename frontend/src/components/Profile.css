@@ -30,22 +30,6 @@
 
 /* .edit-input, .edit-textarea, .edit-select — styles/architect.css */
 
-.tc-ratings {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-.tc-rating-badge {
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--r-pill);
-  border: 1px solid var(--line-soft);
-  background: rgb(var(--accent-rgb) / 0.06);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--muted);
-}
-
 .profile-preferences {
   display: flex;
   flex-direction: column;
@@ -217,12 +201,4 @@
 
 .rating-chart-error {
   color: var(--danger-text);
-}
-
-.country-flag {
-  width: 22px;
-  height: auto;
-  border-radius: 2px;
-  border: 1px solid var(--line-soft);
-  object-fit: cover;
 }

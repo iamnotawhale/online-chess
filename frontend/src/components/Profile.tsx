@@ -8,6 +8,8 @@ import { getBoardTheme, setBoardTheme, BoardTheme } from '../utils/boardTheme';
 import { getPieceSet, setPieceSet, PieceSet } from '../utils/pieceSet';
 import { setupInstallPrompt, promptInstall, isPWAInstalled } from '../utils/pwa';
 import { DEFAULT_AVATARS, isExternalAvatarUrl } from '../utils/avatars';
+import { TimeControlRatings } from './TimeControlRatings';
+import { TimeControlRating } from '../api';
 import './Profile.css';
 
 interface UserProfile {
@@ -160,7 +162,7 @@ export const Profile: React.FC = () => {
   const [soundOn, setSoundOn] = useState(isSoundEnabled());
   const [pieceSet, setPieceSetState] = useState<PieceSet>(getPieceSet());
   const [canInstall, setCanInstall] = useState(false);
-  const [tcRatings, setTcRatings] = useState<Array<{ category: string; rating: number }>>([]);
+  const [tcRatings, setTcRatings] = useState<TimeControlRating[]>([]);
   const [editData, setEditData] = useState({
     username: '',
     password: '',
@@ -313,7 +315,7 @@ export const Profile: React.FC = () => {
           <div className="profile-info">
             <div className="profile-title">
               <h1>
-                {profile.username}
+                <span>{profile.username}</span>
                 {profile.country && (
                   <img
                     className="country-flag"
@@ -327,19 +329,7 @@ export const Profile: React.FC = () => {
             </div>
 
             <div className="rating-section">
-              <div className="rating-display">
-                <span className="rating-label">{t('rating')}</span>
-                <span className="rating-value">{profile.rating}</span>
-              </div>
-              {tcRatings.length > 0 && (
-                <div className="tc-ratings">
-                  {tcRatings.map((r) => (
-                    <span key={r.category} className="tc-rating-badge">
-                      {t(r.category as 'bullet' | 'blitz' | 'rapid' | 'classic')}: {r.rating}
-                    </span>
-                  ))}
-                </div>
-              )}
+              <TimeControlRatings ratings={tcRatings} />
             </div>
 
             <div className="profile-preferences">

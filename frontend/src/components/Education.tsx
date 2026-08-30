@@ -497,41 +497,45 @@ export const Education: React.FC = () => {
           <p>{getCategoryDescription(selectedCategory)}</p>
         </div>
 
-        <div className="cc-card">
+        <div className="cc-card openings-panel">
           <div className="openings-grid">
-          {selectedCategory.subtopics.map(subtopic => (
+          {selectedCategory.subtopics.map(subtopic => {
+            const progress = getSubtopicProgress(subtopic);
+            return (
             <div
               key={subtopic.id}
               className="subtopic-card"
+              role="button"
+              tabIndex={0}
               onClick={() => setSearchParams({category: searchParams.get('category') || '', subtopic: subtopic.id})}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setSearchParams({category: searchParams.get('category') || '', subtopic: subtopic.id});
+                }
+              }}
             >
-              <div className="card-header">
-                <span className="icon">{subtopic.icon}</span>
-                <h3>{getOpeningName(subtopic)}</h3>
-              </div>
-
-              <p className="card-opening">{getOpeningDescription(subtopic)}</p>
-
-              <div className="card-stats">
-                <span className="stat">📖 {subtopic.puzzles_count.toLocaleString()} {t('puzzles')}</span>
-                <span className="stat">⭐ {subtopic.elo_range}</span>
-              </div>
-
-              <div className="progress-wrapper">
-                <div className="progress-bar">
-                  <div
-                    className="progress-fill"
-                    style={{ width: `${getSubtopicProgress(subtopic)}%` }}
-                  ></div>
+              <span className="subtopic-card__icon" aria-hidden="true">{subtopic.icon}</span>
+              <div className="subtopic-card__main">
+                <div className="subtopic-card__head">
+                  <h3 className="subtopic-card__title">{getOpeningName(subtopic)}</h3>
+                  <div className="subtopic-card__chips">
+                    <span className="subtopic-card__chip">{subtopic.puzzles_count.toLocaleString()} {t('puzzles')}</span>
+                    <span className="subtopic-card__chip">⭐ {subtopic.elo_range}</span>
+                  </div>
                 </div>
-                <span className="progress-text">
-                  {getSubtopicProgress(subtopic)}% {t('completedPercent')}
-                </span>
+                <p className="subtopic-card__desc">{getOpeningDescription(subtopic)}</p>
+                <div className="subtopic-card__progress">
+                  <div className="progress-bar">
+                    <div className="progress-fill" style={{ width: `${progress}%` }} />
+                  </div>
+                  <span className="subtopic-card__pct">{progress}%</span>
+                </div>
               </div>
-
-              <button type="button" className="btn btn-primary btn-sm card-btn">{t('explore')}</button>
+              <span className="subtopic-card__go" aria-hidden="true">›</span>
             </div>
-          ))}
+            );
+          })}
           </div>
         </div>
       </div>

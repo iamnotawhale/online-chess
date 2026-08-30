@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { apiService, User } from '../api';
+import { apiService, User, TimeControlRating } from '../api';
 import { DailyPuzzle } from './DailyPuzzle';
+import { TimeControlRatings } from './TimeControlRatings';
 import { useTranslation } from '../i18n/LanguageContext';
 import './Dashboard.css';
 
@@ -24,7 +25,7 @@ export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
-  const [rating, setRating] = useState<number>(0);
+  const [tcRatings, setTcRatings] = useState<TimeControlRating[]>([]);
   const [games, setGames] = useState<Game[]>([]);
   const [finishedGames, setFinishedGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,14 +40,14 @@ export const Dashboard: React.FC = () => {
   const loadDashboard = async () => {
     try {
       setLoading(true);
-      const [userData, ratingData, gamesData, finishedGamesData] = await Promise.all([
+      const [userData, ratingsData, gamesData, finishedGamesData] = await Promise.all([
         apiService.getMe(),
-        apiService.getCurrentRating(),
+        apiService.getAllRatings(),
         apiService.getMyGames(),
         apiService.getMyFinishedGames(),
       ]);
       setUser(userData);
-      setRating(ratingData.rating);
+      setTcRatings(ratingsData);
       setGames(gamesData);
       const sorted = [...finishedGamesData].sort((a, b) =>
         new Date(b.finishedAt || b.createdAt || 0).getTime() - new Date(a.finishedAt || a.createdAt || 0).getTime()
@@ -90,15 +91,17 @@ export const Dashboard: React.FC = () => {
     <div className="page-wrapper dashboard-page">
       <div className="dashboard-hero">
         <h1 className="page-title">
-          {user?.username}
+          <span className="dashboard-hero__name">{user?.username}</span>
           {user?.country && (
-            <img className="country-flag-dashboard" src={`https://flagcdn.com/w20/${user.country.toLowerCase()}.png`} alt={user.country} />
+            <img
+              className="country-flag dashboard-hero__flag"
+              src={`https://flagcdn.com/w20/${user.country.toLowerCase()}.png`}
+              srcSet={`https://flagcdn.com/w40/${user.country.toLowerCase()}.png 2x`}
+              alt={user.country}
+            />
           )}
         </h1>
-        <div className="page-hero__stat">
-          <span className="page-hero__stat-label">{t('rating')}</span>
-          <span className="page-hero__stat-value">{rating}</span>
-        </div>
+        <TimeControlRatings ratings={tcRatings} compact />
       </div>
 
       <div className="dashboard-layout">

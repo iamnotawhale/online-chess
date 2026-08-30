@@ -29,6 +29,12 @@ export interface User {
   };
 }
 
+export interface TimeControlRating {
+  category: string;
+  rating: number;
+  gamesPlayed?: number;
+}
+
 interface GameResponse {
   id: string;
   whitePlayerId: string;
@@ -510,8 +516,12 @@ class ApiService {
     return this.client.post(`/challenges/decline/${id}`).then(res => res.data);
   }
 
-  getAllRatings(): Promise<any[]> {
+  getAllRatings(): Promise<TimeControlRating[]> {
     return this.client.get('/ratings/me/all').then(res => res.data);
+  }
+
+  getUserAllRatings(username: string): Promise<TimeControlRating[]> {
+    return this.client.get(`/ratings/user/${encodeURIComponent(username)}/all`).then(res => res.data);
   }
 
   startPuzzleRush(): Promise<{ sessionId: string }> {

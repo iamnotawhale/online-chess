@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { Login } from './components/Login';
@@ -58,6 +58,7 @@ const Header: React.FC<HeaderProps> = ({ themeMode, onToggleTheme }) => {
   const { language, setLanguage, t } = useTranslation();
   const { user, isAuthenticated, logout, refreshUser } = useAuth();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [pendingChallenges, setPendingChallenges] = useState(0);
   const [showChallenges, setShowChallenges] = useState(false);
@@ -86,7 +87,28 @@ const Header: React.FC<HeaderProps> = ({ themeMode, onToggleTheme }) => {
     };
   }, [isAuthenticated]);
 
-  useEffect(() => setMobileOpen(false), [location.pathname]);
+  useEffect(() => {
+    setMobileOpen(false);
+    setShowProfileMenu(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!showProfileMenu) return;
+
+    const handleOutside = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node;
+      if (profileMenuRef.current && !profileMenuRef.current.contains(target)) {
+        setShowProfileMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutside);
+    document.addEventListener('touchstart', handleOutside, { passive: true });
+    return () => {
+      document.removeEventListener('mousedown', handleOutside);
+      document.removeEventListener('touchstart', handleOutside);
+    };
+  }, [showProfileMenu]);
 
   const hideBottomNav = /^\/game\//.test(location.pathname);
 
@@ -147,7 +169,7 @@ const Header: React.FC<HeaderProps> = ({ themeMode, onToggleTheme }) => {
               <span className="theme-icon">{themeMode === 'dark' ? '🌙' : '☀️'}</span>
             </button>
             {isAuthenticated && user && (
-              <div className="profile-menu-container">
+              <div className="profile-menu-container" ref={profileMenuRef}>
                 <button type="button" className="profile-avatar-btn" onClick={() => setShowProfileMenu(!showProfileMenu)} title={user.username}>
                   <UserAvatar avatarUrl={user.avatarUrl} username={user.username} />
                   {pendingChallenges > 0 && <span className="nav-badge profile-badge">{pendingChallenges}</span>}

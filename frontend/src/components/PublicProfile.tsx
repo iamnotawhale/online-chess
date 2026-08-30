@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { apiService, User } from '../api';
+import { apiService, User, TimeControlRating } from '../api';
 import { useTranslation } from '../i18n/LanguageContext';
+import { TimeControlRatings } from './TimeControlRatings';
 import './PublicProfile.css';
 
 interface Game {
@@ -38,6 +39,7 @@ export const PublicProfile: React.FC = () => {
   const { t } = useTranslation();
 
   const [profile, setProfile] = useState<User | null>(null);
+  const [tcRatings, setTcRatings] = useState<TimeControlRating[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [games, setGames] = useState<Game[]>([]);
@@ -77,8 +79,12 @@ export const PublicProfile: React.FC = () => {
   const loadProfile = async () => {
     try {
       setLoading(true);
-      const response = await apiService.getUserByUsername(username!);
+      const [response, ratingsData] = await Promise.all([
+        apiService.getUserByUsername(username!),
+        apiService.getUserAllRatings(username!),
+      ]);
       setProfile(response);
+      setTcRatings(ratingsData);
       setError('');
       
       // Load games
@@ -315,14 +321,22 @@ export const PublicProfile: React.FC = () => {
 
           <div className="profile-info">
             <div className="profile-title">
-              <h1>{profile.username}</h1>
+              <h1>
+                <span>{profile.username}</span>
+                {profile.country && (
+                  <img
+                    className="country-flag"
+                    src={`https://flagcdn.com/w20/${profile.country.toLowerCase()}.png`}
+                    srcSet={`https://flagcdn.com/w40/${profile.country.toLowerCase()}.png 2x`}
+                    alt={profile.country.toUpperCase()}
+                    loading="lazy"
+                  />
+                )}
+              </h1>
             </div>
 
             <div className="rating-section">
-              <div className="rating-display">
-                <span className="rating-label">{t('rating')}</span>
-                <span className="rating-value">{profile.rating}</span>
-              </div>
+              <TimeControlRatings ratings={tcRatings} />
             </div>
 
             {profile.bio && (

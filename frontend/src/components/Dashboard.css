@@ -1,5 +1,21 @@
 /* Dashboard — game history & matchmaking widgets */
 
+.dashboard-hero .page-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: 0;
+}
+
+.dashboard-hero__name {
+  min-width: 0;
+}
+
+.dashboard-hero__flag {
+  flex-shrink: 0;
+}
+
 .dashboard-grid {
   display: contents;
 }
@@ -194,11 +210,4 @@
   border: 1px solid var(--info-border);
   border-radius: var(--r-md);
   font-size: 0.8125rem;
-}
-
-.country-flag-dashboard {
-  width: 22px;
-  height: auto;
-  border-radius: 2px;
-  vertical-align: middle;
 }
