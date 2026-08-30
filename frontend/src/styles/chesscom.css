@@ -1,8 +1,8 @@
 /**
- * Chess.com-inspired layout & surfaces
+ * OnChess panel layouts — two-column grids and card surfaces
  */
 
-/* ---- Cards (chess.com widget panels) ---- */
+/* ---- Panel cards ---- */
 .cc-card {
   background: var(--surface);
   border: 1px solid var(--line-soft);
