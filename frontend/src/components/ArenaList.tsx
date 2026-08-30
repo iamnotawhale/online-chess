@@ -14,21 +14,31 @@ export const ArenaList: React.FC = () => {
   }, []);
 
   return (
-    <div className="page-wrapper">
-      <h1>{t('navArena')}</h1>
-      <p>{t('arenaDesc')}</p>
-      {arenas.length === 0 ? <p>{t('noArenas')}</p> : (
-        <ul className="arena-list">
-          {arenas.map((a) => (
-            <li key={a.id}>
-              <Link to={`/arena/${a.id}`} className="arena-list-item">
-                <strong>{a.name}</strong>
-                <span>{a.timeControl} · {a.status}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
+    <div className="page-wrapper page-wrapper--wide arena-page">
+      <div className="page-hero">
+        <div>
+          <h1 className="page-title">{t('navArena')}</h1>
+          <p className="page-subtitle">{t('arenaDesc')}</p>
+        </div>
+      </div>
+
+      <div className="cc-card">
+        {arenas.length === 0 ? (
+          <p className="empty-state">{t('noArenas')}</p>
+        ) : (
+          <ul className="arena-list">
+            {arenas.map((a) => (
+              <li key={a.id}>
+                <Link to={`/arena/${a.id}`} className="arena-list-item">
+                  <span className="arena-list-item__name">{a.name}</span>
+                  <span className="arena-list-item__meta">{a.timeControl}</span>
+                  <span className={`arena-status arena-status--${a.status}`}>{a.status}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 };

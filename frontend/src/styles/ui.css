@@ -302,17 +302,21 @@
 
 /* ---- Game history cards ---- */
 .game-card {
-  padding: var(--space-3) 0;
-  border-radius: 0;
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr) auto auto auto auto;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--r-sm);
   border: none;
   border-bottom: var(--rule) solid var(--line-faint);
   border-left: 3px solid transparent;
   background: transparent;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  cursor: pointer;
   transition: background-color var(--trans-fast), border-color var(--trans-fast);
+}
+
+.game-card--active {
+  grid-template-columns: 2rem minmax(0, 1fr) auto auto;
 }
 
 .game-card:last-child {
@@ -320,7 +324,7 @@
 }
 
 .game-card:hover {
-  background: rgb(var(--accent-rgb) / 0.03);
+  background: rgb(var(--accent-rgb) / 0.04);
   box-shadow: none;
 }
 
@@ -329,12 +333,70 @@
 .game-card--draw { border-left-color: var(--muted); }
 .game-card--active { border-left-color: var(--accent-ink); }
 
+.game-card__player {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.game-card__reason {
+  font-size: 0.6875rem;
+  color: var(--muted-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.game-card__meta {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  white-space: nowrap;
+  font-family: var(--font-mono);
+}
+
+.game-card__meta-spacer {
+  width: 0;
+}
+
+.game-card__action {
+  justify-self: end;
+}
+
+.game-card__status {
+  font-size: 0.875rem;
+  color: var(--accent-ink);
+  line-height: 1;
+}
+
 .game-card__row {
   display: flex;
   align-items: center;
   gap: var(--space-3);
   font-size: 0.875rem;
   flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .game-card {
+    grid-template-columns: 2rem minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+  }
+
+  .game-card--active {
+    grid-template-columns: 2rem minmax(0, 1fr) auto;
+  }
+
+  .game-card__meta,
+  .game-card__date,
+  .rating-delta {
+    grid-column: 2;
+  }
+
+  .game-card__action {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+  }
 }
 
 @media (max-width: 900px) {
@@ -537,23 +599,28 @@
 }
 
 /* ---- Arena ---- */
+.arena-page {
+  max-width: var(--container);
+}
+
 .arena-list {
   list-style: none;
   padding: 0;
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--gap-card);
+  gap: 0;
 }
 
 .arena-list-item {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-3) 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
   border: none;
   border-bottom: var(--rule) solid var(--line-faint);
-  border-radius: 0;
+  border-radius: var(--r-sm);
   text-decoration: none;
   color: inherit;
   background: transparent;
@@ -565,8 +632,41 @@
 }
 
 .arena-list-item:hover {
-  background: rgb(var(--accent-rgb) / 0.03);
+  background: rgb(var(--accent-rgb) / 0.04);
   box-shadow: none;
+}
+
+.arena-list-item__name {
+  font-weight: 600;
+  color: var(--text);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.arena-list-item__meta {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+.arena-status {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px var(--space-2);
+  border-radius: var(--r-sm);
+  background: var(--surface-3);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.arena-status--active {
+  background: rgb(var(--accent-rgb) / 0.12);
+  color: var(--accent-ink);
 }
 
 .arena-standings {

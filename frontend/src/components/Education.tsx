@@ -414,7 +414,7 @@ export const Education: React.FC = () => {
     setSelectedLesson(lesson);
     setActiveLesson(lesson);
     await updateProgressForLesson(lesson, { total: lesson.puzzle_limit });
-    navigate('/puzzles?mode=lesson');
+    navigate('/puzzles/train?mode=lesson');
   };
 
   const getSubtopicProgress = (subtopic: Subtopic) => {
@@ -497,7 +497,8 @@ export const Education: React.FC = () => {
           <p>{getCategoryDescription(selectedCategory)}</p>
         </div>
 
-        <div className="openings-grid">
+        <div className="cc-card">
+          <div className="openings-grid">
           {selectedCategory.subtopics.map(subtopic => (
             <div
               key={subtopic.id}
@@ -531,6 +532,7 @@ export const Education: React.FC = () => {
               <button type="button" className="btn btn-primary btn-sm card-btn">{t('explore')}</button>
             </div>
           ))}
+          </div>
         </div>
       </div>
     );
@@ -548,7 +550,7 @@ export const Education: React.FC = () => {
       </div>
 
       <div className="lessons-wrapper">
-        <div className="lessons-sidebar">
+        <div className="cc-card lessons-sidebar">
           <div className="sidebar-info">
             <h3>{t('progress')}</h3>
             <p>{t('puzzlesLabel')}: {selectedSubtopic.puzzles_count.toLocaleString()}</p>
@@ -581,7 +583,7 @@ export const Education: React.FC = () => {
           </div>
         </div>
 
-        <div className="lessons-main">
+        <div className="cc-card lessons-main">
           <div className="mini-board-card">
             <div className="mini-board-header">
               <div>

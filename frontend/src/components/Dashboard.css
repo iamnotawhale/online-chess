@@ -53,7 +53,7 @@
 .game-card__date {
   color: var(--muted-2);
   font-size: 0.75rem;
-  margin-left: auto;
+  white-space: nowrap;
 }
 
 .rating-delta {

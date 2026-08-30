@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { apiService } from '../api';
 import { useTranslation } from '../i18n/LanguageContext';
 import { ChessBoardWrapper } from './common';
@@ -160,9 +161,9 @@ export const DailyPuzzle: React.FC = () => {
       </div>
 
       <div className="puzzle-actions">
-        <a href="/puzzles" className="btn btn-primary">
+        <Link to="/puzzles/train" className="btn btn-primary">
           {t('puzzleTrainMore')}
-        </a>
+        </Link>
       </div>
     </div>
   );

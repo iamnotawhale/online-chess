@@ -46,17 +46,21 @@ export const PlayHub: React.FC = () => {
         </button>
       </div>
 
-      <div className="layout-split">
+      <div className="play-hub-layout">
         <div id="quick-play" className="play-hub-main">
-          <MatchmakingPanel />
+          <div className="cc-card">
+            <MatchmakingPanel />
+          </div>
         </div>
-        <div className="layout-sticky-side">
-          <Lobby
-            key={lobbyKey}
-            onGameStart={(id) => navigate(`/game/${id}`)}
-            onGameCancelled={() => setLobbyKey((k) => k + 1)}
-          />
-        </div>
+        <aside className="play-hub-aside">
+          <div className="cc-card">
+            <Lobby
+              key={lobbyKey}
+              onGameStart={(id) => navigate(`/game/${id}`)}
+              onGameCancelled={() => setLobbyKey((k) => k + 1)}
+            />
+          </div>
+        </aside>
       </div>
 
       <BotGameModal

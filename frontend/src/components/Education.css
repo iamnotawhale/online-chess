@@ -161,7 +161,7 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  margin-bottom: var(--space-8);
+  margin-bottom: 0;
 }
 
 .subtopic-card {
@@ -169,17 +169,17 @@
   border: none;
   border-bottom: var(--rule) solid var(--line-faint);
   border-radius: 0;
-  padding: var(--space-4) 0;
+  padding: var(--space-4) var(--space-1);
   cursor: pointer;
   transition: background-color var(--trans-fast);
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: var(--space-3);
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-3) var(--space-4);
   box-shadow: none;
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
-  align-items: start;
+  align-items: center;
 }
 
 .subtopic-card:last-child {
@@ -212,8 +212,9 @@
 
 .card-header h3 {
   margin: 0;
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: var(--font-display);
   color: var(--text);
   flex: 1;
 }
@@ -318,23 +319,31 @@
 
 .lessons-wrapper {
   display: grid;
-  grid-template-columns: minmax(0, 240px) minmax(0, 1fr);
-  gap: var(--space-6);
+  grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
+  gap: var(--space-4);
   min-width: 0;
   max-width: var(--container-wide);
+  align-items: start;
+}
+
+.lessons-sidebar.cc-card,
+.lessons-main.cc-card {
+  min-width: 0;
 }
 
 .lessons-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--space-4);
   min-width: 0;
 }
 
 .sidebar-info {
   background: transparent;
-  padding: 0 0 var(--space-4);
+  padding: 0;
   border-bottom: var(--rule) solid var(--line-faint);
+  padding-bottom: var(--space-4);
+  margin-bottom: var(--space-1);
 }
 
 .sidebar-info h3 {
@@ -370,13 +379,15 @@
 
 .lesson-item {
   display: flex;
-  gap: 12px;
-  padding: var(--space-3) 0;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  margin: 0 calc(-1 * var(--space-1));
   border-bottom: var(--rule) solid var(--line-faint);
+  border-radius: var(--r-sm);
   cursor: pointer;
   transition: background-color var(--trans-fast);
   border-left: 3px solid transparent;
-  align-items: center;
+  align-items: flex-start;
   min-width: 0;
 }
 
@@ -453,8 +464,27 @@
 .lessons-main {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--space-4);
   min-width: 0;
+}
+
+.lesson-content-text {
+  padding-top: var(--space-2);
+  border-top: var(--rule) solid var(--line-faint);
+}
+
+.lesson-content-text h2 {
+  margin: 0 0 var(--space-3);
+  font-size: 1.125rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+.lesson-action {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
 }
 
 .mini-board-placeholder {

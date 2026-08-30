@@ -46,23 +46,36 @@ export const ArenaPage: React.FC = () => {
   if (!arena) return <div className="page-wrapper"><p>{t('loading')}</p></div>;
 
   return (
-    <div className="page-wrapper">
-      <h1>{arena.name}</h1>
-      <p>{arena.timeControl} · {arena.status}</p>
-      {joined ? (
-        <button type="button" className="btn btn-primary" onClick={() => navigate('/play')}>{t('findOpponent')}</button>
-      ) : (
-        <button type="button" className="btn btn-primary" onClick={handleJoin} disabled={joining}>{joining ? t('loading') : t('joinArena')}</button>
-      )}
-      <h2>{t('standings')}</h2>
-      <table className="arena-standings">
-        <thead><tr><th>#</th><th>{t('username')}</th><th>{t('score')}</th></tr></thead>
-        <tbody>
-          {standings.map((s, i) => (
-            <tr key={s.userId}><td>{i + 1}</td><td>{s.username}</td><td>{s.score}</td></tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="page-wrapper page-wrapper--wide arena-page">
+      <div className="page-hero">
+        <div>
+          <h1 className="page-title">{arena.name}</h1>
+          <p className="page-subtitle">{arena.timeControl} · {arena.status}</p>
+        </div>
+        {joined ? (
+          <button type="button" className="btn btn-primary" onClick={() => navigate('/play')}>{t('findOpponent')}</button>
+        ) : (
+          <button type="button" className="btn btn-primary" onClick={handleJoin} disabled={joining}>{joining ? t('loading') : t('joinArena')}</button>
+        )}
+      </div>
+
+      <div className="cc-card">
+        <div className="cc-card__head">
+          <h2 className="cc-card__title">{t('standings')}</h2>
+        </div>
+        {standings.length === 0 ? (
+          <p className="empty-state">{t('noGames')}</p>
+        ) : (
+          <table className="arena-standings">
+            <thead><tr><th>#</th><th>{t('username')}</th><th>{t('score')}</th></tr></thead>
+            <tbody>
+              {standings.map((s, i) => (
+                <tr key={s.userId}><td>{i + 1}</td><td>{s.username}</td><td>{s.score}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 };
