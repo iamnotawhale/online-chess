@@ -334,8 +334,8 @@ class ApiService {
       gameId,
       moves,
       startFen: startFen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
-      depth: depth || 20
-    }).then(res => res.data);
+      depth: depth || 15
+    }, { timeout: 300000 }).then(res => res.data);
   }
 
   // Puzzle endpoints

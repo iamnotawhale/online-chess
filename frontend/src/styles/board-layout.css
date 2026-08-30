@@ -45,6 +45,33 @@
   box-sizing: border-box;
 }
 
+@media (max-width: 860px) {
+  .board-layout-page.page-wrapper,
+  .board-layout-page.page-wrapper--play,
+  .board-layout-page.page-wrapper--full {
+    padding-left: 0;
+    padding-right: 0;
+    max-width: 100%;
+  }
+
+  .board-surface {
+    max-width: 100%;
+    margin-inline: 0;
+  }
+
+  .board-layout-page .board-stage,
+  .board-layout-page .puzzle-board-wrap {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .board-layout-page .chess-board-wrapper {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: 0;
+  }
+}
+
 @media (max-width: 768px) {
   .board-layout-page.page-wrapper,
   .board-layout-page.page-wrapper--play,

@@ -7,7 +7,7 @@ import { ChessBoardWrapper } from './common';
 import './PuzzleTraining.css';
 import { PuzzleData, applyUciMove, buildPuzzleMoveRows } from './puzzleUtils';
 import { usePuzzleGame } from './usePuzzleGame';
-import { resolveBoardColumnWidth } from '../utils/boardLayout';
+import { resolveGameBoardWidth } from '../utils/boardLayout';
 
 const FILTER_STORAGE_KEY = 'puzzleTrainingRatingFilter';
 const ACTIVE_LESSON_STORAGE_KEY = 'educationActiveLesson';
@@ -423,7 +423,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
     const updateBoardWidth = () => {
       const width = stack.clientWidth;
       if (width > 0) {
-        setBoardWidth(resolveBoardColumnWidth(width));
+        setBoardWidth(resolveGameBoardWidth(width));
       }
     };
 
@@ -673,7 +673,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
 
   if (rushFinished && rushMode) {
     return (
-      <div className="page-wrapper page-wrapper--play board-layout-page puzzle-training-page">
+      <div className="page-wrapper page-wrapper--full board-layout-page puzzle-training-page">
         <h2>{t('puzzleRush')}</h2>
         <p>{t('score')}: <strong>{rushScore}</strong></p>
         <button type="button" className="btn btn-primary" onClick={() => navigate('/puzzles')}>{t('back')}</button>
@@ -683,7 +683,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
 
   if (loading && !puzzle) {
     return (
-      <div className="page-wrapper page-wrapper--play board-layout-page puzzle-training-page">
+      <div className="page-wrapper page-wrapper--full board-layout-page puzzle-training-page">
         <div className="puzzle-loading">{t('loading')}</div>
       </div>
     );
@@ -691,7 +691,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
 
   if (!puzzle) {
     return (
-      <div className="page-wrapper page-wrapper--play board-layout-page puzzle-training-page">
+      <div className="page-wrapper page-wrapper--full board-layout-page puzzle-training-page">
         <div className="puzzle-error">{t('puzzleNotAvailable')}</div>
       </div>
     );
@@ -759,7 +759,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
   // Show congratulations screen if lesson is completed
   if (isLessonCompleted) {
     return (
-      <div className="page-wrapper page-wrapper--play board-layout-page puzzle-training-page">
+      <div className="page-wrapper page-wrapper--full board-layout-page puzzle-training-page">
         <div className="lesson-completion-overlay">
           <div className="lesson-completion-card">
             <div className="completion-confetti">
@@ -820,7 +820,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
 
   if (rushFinished && rushMode) {
     return (
-      <div className="page-wrapper page-wrapper--play board-layout-page puzzle-training-page">
+      <div className="page-wrapper page-wrapper--full board-layout-page puzzle-training-page">
         <h2>{t('puzzleRush')}</h2>
         <p>{t('score')}: <strong>{rushScore}</strong></p>
         <button type="button" className="btn btn-primary" onClick={() => navigate('/puzzles')}>{t('back')}</button>
@@ -829,7 +829,7 @@ export const PuzzleTraining: React.FC<{ rushMode?: boolean }> = ({ rushMode = fa
   }
 
   return (
-    <div className="page-wrapper page-wrapper--play board-layout-page puzzle-training-page">
+    <div className="page-wrapper page-wrapper--full board-layout-page puzzle-training-page">
       <div className="board-surface__head puzzle-page-head">
         <h1 className="page-title">{rushMode ? t('puzzleRush') : t('puzzleTraining')}</h1>
         <div className="puzzle-page-head__meta">

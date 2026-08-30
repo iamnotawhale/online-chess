@@ -790,17 +790,6 @@
     padding-top: var(--space-1);
   }
 
-  .game-page .moves-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    align-items: center;
-  }
-
-  .game-page .move-row {
-    display: contents;
-  }
-
   .game-page .move-number {
     font-size: 0.65rem;
     padding-right: 2px;

@@ -8,6 +8,24 @@ import { useTranslation } from '../i18n/LanguageContext';
 import { MoveAnalysis, GameAnalysisResult } from '../utils/analysisTypes';
 import { resolveGameBoardWidth } from '../utils/boardLayout';
 
+const UCI_MOVE_PATTERN = /^[a-h][1-8][a-h][1-8][qrbn]?$/i;
+
+const applyMoveToChess = (chess: Chess, raw: string) => {
+  if (!raw) return null;
+  try {
+    if (UCI_MOVE_PATTERN.test(raw)) {
+      return chess.move({
+        from: raw.slice(0, 2),
+        to: raw.slice(2, 4),
+        promotion: raw.length === 5 ? (raw[4].toLowerCase() as 'q' | 'r' | 'b' | 'n') : undefined,
+      });
+    }
+    return chess.move(raw);
+  } catch {
+    return null;
+  }
+};
+
 const uciToSan = (fen: string, uci?: string): string => {
   if (!uci || uci.length < 4) return uci || '-';
   try {
@@ -26,11 +44,7 @@ const uciToSan = (fen: string, uci?: string): string => {
 const buildFenBeforeMove = (startFen: string | undefined, analysisMoves: MoveAnalysis[], index: number): string => {
   const chess = new Chess(startFen || undefined);
   for (let i = 0; i < index; i++) {
-    try {
-      chess.move(analysisMoves[i].move);
-    } catch {
-      // ignore invalid SAN in replay
-    }
+    applyMoveToChess(chess, analysisMoves[i].move);
   }
   return chess.fen();
 };
@@ -162,45 +176,34 @@ export const GameAnalysis: React.FC = () => {
     setProgress(0);
     setError('');
 
+    const rawMoves = moves.map((m: any) => m.san || m.move || '');
+    let progressInterval: ReturnType<typeof setInterval> | null = null;
+
     try {
-      // Extract moves in SAN format
-      const sanMoves = moves.map((m: any) => m.san || m.move || '');
-      
-      // Setup chess instance for visualizing progress
       const chess = new Chess();
       if (game?.startFen) {
         chess.load(game.startFen);
       }
-      
-      // Simulate progress with move-by-move visualization
-      let moveIndex = 0;
-      const progressInterval = setInterval(() => {
-        if (moveIndex < sanMoves.length) {
-          try {
-            chess.move(sanMoves[moveIndex]);
-            // Update position visualization
-            const moveNum = Math.floor(moveIndex / 2) + 1;
-            const color = moveIndex % 2 === 0 ? '.' : '...';
-            setCurrentMove(`${moveNum}${color} ${sanMoves[moveIndex]}`);
-            moveIndex++;
-            // Cap visualization at 90% - remaining 10% after API response
-            setProgress(Math.min(90, Math.floor((moveIndex / sanMoves.length) * 90)));
-          } catch (e) {
-            console.error('Invalid move during visualization:', sanMoves[moveIndex]);
-            moveIndex++;
-          }
-        }
-      }, 300); // Update every 300ms for smooth visualization
 
-      // Call backend API for analysis
+      let moveIndex = 0;
+      progressInterval = setInterval(() => {
+        if (moveIndex < rawMoves.length) {
+          const moveResult = applyMoveToChess(chess, rawMoves[moveIndex]);
+          const moveNum = Math.floor(moveIndex / 2) + 1;
+          const color = moveIndex % 2 === 0 ? '.' : '...';
+          const label = moveResult?.san || rawMoves[moveIndex];
+          setCurrentMove(`${moveNum}${color} ${label}`);
+          moveIndex++;
+          setProgress(Math.min(90, Math.floor((moveIndex / rawMoves.length) * 90)));
+        }
+      }, 300);
+
       const response = await apiService.analyzeGame(
         gameId!,
-        sanMoves,
+        rawMoves,
         game.startFen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
-        20 // depth
+        15
       );
-
-      clearInterval(progressInterval);
 
       // Transform backend response to frontend format
       const analysisResults: MoveAnalysis[] = response.moves.map((m: any) => ({
@@ -249,6 +252,9 @@ export const GameAnalysis: React.FC = () => {
     } catch (err) {
       setError(`${t('analysisErrorPrefix')}${err instanceof Error ? err.message : t('analysisUnknownError')}`);
     } finally {
+      if (progressInterval) {
+        clearInterval(progressInterval);
+      }
       setAnalyzing(false);
     }
   };
@@ -264,11 +270,10 @@ export const GameAnalysis: React.FC = () => {
     if (game?.startFen) {
       chess.load(game.startFen);
     }
-    const sanMoves = moves.map((m: any) => m.san || m.move || '');
+    const rawMoves = moves.map((m: any) => m.san || m.move || '');
     
     for (let i = 0; i <= moveIndex; i++) {
-      try {
-        const moveResult = chess.move(sanMoves[i]);
+      const moveResult = applyMoveToChess(chess, rawMoves[i]);
         
         // On the selected move, highlight squares
         if (i === moveIndex && moveResult) {
@@ -297,9 +302,6 @@ export const GameAnalysis: React.FC = () => {
           setHighlightSquares(highlights);
           setArrows(nextArrows);
         }
-      } catch (e) {
-        console.error('Error replaying move:', sanMoves[i]);
-      }
     }
     
     setChessInstance(chess);
@@ -400,14 +402,10 @@ export const GameAnalysis: React.FC = () => {
       chess.load(game.startFen);
     }
 
-    const sanMoves = moves.map((m: any) => m.san || m.move || '').slice(0, moveCount);
+    const rawMoves = moves.map((m: any) => m.san || m.move || '').slice(0, moveCount);
 
-    for (const sanMove of sanMoves) {
-      try {
-        chess.move(sanMove);
-      } catch (error) {
-        // Keep the last known phase if move cannot be applied
-      }
+    for (const rawMove of rawMoves) {
+      applyMoveToChess(chess, rawMove);
       const { phase, queens } = getPhaseValue(chess);
       const stage = getPhaseStage(phase, queens, stageByMove.length + 1);
       stageByMove.push(stage);
