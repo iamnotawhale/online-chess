@@ -1,25 +1,29 @@
 /* Lobby list */
 
 .lobby-game-card {
-  border: 1px solid var(--line-soft);
-  border-radius: var(--r-md);
-  padding: var(--space-3) var(--space-4);
+  border: none;
+  border-bottom: var(--rule) solid var(--line-faint);
+  border-radius: 0;
+  padding: var(--space-3) 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  background: var(--surface-2);
-  transition: all var(--trans-fast);
+  background: transparent;
+  transition: background-color var(--trans-fast);
   cursor: pointer;
 }
 
+.lobby-game-card:last-child {
+  border-bottom: none;
+}
+
 .lobby-game-card:not(.own-game):hover {
-  border-color: rgb(var(--accent-rgb) / 0.35);
-  box-shadow: var(--shadow-md);
+  background: rgb(var(--accent-rgb) / 0.03);
+  box-shadow: none;
 }
 
 .lobby-game-card.own-game {
   cursor: default;
-  border-color: rgb(var(--accent-rgb) / 0.2);
 }
 
 .lobby-card-top {
@@ -77,7 +81,7 @@
 }
 
 .games-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: var(--gap-card);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }

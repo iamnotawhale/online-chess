@@ -1,10 +1,18 @@
-/* Profile page — edit form & preferences (shared layout in styles/ui.css) */
+.profile-content > .page-section {
+  padding-top: var(--gap-section);
+  border-top: var(--rule) solid var(--line-faint);
+  margin-top: var(--gap-section);
+}
+
+.profile-content > .page-section:first-of-type {
+  margin-top: var(--gap-section);
+}
 
 .bio-section {
-  padding: var(--space-4);
-  border-radius: var(--r-md);
-  border: 1px solid var(--line-soft);
-  background: var(--surface-2);
+  padding: 0;
+  border-radius: 0;
+  border: none;
+  background: transparent;
 }
 
 .bio-section p {
@@ -42,10 +50,11 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  padding: var(--space-4);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--r-md);
-  background: var(--surface-2);
+  padding: var(--space-4) 0 0;
+  border: none;
+  border-top: var(--rule) solid var(--line-faint);
+  border-radius: 0;
+  background: transparent;
 }
 
 .pref-row {

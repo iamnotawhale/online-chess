@@ -315,7 +315,7 @@ export const PublicProfile: React.FC = () => {
   return (
     <div className="page-wrapper profile-page">
       <div className="profile-content">
-        <div className="profile-header section">
+        <div className="profile-header">
           <div className="profile-avatar">
             {getAvatarDisplay()}
           </div>
@@ -385,7 +385,7 @@ export const PublicProfile: React.FC = () => {
           </div>
         </div>
 
-        <div className="section profile-stats page-section">
+        <div className="profile-stats page-section">
           <h2 className="section-title">{t('statistics')}</h2>
           <div className="stats-grid">
             <div className="stat-card">
@@ -411,7 +411,7 @@ export const PublicProfile: React.FC = () => {
           </div>
         </div>
 
-        <div className="section games-section page-section">
+        <div className="games-section page-section">
           <h2 className="section-title">{t('gameHistory')}</h2>
           
           {currentUser && profile && currentUser.id !== profile.id && (

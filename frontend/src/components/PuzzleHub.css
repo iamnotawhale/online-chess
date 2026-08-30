@@ -2,18 +2,16 @@
   margin-bottom: var(--space-2);
 }
 
-.puzzle-hub-rating {
-  color: var(--muted);
-  margin-bottom: var(--space-5);
-  font-size: 0.9375rem;
-}
-
 .puzzle-hub-guest-note {
   margin-top: var(--space-4);
   color: var(--muted);
   font-size: 0.875rem;
 }
 
-.puzzle-hub-card .section-title {
+.puzzle-hub-block .section-title {
   margin-bottom: var(--space-3);
+}
+
+.puzzle-hub-block .daily-puzzle-widget .puzzle-header-title {
+  display: none;
 }

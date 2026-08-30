@@ -327,7 +327,7 @@ export const Profile: React.FC = () => {
   return (
     <div className="page-wrapper profile-page">
       <div className="profile-content">
-        <div className="profile-header section">
+        <div className="profile-header">
           <div className="profile-avatar">
             {getAvatarDisplay()}
           </div>
@@ -502,7 +502,7 @@ export const Profile: React.FC = () => {
 
         <RatingChart />
 
-        <div className="section profile-stats page-section">
+        <div className="profile-stats page-section">
           <h2 className="section-title">{t('statistics')}</h2>
           <div className="stats-grid">
             <div className="stat-card">

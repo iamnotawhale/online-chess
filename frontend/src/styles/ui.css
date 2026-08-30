@@ -40,6 +40,18 @@
   margin-bottom: 0;
 }
 
+.page-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.page-flow > .page-section + .page-section,
+.page-flow > section + section {
+  padding-top: var(--gap-section);
+  border-top: var(--rule) solid var(--line-faint);
+}
+
 /* ---- Section / card surfaces — base styles in architect.css ---- */
 
 .section > p,
@@ -63,15 +75,20 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  padding: var(--space-4);
-  background: var(--surface-2);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--r-md);
-  transition: border-color var(--trans-fast), box-shadow var(--trans-fast);
+  padding: var(--space-4) 0;
+  background: transparent;
+  border: none;
+  border-bottom: var(--rule) solid var(--line-faint);
+  border-radius: 0;
+  transition: background-color var(--trans-fast);
+}
+
+.list-card:last-child {
+  border-bottom: none;
 }
 
 .list-card:hover {
-  border-color: var(--line);
+  background: rgb(var(--accent-rgb) / 0.03);
 }
 
 .list-card__row {
@@ -111,56 +128,62 @@
   flex: 0 1 auto;
 }
 
-/* ---- CTA grid (Play hub, puzzle hub) ---- */
+/* ---- Quick actions (Play hub) ---- */
 .cta-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
-  gap: var(--gap-card);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
   margin-bottom: var(--gap-section);
 }
 
 .cta-card {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-1);
-  padding: var(--space-4);
-  border: var(--rule) solid var(--line-soft);
-  border-radius: var(--r-md);
-  background: var(--surface);
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border: none;
+  border-radius: var(--r-pill);
+  background: transparent;
   cursor: pointer;
   text-align: left;
-  transition: all var(--trans-fast);
-  color: inherit;
+  transition: background-color var(--trans-fast), color var(--trans-fast);
+  color: var(--muted);
   font: inherit;
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
 }
 
 .cta-card:hover {
-  border-color: var(--line);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
+  background: rgb(var(--accent-rgb) / 0.06);
+  color: var(--text);
+  transform: none;
+  box-shadow: none;
 }
 
 .cta-card--primary {
-  border-color: rgb(var(--accent-rgb) / 0.25);
-  background: linear-gradient(180deg, rgb(var(--accent-rgb) / 0.1), rgb(var(--accent-rgb) / 0.02));
+  background: rgb(var(--accent-rgb) / 0.08);
+  color: var(--accent-ink);
+  border: var(--rule) solid rgb(var(--accent-rgb) / 0.18);
+}
+
+.cta-card--primary:hover {
+  background: rgb(var(--accent-rgb) / 0.12);
 }
 
 .cta-card__icon {
-  font-size: 1.35rem;
+  font-size: 1.1rem;
   line-height: 1;
+  flex-shrink: 0;
 }
 
 .cta-card__title {
   font-weight: 700;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
 }
 
 .cta-card__desc {
-  font-size: 0.78rem;
-  color: var(--muted);
-  line-height: 1.4;
+  display: none;
 }
 
 /* ---- Layout grids ---- */
@@ -172,9 +195,14 @@
 }
 
 .layout-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--gap-card);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.layout-cards > * + * {
+  padding-top: var(--gap-section);
+  border-top: var(--rule) solid var(--line-faint);
 }
 
 .layout-sticky-side {
@@ -224,15 +252,15 @@
 .page-hero {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
   flex-wrap: wrap;
   gap: var(--space-4);
-  padding: var(--space-5) var(--space-6);
+  padding: 0;
   margin-bottom: var(--gap-section);
-  background: linear-gradient(180deg, rgb(var(--accent-rgb) / 0.06), rgb(var(--accent-rgb) / 0.02));
-  border: 1px solid var(--line-soft);
-  border-radius: var(--r-xl);
-  box-shadow: var(--shadow-sm);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .page-hero__stat {
@@ -261,21 +289,26 @@
 
 /* ---- Game history cards ---- */
 .game-card {
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--r-md);
-  border: 1px solid var(--line-soft);
-  border-left-width: 3px;
-  background: rgb(var(--accent-rgb) / 0.03);
+  padding: var(--space-3) 0;
+  border-radius: 0;
+  border: none;
+  border-bottom: var(--rule) solid var(--line-faint);
+  border-left: 3px solid transparent;
+  background: transparent;
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
   cursor: pointer;
-  transition: border-color var(--trans-fast), box-shadow var(--trans-fast);
+  transition: background-color var(--trans-fast), border-color var(--trans-fast);
+}
+
+.game-card:last-child {
+  border-bottom: none;
 }
 
 .game-card:hover {
-  border-color: var(--line);
-  box-shadow: var(--shadow-sm);
+  background: rgb(var(--accent-rgb) / 0.03);
+  box-shadow: none;
 }
 
 .game-card--won { border-left-color: var(--success-text); }
@@ -392,32 +425,25 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
   gap: var(--gap-card);
+  padding-top: var(--space-2);
 }
 
 .stat-card {
-  background: var(--surface-2);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--r-md);
-  padding: var(--space-4);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: var(--space-3) 0;
   text-align: center;
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
 }
 
-.stat-card.win {
-  border-color: var(--success-border);
-  background: var(--success-bg);
-}
-
-.stat-card.draw {
-  border-color: var(--neutral-border);
-  background: var(--neutral-bg);
-}
-
+.stat-card.win,
+.stat-card.draw,
 .stat-card.loss {
-  border-color: var(--danger-border);
-  background: var(--danger-bg);
+  background: transparent;
+  border: none;
 }
 
 .stat-card .stat-label {
@@ -511,18 +537,23 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  padding: var(--space-4);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--r-md);
+  padding: var(--space-3) 0;
+  border: none;
+  border-bottom: var(--rule) solid var(--line-faint);
+  border-radius: 0;
   text-decoration: none;
   color: inherit;
-  background: var(--surface-2);
-  transition: border-color var(--trans-fast), box-shadow var(--trans-fast);
+  background: transparent;
+  transition: background-color var(--trans-fast);
+}
+
+.arena-list-item:last-child {
+  border-bottom: none;
 }
 
 .arena-list-item:hover {
-  border-color: var(--line);
-  box-shadow: var(--shadow-sm);
+  background: rgb(var(--accent-rgb) / 0.03);
+  box-shadow: none;
 }
 
 .arena-standings {
@@ -553,16 +584,9 @@
     padding: var(--space-3) var(--space-3) calc(var(--bottom-nav-height) + var(--space-8));
   }
 
-  .card,
-  .section,
-  .panel {
-    padding: var(--space-4);
-  }
-
   .page-hero {
-    padding: var(--space-4);
     flex-direction: column;
-    align-items: stretch;
+    align-items: flex-start;
   }
 
   .page-hero__stat {
@@ -570,11 +594,7 @@
   }
 
   .cta-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .layout-cards {
-    grid-template-columns: 1fr;
+    gap: var(--space-2);
   }
 
   .profile-actions .btn {
@@ -611,8 +631,8 @@
 }
 
 @media (max-width: 480px) {
-  .cta-grid {
-    grid-template-columns: 1fr;
+  .cta-card__title {
+    font-size: 0.8125rem;
   }
 
   .list-card__actions .btn {

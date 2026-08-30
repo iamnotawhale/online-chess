@@ -96,7 +96,7 @@ export const Dashboard: React.FC = () => {
       </div>
 
       <div className="dashboard-grid">
-        <div className="section">
+        <div className="page-section">
           <h2 className="section-title">{t('overview')}</h2>
           <p className="section-desc">{t('playHubSubtitle')}</p>
           <Link to="/play" className="btn btn-primary btn-block">{t('navPlay')}</Link>
@@ -104,7 +104,7 @@ export const Dashboard: React.FC = () => {
 
         <DailyPuzzle />
 
-        <div className="section">
+        <div className="page-section">
           <h2 className="section-title">{t('myGames')} ({games.length + finishedGames.length})</h2>
           {games.length === 0 && finishedGames.length === 0 ? (
             <p className="empty-state">{t('noGames')}</p>
@@ -177,7 +177,7 @@ export const Dashboard: React.FC = () => {
           )}
         </div>
 
-        <div className="section education-widget">
+        <div className="page-section education-widget">
           <h2 className="section-title">{t('navLearn')}</h2>
           <p className="section-desc">{t('educationFeatureStructured')}</p>
           <Link to="/education" className="btn btn-primary btn-block">{t('openEducation')}</Link>

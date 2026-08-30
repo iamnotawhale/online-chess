@@ -284,9 +284,26 @@ a.link:hover,
   background-image: var(--hatch);
 }
 
-/* ---- Cards & panels (ARCHITECT .card / .panel / .zone) ---- */
+/* ---- Page sections (flow — no box) ---- */
+.section {
+  position: relative;
+  min-width: 0;
+  max-width: 100%;
+  margin-bottom: var(--gap-section);
+}
+
+.section:last-child {
+  margin-bottom: 0;
+}
+
+.page-wrapper .section + .section,
+.page-flow .page-section + .page-section {
+  padding-top: var(--gap-section);
+  border-top: var(--rule) solid var(--line-faint);
+}
+
+/* ---- Cards & panels (boxed surfaces — use sparingly) ---- */
 .card,
-.section,
 .panel {
   position: relative;
   background: var(--surface);
@@ -303,8 +320,7 @@ a.link:hover,
     box-shadow var(--trans-fast);
 }
 
-.card,
-.section {
+.card {
   padding: var(--space-5);
 }
 
@@ -314,8 +330,7 @@ a.link:hover,
 }
 
 a.card:hover,
-button.card:hover,
-.cta-card:hover {
+button.card:hover {
   border-color: var(--line);
   background: var(--surface-2);
   transform: translateY(-2px);
@@ -327,16 +342,16 @@ button.card:hover,
 .panel-head,
 .panel-title,
 .section h2.section-title {
-  margin: 0 0 var(--space-4);
-  padding: 0 0 var(--space-3);
-  border-bottom: var(--rule) solid var(--line-faint);
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  border-bottom: none;
   background: transparent;
   font-family: var(--font-display);
-  font-size: var(--t-xs);
+  font-size: var(--t-sm);
   font-weight: 700;
-  letter-spacing: var(--track-label);
-  text-transform: uppercase;
-  color: var(--accent-ink);
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--text);
 }
 
 .section > h2:not(.section-title) {
@@ -470,11 +485,10 @@ button.card:hover,
   flex-direction: column;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-8) var(--space-5);
-  border: var(--rule) dashed var(--line-soft);
-  border-radius: var(--r-md);
-  background-color: var(--surface);
-  background-image: var(--hatch);
+  padding: var(--space-6) 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
   text-align: center;
   color: var(--muted-2);
   font-size: var(--t-sm);

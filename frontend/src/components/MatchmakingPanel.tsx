@@ -146,7 +146,7 @@ export const MatchmakingPanel: React.FC = () => {
   };
 
   return (
-    <div className="section matchmaking-section">
+    <div className="matchmaking-section">
       <h2 className="section-title">{t('quickPlay')}</h2>
       <div className="matchmaking-presets">
         {MATCHMAKING_PRESETS.map((preset) => (

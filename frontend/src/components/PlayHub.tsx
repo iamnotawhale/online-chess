@@ -48,7 +48,7 @@ export const PlayHub: React.FC = () => {
         <div id="quick-play" className="play-hub-main">
           <MatchmakingPanel />
         </div>
-        <div className="layout-sticky-side section">
+        <div className="layout-sticky-side">
           <Lobby
             key={lobbyKey}
             onGameStart={(id) => navigate(`/game/${id}`)}

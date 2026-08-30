@@ -117,7 +117,7 @@ export const DailyPuzzle: React.FC = () => {
     : null;
 
   return (
-    <div className="section daily-puzzle-widget">
+    <div className="daily-puzzle-widget">
       <h2 className="puzzle-header-title">
         <span>{t('dailyPuzzle')}</span>
         <span className="puzzle-rating">⭐ {puzzle.rating}</span>
