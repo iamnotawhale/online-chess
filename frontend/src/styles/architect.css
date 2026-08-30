@@ -147,6 +147,58 @@ a.link:hover,
 .btn--block {
   display: flex;
   width: 100%;
+  max-width: 100%;
+}
+
+/* Tile / preset buttons (matchmaking, color pickers) */
+.tile-btn,
+.preset-btn,
+.color-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 52px;
+  height: auto;
+  width: 100%;
+  min-width: 0;
+  padding: var(--space-2) var(--space-2);
+  border: var(--rule) solid var(--line-soft);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: var(--t-xs);
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: normal;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--trans-fast);
+  box-sizing: border-box;
+}
+
+.tile-btn:hover:not(:disabled),
+.preset-btn:hover:not(:disabled),
+.color-btn:hover:not(:disabled) {
+  border-color: var(--line);
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.tile-btn.active,
+.preset-btn.active,
+.color-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  box-shadow: var(--shadow-glow);
+}
+
+.color-btn {
+  flex-direction: row;
+  min-height: 44px;
 }
 
 .btn:disabled,
@@ -241,6 +293,9 @@ a.link:hover,
   border: var(--rule) solid var(--line-soft);
   border-radius: var(--r-md);
   box-shadow: var(--shadow-sm);
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   transition:
     border-color var(--trans-fast),
     background-color var(--trans-fast),
@@ -273,10 +328,9 @@ button.card:hover,
 .panel-title,
 .section h2.section-title {
   margin: 0 0 var(--space-4);
-  padding: var(--space-4) var(--space-5);
-  padding-bottom: var(--space-3);
+  padding: 0 0 var(--space-3);
   border-bottom: var(--rule) solid var(--line-faint);
-  background: var(--surface-solid);
+  background: transparent;
   font-family: var(--font-display);
   font-size: var(--t-xs);
   font-weight: 700;
@@ -285,15 +339,23 @@ button.card:hover,
   color: var(--accent-ink);
 }
 
-.section:not(.panel) > .section-title:first-child,
-.section:not(.panel) > h2.section-title {
-  margin: calc(var(--space-5) * -1) calc(var(--space-5) * -1) var(--space-4);
-  padding-top: var(--space-4);
+.section > h2:not(.section-title) {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-display);
+  font-size: var(--t-xs);
+  font-weight: 700;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--accent-ink);
 }
 
 .panel .section-title,
 .panel .panel-header {
   margin: 0;
+  padding: var(--space-4) var(--space-5);
+  padding-bottom: var(--space-3);
+  background: var(--surface-solid);
+  border-bottom: var(--rule) solid var(--line-faint);
 }
 
 /* ---- Tabs (ARCHITECT underline style) ---- */
@@ -550,6 +612,35 @@ button.card:hover,
 }
 
 @media (max-width: 768px) {
+  .btn {
+    white-space: normal;
+    height: auto;
+    min-height: 38px;
+    padding-top: var(--space-2);
+    padding-bottom: var(--space-2);
+    max-width: 100%;
+  }
+
+  .btn-sm {
+    min-height: 30px;
+  }
+
+  .tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab,
+  .tab-btn {
+    flex-shrink: 0;
+  }
+
   .modal-overlay {
     align-items: flex-end;
     padding: 0;

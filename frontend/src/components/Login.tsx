@@ -48,6 +48,7 @@ export const Login: React.FC = () => {
             <label>{t('email')}:</label>
             <input
               type="email"
+              className="form-input"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -58,13 +59,14 @@ export const Login: React.FC = () => {
             <label>{t('password')}:</label>
             <input
               type="password"
+              className="form-input"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               disabled={loading}
             />
           </div>
-          <button type="submit" disabled={loading}>
+          <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
             {loading ? t('loading') : t('loginButton')}
           </button>
         </form>

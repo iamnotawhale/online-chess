@@ -866,7 +866,7 @@ export const GameView: React.FC = () => {
           {!isParticipant && <span className="ws-badge">👁 {t('spectatorView')}</span>}
           <button
             type="button"
-            className="share-link-btn"
+            className="btn btn-secondary btn-sm share-link-btn"
             onClick={handleShareGame}
             title={t('copy')}
             aria-label={t('copy')}
@@ -1076,10 +1076,10 @@ export const GameView: React.FC = () => {
                 <div className="draw-offer">
                   <p>{t('opponentOffersDrawMsg')}</p>
                   <div className="draw-actions">
-                    <button onClick={() => handleRespondToDraw(true)} className="accept-btn">
+                    <button type="button" onClick={() => handleRespondToDraw(true)} className="btn btn-success">
                       {t('acceptBtn')}
                     </button>
-                    <button onClick={() => handleRespondToDraw(false)} className="decline-btn">
+                    <button type="button" onClick={() => handleRespondToDraw(false)} className="btn btn-danger">
                       {t('declineBtn')}
                     </button>
                   </div>
@@ -1091,11 +1091,11 @@ export const GameView: React.FC = () => {
                 </div>
               )}
               {!game.drawOfferedById && (
-                <button type="button" onClick={handleOfferDraw} className="offer-draw-btn">
+                <button type="button" onClick={handleOfferDraw} className="btn btn-secondary btn-block offer-draw-btn">
                   {t('offerDraw')}
                 </button>
               )}
-              <button type="button" onClick={handleResign} className="resign-btn">
+              <button type="button" onClick={handleResign} className="btn btn-danger btn-block resign-btn">
                 {t('resign')}
               </button>
               {moveHistory.length < 4 && (

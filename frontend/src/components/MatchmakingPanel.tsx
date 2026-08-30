@@ -147,7 +147,7 @@ export const MatchmakingPanel: React.FC = () => {
 
   return (
     <div className="section matchmaking-section">
-      <h2>{t('quickPlay')}</h2>
+      <h2 className="section-title">{t('quickPlay')}</h2>
       <div className="matchmaking-presets">
         {MATCHMAKING_PRESETS.map((preset) => (
           <button
@@ -186,7 +186,7 @@ export const MatchmakingPanel: React.FC = () => {
             <input type="checkbox" checked={customIsRated} onChange={(e) => setCustomIsRated(e.target.checked)} />
             {t('rated')}
           </label>
-          <button type="button" className="matchmaking-btn" onClick={handleStartCustomMatchmaking} disabled={matchmakingLoading}>
+          <button type="button" className="btn btn-primary btn-block" onClick={handleStartCustomMatchmaking} disabled={matchmakingLoading}>
             {t('findOpponent')}
           </button>
         </div>

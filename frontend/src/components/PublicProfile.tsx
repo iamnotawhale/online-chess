@@ -471,7 +471,7 @@ export const PublicProfile: React.FC = () => {
               {totalPages > 1 && (
                 <div className="pagination-controls">
                   <button
-                    className="pagination-btn"
+                    className="btn btn-secondary pagination-btn"
                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                     disabled={currentPage === 1}
                   >
@@ -483,7 +483,7 @@ export const PublicProfile: React.FC = () => {
                   </span>
 
                   <button
-                    className="pagination-btn"
+                    className="btn btn-secondary pagination-btn"
                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                     disabled={currentPage === totalPages}
                   >

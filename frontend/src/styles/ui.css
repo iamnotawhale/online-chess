@@ -9,6 +9,9 @@
   padding: var(--space-4) var(--gap-page) var(--space-10);
   min-height: calc(100vh - var(--header-height));
   box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  overflow-x: clip;
 }
 
 .page-title {
@@ -111,7 +114,7 @@
 /* ---- CTA grid (Play hub, puzzle hub) ---- */
 .cta-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
   gap: var(--gap-card);
   margin-bottom: var(--gap-section);
 }
@@ -458,18 +461,15 @@
 }
 
 .pagination-btn {
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
   padding: 0;
-  background: var(--surface-2);
-  color: var(--text);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--r-md);
-  cursor: pointer;
-  font-size: 1.125rem;
-  font-weight: 600;
-  transition: all var(--trans-fast);
-  display: flex;
+  flex-shrink: 0;
+}
+
+.pagination-controls .btn.pagination-btn {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
 }
@@ -561,6 +561,24 @@
 
   .page-hero {
     padding: var(--space-4);
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .page-hero__stat {
+    align-items: flex-start;
+  }
+
+  .cta-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .layout-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-actions .btn {
+    flex: 1 1 calc(50% - var(--space-2));
   }
 
   .list-card__row {
@@ -589,5 +607,15 @@
 
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .cta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .list-card__actions .btn {
+    flex: 1 1 100%;
   }
 }

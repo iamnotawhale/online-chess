@@ -12,6 +12,8 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: clip;
+  max-width: 100%;
 }
 
 body {
@@ -20,6 +22,9 @@ body {
   min-height: 100dvh;
   font-family: var(--font-body);
   color: var(--text);
+  overflow-x: clip;
+  max-width: 100%;
+  min-width: 0;
   background:
     radial-gradient(1200px 600px at 8% -8%, var(--fx-aurora), transparent 55%),
     radial-gradient(900px 480px at 92% 0%, rgb(var(--accent-deep-rgb) / 0.08), transparent 50%),
@@ -42,6 +47,9 @@ body::after {
 #root {
   position: relative;
   z-index: 1;
+  overflow-x: clip;
+  max-width: 100%;
+  min-width: 0;
 }
 
 h1, h2, h3, h4, h5, h6 {

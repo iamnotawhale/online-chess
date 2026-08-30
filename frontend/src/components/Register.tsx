@@ -64,6 +64,7 @@ export const Register: React.FC = () => {
             <label>{t('usernameLabel')}:</label>
             <input
               type="text"
+              className="form-input"
               value={username}
               minLength={3}
               maxLength={32}
@@ -76,6 +77,7 @@ export const Register: React.FC = () => {
             <label>{t('email')}:</label>
             <input
               type="email"
+              className="form-input"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -86,6 +88,7 @@ export const Register: React.FC = () => {
             <label>{t('passwordLabel')}:</label>
             <input
               type="password"
+              className="form-input"
               value={password}
               minLength={6}
               maxLength={64}
@@ -98,6 +101,7 @@ export const Register: React.FC = () => {
             <label>{t('confirmPassword')}:</label>
             <input
               type="password"
+              className="form-input"
               value={confirmPassword}
               minLength={6}
               maxLength={64}
@@ -106,7 +110,7 @@ export const Register: React.FC = () => {
               disabled={loading}
             />
           </div>
-          <button type="submit" disabled={loading}>
+          <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
             {loading ? t('loading') : t('registerButton')}
           </button>
         </form>

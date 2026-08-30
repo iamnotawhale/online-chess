@@ -477,7 +477,7 @@ export const Education: React.FC = () => {
                 <span>📖 {category.subtopics.length} {t('openingCount')}</span>
                 <span>💎 {category.subtopics.reduce((acc, s) => acc + s.puzzles_count, 0).toLocaleString()} {t('puzzleCount')}</span>
               </div>
-              <button className="category-btn">{t('explore')}</button>
+              <button type="button" className="btn btn-primary btn-block category-btn">{t('explore')}</button>
             </div>
           ))}
         </div>
@@ -528,7 +528,7 @@ export const Education: React.FC = () => {
                 </span>
               </div>
 
-              <button className="card-btn">{t('explore')}</button>
+              <button type="button" className="btn btn-primary btn-block card-btn">{t('explore')}</button>
             </div>
           ))}
         </div>
@@ -662,12 +662,12 @@ export const Education: React.FC = () => {
 
             <div className="lesson-action">
               <button
-                className="btn-primary"
+                className="btn btn-primary btn-block"
                 onClick={() => startLessonTraining(selectedLesson || selectedSubtopic.lessons[0])}
               >
                 {t('startPuzzleTraining')} ({(selectedLesson || selectedSubtopic.lessons[0]).puzzle_limit} {t('tasksCompleted')})
               </button>
-              <button className="btn-secondary" onClick={handleReadMore}>
+              <button type="button" className="btn btn-secondary btn-block" onClick={handleReadMore}>
                 {t('readMore')}
               </button>
             </div>

@@ -143,21 +143,23 @@
 
 .share-link-btn {
   width: 32px;
-  height: 32px;
-  border-radius: 4px;
-  border: 1px solid var(--border);
-  background: var(--surface-2);
-  color: var(--text);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s ease;
+  min-width: 32px;
+  padding: 0;
 }
 
-.share-link-btn:hover {
-  background: var(--surface-3);
+.draw-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.draw-actions .btn {
+  flex: 1 1 calc(50% - var(--space-1));
+  min-width: 0;
+}
+
+.offer-draw-btn {
+  margin-bottom: var(--space-2);
 }
 
 .game-content {
@@ -407,41 +409,6 @@
   font-weight: 600;
 }
 
-.offer-draw-btn, .resign-btn {
-  width: 100%;
-  padding: 12px 12px;
-  min-height: 48px;
-  background: var(--accent);
-  color: var(--accent-contrast);
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-  font-size: 14px;
-  transition: all 0.2s;
-}
-
-.offer-draw-btn {
-  background: var(--info-bg);
-  color: var(--info-text);
-  border: 1px solid var(--info-border);
-  margin-bottom: 8px;
-}
-
-.offer-draw-btn:hover {
-  background: var(--info-border);
-}
-
-.resign-btn {
-  background: var(--danger-bg);
-  color: var(--danger-text);
-  border: 1px solid var(--danger-border);
-}
-
-.resign-btn:hover {
-  background: var(--danger-border);
-}
-
 .draw-offer {
   background: var(--warning-bg);
   border: 1px solid var(--warning-border);
@@ -455,42 +422,6 @@
   font-weight: 600;
   color: var(--warning-text);
   font-size: 14px;
-}
-
-.draw-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.draw-actions button {
-  flex: 1;
-  padding: 8px;
-  border: none;
-  border-radius: 4px;
-  font-weight: 500;
-  cursor: pointer;
-  font-size: 13px;
-  transition: all 0.2s;
-}
-
-.accept-btn {
-  background: var(--success-bg);
-  color: var(--success-text);
-  border: 1px solid var(--success-border);
-}
-
-.accept-btn:hover {
-  background: var(--success-border);
-}
-
-.decline-btn {
-  background: var(--danger-bg);
-  color: var(--danger-text);
-  border: 1px solid var(--danger-border);
-}
-
-.decline-btn:hover {
-  background: var(--danger-border);
 }
 
 .draw-offer-sent {
