@@ -18,8 +18,8 @@ services:
 
   backend:
     build:
-      context: .
-      dockerfile: backend/Dockerfile.prebuilt
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: chess_backend_prod
     restart: always
     environment:
@@ -42,7 +42,9 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: frontend/Dockerfile.prebuilt
+      dockerfile: frontend/Dockerfile
+      args:
+        VITE_API_URL: ${FRONTEND_URL:-https://onchess.online}
     container_name: chess_frontend_prod
     restart: always
     networks:

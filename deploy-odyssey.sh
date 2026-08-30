@@ -75,22 +75,9 @@ docker exec chess_postgres_prod pg_isready -U chess -d chessonline
 echo "Applying migrations..."
 ./db/apply-migrations.sh
 
-echo "Preparing backend JAR..."
-mkdir -p deploy
-if [ ! -f deploy/chessonline-backend.jar ]; then
-    echo "Fetching backend JAR from pol..."
-    scp -o StrictHostKeyChecking=accept-new "root@${POL_HOST:-144.31.102.74}:/tmp/chessonline-backend.jar" deploy/chessonline-backend.jar
-fi
-
-echo "Preparing frontend dist..."
-if [ ! -f frontend-dist/index.html ]; then
-    echo "Building frontend..."
-    (cd frontend && npm ci && npm run build)
-    rm -rf frontend-dist && cp -a frontend/dist frontend-dist
-fi
-
-echo "Building backend and frontend..."
-$DOCKER_COMPOSE -f "$COMPOSE_FILE" up -d --build backend frontend
+echo "Building and starting backend and frontend from source..."
+$DOCKER_COMPOSE -f "$COMPOSE_FILE" build --pull frontend backend
+$DOCKER_COMPOSE -f "$COMPOSE_FILE" up -d --force-recreate backend frontend
 
 echo "Waiting for backend..."
 for _ in $(seq 1 30); do
