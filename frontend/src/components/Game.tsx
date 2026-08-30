@@ -849,7 +849,7 @@ export const GameView: React.FC = () => {
   const incrementSeconds = getIncrementSeconds(game.timeControl);
 
   return (
-    <div className="page-wrapper">
+    <div className="page-wrapper page-wrapper--full">
       {toast && (
         <div className={`game-toast ${toast.type || 'info'}`}>
           {toast.message}

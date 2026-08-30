@@ -99,7 +99,7 @@ export const Dashboard: React.FC = () => {
         <div className="page-section">
           <h2 className="section-title">{t('overview')}</h2>
           <p className="section-desc">{t('playHubSubtitle')}</p>
-          <Link to="/play" className="btn btn-primary btn-block">{t('navPlay')}</Link>
+          <Link to="/play" className="btn btn-primary">{t('navPlay')}</Link>
         </div>
 
         <DailyPuzzle />
@@ -180,7 +180,7 @@ export const Dashboard: React.FC = () => {
         <div className="page-section education-widget">
           <h2 className="section-title">{t('navLearn')}</h2>
           <p className="section-desc">{t('educationFeatureStructured')}</p>
-          <Link to="/education" className="btn btn-primary btn-block">{t('openEducation')}</Link>
+          <Link to="/education" className="btn btn-primary">{t('openEducation')}</Link>
         </div>
       </div>
     </div>

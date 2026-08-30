@@ -18,7 +18,14 @@
 
   --header-height: 72px;
   --bottom-nav-height: 56px;
-  --container: min(1200px, calc(100vw - 32px));
+  /* Layout widths — Lichess narrow hub + ARCHITECT readable column */
+  --container-full: min(1140px, calc(100vw - 32px));
+  --container-play: min(860px, calc(100vw - 32px));
+  --container-wide: min(780px, calc(100vw - 32px));
+  --container: min(640px, calc(100vw - 32px));
+  --content-col: 480px;
+  --sidebar-col: 280px;
+  --btn-max: 220px;
 
   /* Spacing scale (4px base) */
   --space-1: 4px;
@@ -30,7 +37,7 @@
   --space-8: 32px;
   --space-10: 40px;
   --gap-page: var(--space-4);
-  --gap-section: var(--space-5);
+  --gap-section: var(--space-6);
   --gap-card: var(--space-3);
   --gap-inline: var(--space-2);
 

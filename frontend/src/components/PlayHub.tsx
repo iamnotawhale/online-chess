@@ -17,9 +17,11 @@ export const PlayHub: React.FC = () => {
   const [lobbyKey, setLobbyKey] = useState(0);
 
   return (
-    <div className="page-wrapper play-hub">
-      <h1 className="page-title">{t('navPlay')}</h1>
-      <p className="page-subtitle">{t('playHubSubtitle')}</p>
+    <div className="page-wrapper page-wrapper--play play-hub">
+      <div className="play-hub__intro">
+        <h1 className="page-title">{t('navPlay')}</h1>
+        <p className="page-subtitle">{t('playHubSubtitle')}</p>
+      </div>
 
       <div className="cta-grid">
         <button type="button" className="cta-card cta-card--primary" onClick={() => document.getElementById('quick-play')?.scrollIntoView({ behavior: 'smooth' })}>

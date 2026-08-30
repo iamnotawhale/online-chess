@@ -186,7 +186,7 @@ export const MatchmakingPanel: React.FC = () => {
             <input type="checkbox" checked={customIsRated} onChange={(e) => setCustomIsRated(e.target.checked)} />
             {t('rated')}
           </label>
-          <button type="button" className="btn btn-primary btn-block" onClick={handleStartCustomMatchmaking} disabled={matchmakingLoading}>
+          <button type="button" className="btn btn-primary" onClick={handleStartCustomMatchmaking} disabled={matchmakingLoading}>
             {t('findOpponent')}
           </button>
         </div>

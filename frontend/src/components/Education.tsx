@@ -441,7 +441,7 @@ export const Education: React.FC = () => {
   // View: Category selection
   if (!selectedCategory) {
     return (
-      <div className="page-wrapper education-page">
+      <div className="page-wrapper page-wrapper--wide education-page">
         <div className="page-hero education-header">
           <div className="header-info">
             <h1 className="page-title">{t('educationTitle')}</h1>
@@ -477,7 +477,7 @@ export const Education: React.FC = () => {
                 <span>📖 {category.subtopics.length} {t('openingCount')}</span>
                 <span>💎 {category.subtopics.reduce((acc, s) => acc + s.puzzles_count, 0).toLocaleString()} {t('puzzleCount')}</span>
               </div>
-              <button type="button" className="btn btn-primary btn-block category-btn">{t('explore')}</button>
+              <button type="button" className="btn btn-primary btn-sm category-btn">{t('explore')}</button>
             </div>
           ))}
         </div>
@@ -488,7 +488,7 @@ export const Education: React.FC = () => {
   // View: Opening selection within category
   if (!selectedSubtopic) {
     return (
-      <div className="page-wrapper education-page">
+      <div className="page-wrapper page-wrapper--wide education-page">
         <div className="category-header">
           <h1>
             <span className="icon">{selectedCategory.icon}</span>
@@ -528,7 +528,7 @@ export const Education: React.FC = () => {
                 </span>
               </div>
 
-              <button type="button" className="btn btn-primary btn-block card-btn">{t('explore')}</button>
+              <button type="button" className="btn btn-primary btn-sm card-btn">{t('explore')}</button>
             </div>
           ))}
         </div>
@@ -538,7 +538,7 @@ export const Education: React.FC = () => {
 
   // View: Lesson page
   return (
-    <div className="page-wrapper education-page">
+    <div className="page-wrapper page-wrapper--wide education-page">
       <div className="lesson-header">
         <h1>
           <span className="icon">{selectedSubtopic.icon}</span>
@@ -662,12 +662,12 @@ export const Education: React.FC = () => {
 
             <div className="lesson-action">
               <button
-                className="btn btn-primary btn-block"
+                className="btn btn-primary"
                 onClick={() => startLessonTraining(selectedLesson || selectedSubtopic.lessons[0])}
               >
                 {t('startPuzzleTraining')} ({(selectedLesson || selectedSubtopic.lessons[0]).puzzle_limit} {t('tasksCompleted')})
               </button>
-              <button type="button" className="btn btn-secondary btn-block" onClick={handleReadMore}>
+              <button type="button" className="btn btn-secondary" onClick={handleReadMore}>
                 {t('readMore')}
               </button>
             </div>

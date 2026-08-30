@@ -648,7 +648,7 @@ export const GameAnalysis: React.FC = () => {
   }
 
   return (
-    <div className="page-wrapper">
+    <div className="page-wrapper page-wrapper--full">
       <div className="page-header">
         <h2>{t('moveAnalysis')}</h2>
         {gameId && (

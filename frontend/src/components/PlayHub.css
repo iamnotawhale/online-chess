@@ -1,9 +1,84 @@
-/* Play hub layout */
+/* Play hub — Lichess lobby + ARCHITECT two-column */
 
-.play-hub .page-subtitle {
-  margin-bottom: var(--space-5);
+.play-hub .play-hub__intro {
+  max-width: var(--content-col);
+  margin-bottom: var(--space-4);
+}
+
+.play-hub .cta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+  max-width: var(--content-col);
+  margin-bottom: var(--space-6);
+}
+
+.play-hub .cta-card {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: var(--rule) solid var(--line-soft);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  min-height: 0;
+}
+
+.play-hub .cta-card:hover {
+  border-color: var(--line);
+  background: var(--surface-2);
+}
+
+.play-hub .cta-card--primary {
+  border-color: rgb(var(--accent-rgb) / 0.22);
+  background: rgb(var(--accent-rgb) / 0.06);
+}
+
+.play-hub .cta-card__title {
+  font-size: 0.8125rem;
+  white-space: normal;
+}
+
+.play-hub .cta-card__desc {
+  display: block;
+  font-size: 0.6875rem;
+  color: var(--muted-2);
+  line-height: 1.35;
+}
+
+.play-hub .layout-split {
+  width: 100%;
 }
 
 .play-hub-main {
   min-width: 0;
+  max-width: var(--content-col);
+}
+
+.play-hub .layout-sticky-side {
+  max-width: var(--sidebar-col);
+}
+
+.play-hub .layout-sticky-side h2 {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display);
+  font-size: var(--t-sm);
+  font-weight: 700;
+  color: var(--text);
+}
+
+@media (max-width: 900px) {
+  .play-hub .cta-grid {
+    max-width: 100%;
+  }
+
+  .play-hub-main {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .play-hub .cta-grid {
+    grid-template-columns: 1fr;
+  }
 }

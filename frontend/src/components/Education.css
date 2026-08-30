@@ -318,9 +318,10 @@
 
 .lessons-wrapper {
   display: grid;
-  grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
-  gap: 30px;
+  grid-template-columns: minmax(0, 240px) minmax(0, 1fr);
+  gap: var(--space-6);
   min-width: 0;
+  max-width: var(--container-wide);
 }
 
 .lessons-sidebar {

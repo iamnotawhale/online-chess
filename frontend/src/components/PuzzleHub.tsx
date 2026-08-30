@@ -47,17 +47,17 @@ export const PuzzleHub: React.FC<PuzzleHubProps> = ({ guestMode = false }) => {
         <section className="page-section puzzle-hub-block">
           <h2 className="section-title">{t('puzzleTraining')}</h2>
           <p className="section-desc">{t('puzzleTrainingDesc')}</p>
-          <button type="button" className="btn btn-primary btn-block" onClick={() => navigate('/puzzles/train')}>{t('startTraining')}</button>
+          <button type="button" className="btn btn-primary" onClick={() => navigate('/puzzles/train')}>{t('startTraining')}</button>
         </section>
         <section className="page-section puzzle-hub-block">
           <h2 className="section-title">{t('puzzleRush')}</h2>
           <p className="section-desc">{t('puzzleRushDesc')}</p>
-          <button type="button" className="btn btn-primary btn-block" onClick={() => navigate('/puzzles/rush')}>{t('startRush')}</button>
+          <button type="button" className="btn btn-primary" onClick={() => navigate('/puzzles/rush')}>{t('startRush')}</button>
         </section>
         <section className="page-section puzzle-hub-block">
           <h2 className="section-title">{t('navLearn')}</h2>
           <p className="section-desc">{t('educationFeatureStructured')}</p>
-          <button type="button" className="btn btn-secondary btn-block" onClick={() => navigate('/education')}>{t('openEducation')}</button>
+          <button type="button" className="btn btn-secondary" onClick={() => navigate('/education')}>{t('openEducation')}</button>
         </section>
       </div>
     </div>

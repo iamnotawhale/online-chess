@@ -118,28 +118,12 @@
 }
 
 .daily-puzzle-widget .puzzle-actions .btn.btn-primary {
-  flex: 1;
-  width: 100%;
-  padding: 14px 12px;
-  min-height: 48px;
-  background: var(--accent);
-  color: var(--accent-contrast);
-  border: none;
-  border-radius: 4px;
-  font-weight: 500;
-  font-size: 15px;
+  flex: 0 1 auto;
+  width: auto;
+  min-height: 32px;
+  padding: 0 var(--space-4);
+  font-size: var(--t-xs);
   line-height: 1.2;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-}
-
-.daily-puzzle-widget .puzzle-actions .btn.btn-primary:hover {
-  background: var(--text);
-  color: var(--surface);
-  transform: translateY(-1px);
 }
 
 .puzzle-btn-train {
