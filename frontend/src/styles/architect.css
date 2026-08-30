@@ -71,7 +71,7 @@ a.link:hover,
   background: var(--accent);
   border-color: var(--accent);
   color: var(--on-accent);
-  box-shadow: var(--shadow-glow);
+  box-shadow: none;
 }
 
 .btn-primary:hover:not(:disabled),

@@ -9,7 +9,7 @@ import { usePuzzleGame } from './usePuzzleGame';
 export const DailyPuzzle: React.FC = () => {
   const { t } = useTranslation();
   const boardContainerRef = useRef<HTMLDivElement | null>(null);
-  const MAX_DAILY_BOARD_WIDTH = 380;
+  const MAX_DAILY_BOARD_WIDTH = 280;
   const getBoardWidth = () => {
     if (typeof window === 'undefined') return 320;
     return Math.min(Math.max(180, window.innerWidth - 64), MAX_DAILY_BOARD_WIDTH);

@@ -8,22 +8,12 @@
   font-size: 0.875rem;
 }
 
-.puzzle-hub .page-flow {
-  max-width: var(--container);
+.cc-card--puzzle .puzzle-header-title,
+.cc-card--featured .puzzle-header-title {
+  font-size: 0.9375rem;
 }
 
-.puzzle-hub-block .section-title {
-  margin-bottom: var(--space-3);
-}
-
-.puzzle-hub-block .section-desc {
-  max-width: 42ch;
-}
-
-.puzzle-hub-block .btn {
-  margin-top: var(--space-2);
-}
-
-.puzzle-hub-block .daily-puzzle-widget .puzzle-header-title {
-  display: none;
+.cc-card--puzzle .daily-puzzle-widget,
+.cc-card--featured .daily-puzzle-widget {
+  gap: var(--space-3);
 }

@@ -25,7 +25,9 @@ export const PuzzleHub: React.FC<PuzzleHubProps> = ({ guestMode = false }) => {
     return (
       <div className="puzzle-hub page-wrapper">
         <h1 className="page-title">{t('dailyPuzzle')}</h1>
-        <DailyPuzzle />
+        <div className="cc-card">
+          <DailyPuzzle />
+        </div>
         <p className="puzzle-hub-guest-note">
           <Link to="/login">{t('login')}</Link> {t('loginToSavePuzzleProgress')}
         </p>
@@ -39,26 +41,29 @@ export const PuzzleHub: React.FC<PuzzleHubProps> = ({ guestMode = false }) => {
       {puzzleRating !== null && (
         <p className="page-subtitle">{t('puzzleRating')}: <strong>{puzzleRating}</strong></p>
       )}
-      <div className="page-flow layout-cards">
-        <section className="page-section puzzle-hub-block">
-          <h2 className="section-title">{t('dailyPuzzle')}</h2>
+
+      <div className="puzzle-hub-layout">
+        <div className="cc-card cc-card--featured">
           <DailyPuzzle />
-        </section>
-        <section className="page-section puzzle-hub-block">
-          <h2 className="section-title">{t('puzzleTraining')}</h2>
-          <p className="section-desc">{t('puzzleTrainingDesc')}</p>
-          <button type="button" className="btn btn-primary" onClick={() => navigate('/puzzles/train')}>{t('startTraining')}</button>
-        </section>
-        <section className="page-section puzzle-hub-block">
-          <h2 className="section-title">{t('puzzleRush')}</h2>
-          <p className="section-desc">{t('puzzleRushDesc')}</p>
-          <button type="button" className="btn btn-primary" onClick={() => navigate('/puzzles/rush')}>{t('startRush')}</button>
-        </section>
-        <section className="page-section puzzle-hub-block">
-          <h2 className="section-title">{t('navLearn')}</h2>
-          <p className="section-desc">{t('educationFeatureStructured')}</p>
-          <button type="button" className="btn btn-secondary" onClick={() => navigate('/education')}>{t('openEducation')}</button>
-        </section>
+        </div>
+
+        <div className="puzzle-modes-grid">
+          <div className="cc-card cc-mode-card">
+            <h2 className="cc-card__title">{t('puzzleTraining')}</h2>
+            <p className="section-desc">{t('puzzleTrainingDesc')}</p>
+            <button type="button" className="btn btn-primary" onClick={() => navigate('/puzzles/train')}>{t('startTraining')}</button>
+          </div>
+          <div className="cc-card cc-mode-card">
+            <h2 className="cc-card__title">{t('puzzleRush')}</h2>
+            <p className="section-desc">{t('puzzleRushDesc')}</p>
+            <button type="button" className="btn btn-primary" onClick={() => navigate('/puzzles/rush')}>{t('startRush')}</button>
+          </div>
+          <div className="cc-card cc-mode-card">
+            <h2 className="cc-card__title">{t('navLearn')}</h2>
+            <p className="section-desc">{t('educationFeatureStructured')}</p>
+            <button type="button" className="btn btn-secondary" onClick={() => navigate('/education')}>{t('openEducation')}</button>
+          </div>
+        </div>
       </div>
     </div>
   );

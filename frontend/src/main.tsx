@@ -8,6 +8,7 @@ import './index.css'
 import './styles/architect.css'
 import './styles/common.css'
 import './styles/ui.css'
+import './styles/chesscom.css'
 
 // Register PWA service worker
 (async () => {

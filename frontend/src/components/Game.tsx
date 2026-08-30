@@ -1071,15 +1071,15 @@ export const GameView: React.FC = () => {
           </div>
 
           {isGameActive && isParticipant && (
-            <>
+            <div className="game-actions">
               {game.drawOfferedById && game.drawOfferedById !== currentUser?.id && (
                 <div className="draw-offer">
                   <p>{t('opponentOffersDrawMsg')}</p>
                   <div className="draw-actions">
-                    <button type="button" onClick={() => handleRespondToDraw(true)} className="btn btn-success">
+                    <button type="button" onClick={() => handleRespondToDraw(true)} className="btn btn-success btn-sm">
                       {t('acceptBtn')}
                     </button>
-                    <button type="button" onClick={() => handleRespondToDraw(false)} className="btn btn-danger">
+                    <button type="button" onClick={() => handleRespondToDraw(false)} className="btn btn-danger btn-sm">
                       {t('declineBtn')}
                     </button>
                   </div>
@@ -1091,11 +1091,11 @@ export const GameView: React.FC = () => {
                 </div>
               )}
               {!game.drawOfferedById && (
-                <button type="button" onClick={handleOfferDraw} className="btn btn-secondary btn-block offer-draw-btn">
+                <button type="button" onClick={handleOfferDraw} className="btn btn-secondary offer-draw-btn">
                   {t('offerDraw')}
                 </button>
               )}
-              <button type="button" onClick={handleResign} className="btn btn-danger btn-block resign-btn">
+              <button type="button" onClick={handleResign} className="btn btn-danger resign-btn">
                 {t('resign')}
               </button>
               {moveHistory.length < 4 && (
@@ -1111,7 +1111,7 @@ export const GameView: React.FC = () => {
               <button type="button" onClick={handleClaimDraw} className="btn btn-secondary btn-sm">
                 {t('claimDraw')}
               </button>
-            </>
+            </div>
           )}
 
           {!isGameActive && game.result && (

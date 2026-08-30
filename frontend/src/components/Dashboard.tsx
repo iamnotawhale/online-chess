@@ -81,8 +81,8 @@ export const Dashboard: React.FC = () => {
   const pagedFinished = finishedGames.slice(finishedStart, finishedStart + finishedPageSize);
 
   return (
-    <div className="page-wrapper">
-      <div className="page-hero">
+    <div className="page-wrapper dashboard-page">
+      <div className="dashboard-hero">
         <h1 className="page-title">
           {user?.username}
           {user?.country && (
@@ -95,25 +95,28 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      <div className="dashboard-grid">
-        <div className="page-section">
-          <h2 className="section-title">{t('overview')}</h2>
-          <p className="section-desc">{t('playHubSubtitle')}</p>
-          <Link to="/play" className="btn btn-primary">{t('navPlay')}</Link>
-        </div>
+      <div className="dashboard-layout">
+        <div className="dashboard-main">
+          <div className="cc-card">
+            <div className="cc-card__head">
+              <h2 className="cc-card__title">{t('overview')}</h2>
+            </div>
+            <p className="section-desc">{t('playHubSubtitle')}</p>
+            <Link to="/play" className="btn btn-primary btn-lg">{t('navPlay')}</Link>
+          </div>
 
-        <DailyPuzzle />
-
-        <div className="page-section">
-          <h2 className="section-title">{t('myGames')} ({games.length + finishedGames.length})</h2>
-          {games.length === 0 && finishedGames.length === 0 ? (
-            <p className="empty-state">{t('noGames')}</p>
-          ) : (
-            <div className="list-stack">
-              {games.length > 0 && (
-                <>
-                  <div className="games-group-title">{t('activeGames')} ({games.length})</div>
-                  {(showAllActiveGames ? games : games.slice(0, 2)).map((game) => {
+          <div className="cc-card">
+            <div className="cc-card__head">
+              <h2 className="cc-card__title">{t('myGames')} ({games.length + finishedGames.length})</h2>
+            </div>
+            {games.length === 0 && finishedGames.length === 0 ? (
+              <p className="empty-state">{t('noGames')}</p>
+            ) : (
+              <div className="list-stack">
+                {games.length > 0 && (
+                  <>
+                    <div className="games-group-title">{t('activeGames')} ({games.length})</div>
+                    {(showAllActiveGames ? games : games.slice(0, 2)).map((game) => {
                       const isWhite = game.whitePlayerId === user?.id;
                       const opponentName = isWhite ? game.blackUsername : game.whiteUsername;
                       return (
@@ -129,16 +132,16 @@ export const Dashboard: React.FC = () => {
                         </div>
                       );
                     })}
-                  {games.length > 2 && (
-                    <button type="button" className="btn btn-secondary show-more-btn" onClick={() => setShowAllActiveGames(!showAllActiveGames)}>
-                      {showAllActiveGames ? t('showLess') : t('showMore')}
-                    </button>
-                  )}
-                </>
-              )}
-              {finishedGames.length > 0 && (
-                <>
-                  <div className="games-group-title">{t('history')}</div>
+                    {games.length > 2 && (
+                      <button type="button" className="btn btn-ghost btn-sm show-more-btn" onClick={() => setShowAllActiveGames(!showAllActiveGames)}>
+                        {showAllActiveGames ? t('showLess') : t('showMore')}
+                      </button>
+                    )}
+                  </>
+                )}
+                {finishedGames.length > 0 && (
+                  <>
+                    <div className="games-group-title">{t('history')}</div>
                     {pagedFinished.map((game) => {
                       const isWhite = game.whitePlayerId === user?.id;
                       const opponentName = isWhite ? game.blackUsername : game.whiteUsername;
@@ -165,23 +168,32 @@ export const Dashboard: React.FC = () => {
                         </div>
                       );
                     })}
-                  {finishedGames.length > finishedPageSize && (
-                    <div className="list-card__actions list-card__actions--center">
-                      <button type="button" className="btn btn-ghost btn-sm" disabled={finishedGamesPage === 0} onClick={() => setFinishedGamesPage((p) => p - 1)}>←</button>
-                      <button type="button" className="btn btn-ghost btn-sm" disabled={finishedStart + finishedPageSize >= finishedGames.length} onClick={() => setFinishedGamesPage((p) => p + 1)}>→</button>
-                    </div>
-                  )}
-                </>
-              )}
+                    {finishedGames.length > finishedPageSize && (
+                      <div className="list-card__actions list-card__actions--center">
+                        <button type="button" className="btn btn-ghost btn-sm" disabled={finishedGamesPage === 0} onClick={() => setFinishedGamesPage((p) => p - 1)}>←</button>
+                        <button type="button" className="btn btn-ghost btn-sm" disabled={finishedStart + finishedPageSize >= finishedGames.length} onClick={() => setFinishedGamesPage((p) => p + 1)}>→</button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="cc-card">
+            <div className="cc-card__head">
+              <h2 className="cc-card__title">{t('navLearn')}</h2>
             </div>
-          )}
+            <p className="section-desc">{t('educationFeatureStructured')}</p>
+            <Link to="/education" className="btn btn-secondary">{t('openEducation')}</Link>
+          </div>
         </div>
 
-        <div className="page-section education-widget">
-          <h2 className="section-title">{t('navLearn')}</h2>
-          <p className="section-desc">{t('educationFeatureStructured')}</p>
-          <Link to="/education" className="btn btn-primary">{t('openEducation')}</Link>
-        </div>
+        <aside className="dashboard-aside">
+          <div className="cc-card cc-card--puzzle">
+            <DailyPuzzle />
+          </div>
+        </aside>
       </div>
     </div>
   );

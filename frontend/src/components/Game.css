@@ -193,9 +193,12 @@
 }
 
 .layout-2col-board {
-  width: min(100%, 800px);
-  max-width: 800px;
-  justify-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: min(100vw - 340px, 800px);
 }
 
 .player-info {
@@ -442,39 +445,39 @@
 
 .move-history {
   background: var(--surface);
-  padding: 16px;
+  padding: var(--space-3);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-md);
 }
 
 .move-history h3 {
-  margin: 0 0 12px 0;
-  font-size: 14px;
-  font-weight: 600;
+  margin: 0 0 var(--space-3);
+  font-size: 0.8125rem;
+  font-weight: 700;
   color: var(--text);
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line-faint);
+  padding-bottom: var(--space-2);
 }
 
 .history-controls {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-  margin-bottom: 12px;
+  gap: var(--space-1);
+  margin-bottom: var(--space-3);
 }
 
 .history-controls button {
-  padding: 8px 12px;
+  padding: var(--space-2);
   background: var(--surface-2);
   color: var(--text);
-  border: 1px solid var(--border-2);
-  border-radius: 4px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-sm);
   cursor: pointer;
-  font-size: 18px;
-  font-weight: 500;
-  transition: all 0.2s;
+  font-size: 0.875rem;
+  min-height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 40px;
 }
 
 .history-controls button:hover:not(:disabled) {
@@ -489,54 +492,87 @@
 }
 
 .moves-list {
-  border-top: 1px solid var(--border);
-  padding-top: 12px;
-  max-height: 300px;
+  border-top: 1px solid var(--line-faint);
+  padding-top: var(--space-2);
+  max-height: 220px;
   overflow-y: auto;
 }
 
-.no-moves {
-  text-align: center;
-  color: var(--muted-2);
-  font-size: 13px;
-  margin: 0;
-  padding: 12px 0;
-}
-
 .moves-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-  align-items: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .move-row {
-  display: contents;
+  display: grid;
+  grid-template-columns: 1.75rem 1fr 1fr;
+  gap: 2px;
+  align-items: stretch;
+}
+
+.move-number {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: var(--space-1);
+  font-size: 0.6875rem;
+  color: var(--muted-2);
+  font-weight: 600;
 }
 
 .move-button {
-  padding: 8px;
+  padding: var(--space-1) var(--space-2);
   background: var(--surface-2);
-  border: 1px solid var(--border-2);
-  border-radius: 3px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-sm);
   cursor: pointer;
   text-align: center;
-  transition: all 0.2s;
   color: var(--text);
-  font-weight: 500;
-  font-size: 13px;
-}
-
-.move-button:hover {
-  background: var(--surface-4);
-  border-color: var(--muted-2);
+  font-weight: 600;
+  font-size: 0.75rem;
+  min-height: 28px;
 }
 
 .move-button.current {
   background: var(--accent);
-  color: var(--accent-contrast);
+  color: var(--on-accent);
   border-color: var(--accent);
-  font-weight: 600;
+}
+
+.game-info {
+  background: var(--surface);
+  padding: var(--space-3);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-md);
+}
+
+.layout-2col-sidebar .panel {
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.layout-2col-sidebar .game-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.layout-2col-sidebar .game-actions .btn {
+  width: 100%;
+  max-width: none;
+}
+
+.layout-2col-sidebar .game-actions .resign-btn,
+.layout-2col-sidebar .game-actions .offer-draw-btn {
+  grid-column: span 2;
+}
+
+.layout-2col-sidebar .game-actions .draw-offer,
+.layout-2col-sidebar .game-actions .draw-offer-sent {
+  grid-column: span 2;
 }
 
 .error {
@@ -546,6 +582,31 @@
   border-radius: 4px;
   border: 1px solid var(--danger-border);
   font-size: 14px;
+}
+
+.no-moves {
+  text-align: center;
+  color: var(--muted-2);
+  font-size: 0.8125rem;
+  margin: 0;
+  padding: var(--space-3) 0;
+}
+
+.move-button:hover {
+  background: var(--surface-3);
+  border-color: var(--line);
+}
+
+.history-controls button:hover:not(:disabled) {
+  background: var(--surface-3);
+  border-color: var(--line);
+}
+
+.history-controls button:disabled {
+  color: var(--muted-2);
+  border-color: var(--line-faint);
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 /* Promotion Dialog Styles */

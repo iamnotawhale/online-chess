@@ -25,23 +25,12 @@ body {
   overflow-x: clip;
   max-width: 100%;
   min-width: 0;
-  background:
-    radial-gradient(1200px 600px at 8% -8%, var(--fx-aurora), transparent 55%),
-    radial-gradient(900px 480px at 92% 0%, rgb(var(--accent-deep-rgb) / 0.08), transparent 50%),
-    linear-gradient(var(--fx-grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--fx-grid) 1px, transparent 1px),
-    var(--bg);
-  background-size: auto, auto, 48px 48px, 48px 48px, auto;
+  background: var(--bg);
   position: relative;
 }
 
 body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background: radial-gradient(ellipse at center, transparent 40%, var(--fx-vignette) 100%);
+  display: none;
 }
 
 #root {

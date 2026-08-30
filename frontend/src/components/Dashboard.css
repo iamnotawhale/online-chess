@@ -1,14 +1,7 @@
 /* Dashboard — game history & matchmaking widgets */
 
 .dashboard-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.dashboard-grid > * + * {
-  padding-top: var(--gap-section);
-  border-top: var(--rule) solid var(--line-faint);
+  display: contents;
 }
 
 .dashboard-grid > * {
@@ -81,8 +74,9 @@
 }
 
 .show-more-btn {
-  width: 100%;
-  margin-top: var(--space-3);
+  width: auto;
+  margin-top: var(--space-2);
+  align-self: flex-start;
 }
 
 .education-widget {

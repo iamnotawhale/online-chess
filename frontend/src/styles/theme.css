@@ -20,14 +20,20 @@
   --bottom-nav-height: 56px;
   /* Layout widths — Lichess narrow hub + ARCHITECT readable column */
   --container-full: min(1140px, calc(100vw - 32px));
-  --container-play: min(860px, calc(100vw - 32px));
-  --container-wide: min(780px, calc(100vw - 32px));
-  --container: min(640px, calc(100vw - 32px));
-  --content-col: 480px;
-  --sidebar-col: 280px;
-  --btn-max: 220px;
+  --container-play: min(960px, calc(100vw - 32px));
+  --container-wide: min(960px, calc(100vw - 32px));
+  --container: min(960px, calc(100vw - 32px));
+  --content-col: 400px;
+  --sidebar-col: 300px;
+  --btn-max: 200px;
 
-  /* Spacing scale (4px base) */
+  /* Chess.com green accent (light theme default) */
+  --accent-rgb: 129 182 76;
+  --accent-lift-rgb: 155 193 87;
+  --accent-deep-rgb: 97 145 54;
+  --accent-ink-light: #4a7f2a;
+  --counter-rgb: 129 182 76;
+
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -37,15 +43,9 @@
   --space-8: 32px;
   --space-10: 40px;
   --gap-page: var(--space-4);
-  --gap-section: var(--space-6);
+  --gap-section: var(--space-5);
   --gap-card: var(--space-3);
   --gap-inline: var(--space-2);
-
-  --accent-rgb: 71 85 105;
-  --accent-lift-rgb: 100 116 139;
-  --accent-deep-rgb: 51 65 85;
-  --accent-ink-light: #334155;
-  --counter-rgb: 56 189 248;
 
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.06), 0 1px 3px rgb(0 0 0 / 0.04);
   --shadow-md: 0 4px 12px rgb(0 0 0 / 0.08), 0 1px 4px rgb(0 0 0 / 0.05);
@@ -56,116 +56,117 @@
 :root[data-theme='light'] {
   color-scheme: light;
 
-  --ground: color-mix(in oklab, rgb(var(--accent-rgb)) 3%, #fbfbfd);
+  --ground: #eeeded;
   --ground-2: #ffffff;
-  --ground-3: color-mix(in oklab, rgb(var(--accent-deep-rgb)) 4%, var(--ground));
-  --ground-4: color-mix(in oklab, rgb(var(--accent-deep-rgb)) 8%, var(--ground));
-  --ground-5: color-mix(in oklab, rgb(var(--accent-deep-rgb)) 12%, var(--ground));
+  --ground-3: #f5f4f4;
+  --ground-4: #ebeae8;
+  --ground-5: #e0dfdd;
 
-  --ink: color-mix(in oklab, rgb(var(--accent-deep-rgb)) 8%, #131318);
-  --ink-2: color-mix(in oklab, rgb(var(--accent-deep-rgb)) 12%, #3c3a44);
-  --ink-3: color-mix(in oklab, rgb(var(--accent-deep-rgb)) 12%, #55535d);
+  --ink: #312e2b;
+  --ink-2: #5a5854;
+  --ink-3: #73726c;
 
-  --line: rgb(var(--accent-deep-rgb) / 0.22);
-  --line-soft: rgb(var(--accent-deep-rgb) / 0.12);
-  --line-faint: rgb(var(--accent-deep-rgb) / 0.07);
+  --line: rgb(49 46 43 / 0.16);
+  --line-soft: rgb(49 46 43 / 0.1);
+  --line-faint: rgb(49 46 43 / 0.06);
 
   --accent-ink: var(--accent-ink-light);
-  --on-accent: color-mix(in oklab, black 84%, rgb(var(--accent-deep-rgb)));
+  --on-accent: #ffffff;
 
-  --glow: rgb(var(--accent-rgb) / 0.12);
-  --glow-soft: rgb(var(--accent-rgb) / 0.06);
-  --fx-grid: rgb(var(--accent-deep-rgb) / 0.055);
-  --fx-aurora: rgb(var(--accent-rgb) / 0.14);
-  --fx-vignette: rgb(var(--accent-deep-rgb) / 0.06);
+  --glow: rgb(var(--accent-rgb) / 0.15);
+  --glow-soft: rgb(var(--accent-rgb) / 0.08);
+  --fx-grid: rgb(49 46 43 / 0.04);
+  --fx-aurora: rgb(var(--accent-rgb) / 0.08);
+  --fx-vignette: transparent;
 
-  --green: #256640;
-  --green2: #24693e;
-  --red: #b03a26;
-  --red2: #8f2c1b;
-  --blue: #1f5f9c;
+  --green: #61912f;
+  --green2: #81b64c;
+  --red: #c33;
+  --red2: #a52828;
+  --blue: #2d6a9f;
   --cyan: #0e6472;
 
-  --info-bg: rgb(var(--accent-rgb) / 0.08);
+  --info-bg: rgb(var(--accent-rgb) / 0.1);
   --info-text: var(--accent-ink-light);
-  --info-border: rgb(var(--accent-rgb) / 0.22);
-  --success-bg: rgb(var(--counter-rgb) / 0.1);
+  --info-border: rgb(var(--accent-rgb) / 0.25);
+  --success-bg: rgb(var(--accent-rgb) / 0.12);
   --success-text: var(--green);
-  --success-border: rgb(var(--counter-rgb) / 0.22);
+  --success-border: rgb(var(--accent-rgb) / 0.28);
   --warning-bg: rgb(180 83 9 / 0.1);
   --warning-text: #9a3412;
   --warning-border: rgb(180 83 9 / 0.2);
-  --danger-bg: rgb(176 58 38 / 0.1);
+  --danger-bg: rgb(195 51 51 / 0.1);
   --danger-text: var(--red);
-  --danger-border: rgb(176 58 38 / 0.18);
+  --danger-border: rgb(195 51 51 / 0.2);
   --neutral-bg: var(--ground-3);
   --neutral-text: var(--ink-3);
   --neutral-border: var(--line-soft);
 
-  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.06), 0 1px 3px rgb(0 0 0 / 0.04);
-  --shadow-md: 0 4px 12px rgb(0 0 0 / 0.08), 0 1px 4px rgb(0 0 0 / 0.05);
-  --shadow-lg: 0 8px 32px rgb(0 0 0 / 0.1), 0 2px 8px rgb(0 0 0 / 0.06);
-  --shadow-glow: 0 10px 28px rgb(var(--accent-deep-rgb) / 0.16);
+  --shadow-sm: 0 1px 3px rgb(49 46 43 / 0.08);
+  --shadow-md: 0 2px 8px rgb(49 46 43 / 0.1);
+  --shadow-lg: 0 4px 16px rgb(49 46 43 / 0.12);
+  --shadow-glow: 0 2px 8px rgb(var(--accent-rgb) / 0.25);
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
 
-  --accent-rgb: 148 163 184;
-  --accent-lift-rgb: 186 199 216;
-  --accent-deep-rgb: 100 116 139;
-  --accent-ink-light: #cbd5e1;
+  /* Chess.com brown-gray dark — not pure black */
+  --accent-rgb: 129 182 76;
+  --accent-lift-rgb: 155 193 87;
+  --accent-deep-rgb: 97 145 54;
+  --accent-ink-light: #a8d47a;
 
-  --ground: color-mix(in oklab, rgb(var(--accent-rgb)) 4%, #030304);
-  --ground-2: color-mix(in oklab, rgb(var(--accent-rgb)) 5%, #0a090c);
-  --ground-3: color-mix(in oklab, rgb(var(--accent-rgb)) 6%, #100f14);
-  --ground-4: color-mix(in oklab, rgb(var(--accent-rgb)) 7%, #17161c);
-  --ground-5: color-mix(in oklab, rgb(var(--accent-rgb)) 8%, #1e1d25);
+  --ground: #262421;
+  --ground-2: #302e2b;
+  --ground-3: #3a3835;
+  --ground-4: #434240;
+  --ground-5: #4d4b48;
 
-  --ink: color-mix(in oklab, rgb(var(--accent-rgb)) 13%, #f1efeb);
-  --ink-2: color-mix(in oklab, rgb(var(--accent-rgb)) 22%, #a8a49d);
-  --ink-3: color-mix(in oklab, rgb(var(--accent-rgb)) 22%, #97938c);
+  --ink: #ebeae8;
+  --ink-2: #bababa;
+  --ink-3: #8a8884;
 
-  --line: rgb(var(--accent-rgb) / 0.14);
-  --line-soft: rgb(var(--accent-rgb) / 0.07);
-  --line-faint: rgb(var(--accent-rgb) / 0.03);
+  --line: rgb(255 255 255 / 0.1);
+  --line-soft: rgb(255 255 255 / 0.06);
+  --line-faint: rgb(255 255 255 / 0.03);
 
-  --accent-ink: rgb(var(--accent-rgb));
-  --on-accent: color-mix(in oklab, black 84%, rgb(var(--accent-deep-rgb)));
+  --accent-ink: #a8d47a;
+  --on-accent: #ffffff;
 
   --glow: rgb(var(--accent-rgb) / 0.12);
   --glow-soft: rgb(var(--accent-rgb) / 0.06);
-  --fx-grid: rgb(var(--accent-rgb) / 0.018);
-  --fx-aurora: rgb(var(--accent-rgb) / 0.1);
-  --fx-vignette: rgb(0 0 0 / 0.42);
+  --fx-grid: rgb(255 255 255 / 0.025);
+  --fx-aurora: rgb(var(--accent-rgb) / 0.06);
+  --fx-vignette: transparent;
 
-  --green: #5cb87a;
-  --green2: #7dd99a;
-  --red: #d4604a;
+  --green: #81b64c;
+  --green2: #9bc157;
+  --red: #e06858;
   --red2: #ff8f7d;
-  --blue: #5b9bd5;
+  --blue: #6ba4d8;
   --cyan: #64d4e0;
 
-  --info-bg: rgb(var(--accent-rgb) / 0.08);
-  --info-text: rgb(var(--accent-lift-rgb));
+  --info-bg: rgb(var(--accent-rgb) / 0.1);
+  --info-text: #a8d47a;
   --info-border: rgb(var(--accent-rgb) / 0.22);
-  --success-bg: rgb(var(--counter-rgb) / 0.08);
+  --success-bg: rgb(var(--accent-rgb) / 0.12);
   --success-text: var(--green);
-  --success-border: rgb(var(--counter-rgb) / 0.2);
-  --warning-bg: rgb(251 191 36 / 0.08);
+  --success-border: rgb(var(--accent-rgb) / 0.25);
+  --warning-bg: rgb(251 191 36 / 0.1);
   --warning-text: #fbbf24;
   --warning-border: rgb(251 191 36 / 0.2);
-  --danger-bg: rgb(212 96 74 / 0.08);
+  --danger-bg: rgb(224 104 88 / 0.12);
   --danger-text: var(--red);
-  --danger-border: rgb(212 96 74 / 0.15);
+  --danger-border: rgb(224 104 88 / 0.2);
   --neutral-bg: var(--ground-3);
   --neutral-text: var(--ink-3);
   --neutral-border: var(--line-soft);
 
-  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3), 0 1px 3px rgb(0 0 0 / 0.15);
-  --shadow-md: 0 4px 12px rgb(0 0 0 / 0.4), 0 1px 4px rgb(0 0 0 / 0.2);
-  --shadow-lg: 0 8px 32px rgb(0 0 0 / 0.5), 0 2px 8px rgb(0 0 0 / 0.3);
-  --shadow-glow: 0 0 60px rgb(var(--accent-rgb) / 0.04);
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.35);
+  --shadow-md: 0 2px 8px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 4px 16px rgb(0 0 0 / 0.45);
+  --shadow-glow: 0 2px 8px rgb(var(--accent-rgb) / 0.2);
 }
 
 /* Architect design-system extras (from architect.vai-rice.space) */
