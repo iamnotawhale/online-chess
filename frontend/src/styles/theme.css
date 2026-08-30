@@ -56,11 +56,11 @@
 :root[data-theme='light'] {
   color-scheme: light;
 
-  --ground: color-mix(in oklab, rgb(var(--accent-rgb)) 2%, #fdfdff);
+  --ground: #ffffff;
   --ground-2: #ffffff;
-  --ground-3: color-mix(in oklab, rgb(var(--accent-rgb)) 3%, #f8fafc);
-  --ground-4: color-mix(in oklab, rgb(var(--accent-rgb)) 5%, #f1f5f9);
-  --ground-5: color-mix(in oklab, rgb(var(--accent-rgb)) 8%, #e8edf3);
+  --ground-3: #f8fafc;
+  --ground-4: #f1f5f9;
+  --ground-5: #e8edf3;
 
   --ink: #1e293b;
   --ink-2: #475569;
@@ -116,28 +116,29 @@
   --accent-deep-rgb: 113 128 150;
   --accent-ink-light: #dbe4ef;
 
-  --ground: color-mix(in oklab, rgb(var(--accent-rgb)) 5%, #0c0e14);
-  --ground-2: color-mix(in oklab, rgb(var(--accent-rgb)) 7%, #141820);
-  --ground-3: color-mix(in oklab, rgb(var(--accent-rgb)) 9%, #1a1f2a);
-  --ground-4: color-mix(in oklab, rgb(var(--accent-rgb)) 11%, #212836);
-  --ground-5: color-mix(in oklab, rgb(var(--accent-rgb)) 13%, #283042);
+  /* Slate-blue surfaces — lifted off pure black */
+  --ground: #1e2533;
+  --ground-2: #262f40;
+  --ground-3: #2e384c;
+  --ground-4: #364158;
+  --ground-5: #3e4a64;
 
-  --ink: color-mix(in oklab, rgb(var(--accent-rgb)) 14%, #f4f6fa);
-  --ink-2: color-mix(in oklab, rgb(var(--accent-rgb)) 24%, #b8c0cc);
-  --ink-3: color-mix(in oklab, rgb(var(--accent-rgb)) 24%, #949bab);
+  --ink: #eef1f6;
+  --ink-2: #b8c0cc;
+  --ink-3: #949bab;
 
-  --line: rgb(var(--accent-rgb) / 0.16);
-  --line-soft: rgb(var(--accent-rgb) / 0.08);
-  --line-faint: rgb(var(--accent-rgb) / 0.04);
+  --line: rgb(var(--accent-rgb) / 0.2);
+  --line-soft: rgb(var(--accent-rgb) / 0.11);
+  --line-faint: rgb(var(--accent-rgb) / 0.06);
 
   --accent-ink: rgb(var(--accent-rgb));
-  --on-accent: #0f141c;
+  --on-accent: #1a2230;
 
-  --glow: rgb(var(--accent-rgb) / 0.12);
-  --glow-soft: rgb(var(--accent-rgb) / 0.06);
-  --fx-grid: rgb(var(--accent-rgb) / 0.018);
-  --fx-aurora: rgb(var(--accent-rgb) / 0.1);
-  --fx-vignette: rgb(0 0 0 / 0.32);
+  --glow: rgb(var(--accent-rgb) / 0.14);
+  --glow-soft: rgb(var(--accent-rgb) / 0.08);
+  --fx-grid: rgb(var(--accent-rgb) / 0.035);
+  --fx-aurora: rgb(var(--accent-rgb) / 0.12);
+  --fx-vignette: transparent;
 
   --green: #5cb87a;
   --green2: #7dd99a;
@@ -162,10 +163,10 @@
   --neutral-text: var(--ink-3);
   --neutral-border: var(--line-soft);
 
-  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.24);
-  --shadow-md: 0 4px 12px rgb(0 0 0 / 0.32);
-  --shadow-lg: 0 8px 24px rgb(0 0 0 / 0.38);
-  --shadow-glow: 0 0 48px rgb(var(--accent-rgb) / 0.06);
+  --shadow-sm: 0 1px 2px rgb(15 20 30 / 0.28);
+  --shadow-md: 0 4px 12px rgb(15 20 30 / 0.34);
+  --shadow-lg: 0 8px 24px rgb(15 20 30 / 0.4);
+  --shadow-glow: 0 0 40px rgb(var(--accent-rgb) / 0.08);
 }
 
 /* Architect design-system extras (from architect.vai-rice.space) */

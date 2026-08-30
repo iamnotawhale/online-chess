@@ -496,7 +496,7 @@
 .mobile-overlay {
   position: fixed;
   inset: 0;
-  background: light-dark(rgb(40 36 30 / 0.4), rgb(0 0 0 / 0.6));
+  background: light-dark(rgb(71 85 105 / 0.22), rgb(165 180 203 / 0.18));
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   z-index: 400;

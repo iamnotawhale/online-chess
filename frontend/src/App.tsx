@@ -225,7 +225,7 @@ function App() {
     document.documentElement.setAttribute('data-theme', themeMode);
     document.body.setAttribute('data-theme', themeMode);
     localStorage.setItem('themeMode', themeMode);
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', themeMode === 'dark' ? '#141820' : '#64748b');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', themeMode === 'dark' ? '#262f40' : '#64748b');
   }, [themeMode]);
 
   return (
