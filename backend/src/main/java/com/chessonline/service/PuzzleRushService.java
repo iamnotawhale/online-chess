@@ -8,6 +8,7 @@ import com.chessonline.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,7 +45,7 @@ public class PuzzleRushService {
 
     public PuzzleResponse nextPuzzle(UUID sessionId, UUID userId) {
         RushSession session = getActiveSession(sessionId, userId);
-        return puzzleService.getRandomPuzzle(userId.toString(), 800, 2000);
+        return puzzleService.getRandomPuzzle(userId.toString(), 800, 2000, List.of());
     }
 
     public Map<String, Object> finishSession(UUID sessionId, UUID userId, int score, int puzzlesSolved) {

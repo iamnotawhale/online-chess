@@ -75,9 +75,16 @@ docker exec chess_postgres_prod pg_isready -U chess -d chessonline
 echo "Applying migrations..."
 ./db/apply-migrations.sh
 
-echo "Building and starting backend and frontend from source..."
-$DOCKER_COMPOSE -f "$COMPOSE_FILE" build --pull frontend backend
-$DOCKER_COMPOSE -f "$COMPOSE_FILE" up -d --force-recreate backend frontend
+echo "Building and starting frontend from source..."
+$DOCKER_COMPOSE -f "$COMPOSE_FILE" build --pull frontend
+$DOCKER_COMPOSE -f "$COMPOSE_FILE" up -d --force-recreate frontend
+
+echo "Building and starting backend from source..."
+if $DOCKER_COMPOSE -f "$COMPOSE_FILE" build --pull backend; then
+  $DOCKER_COMPOSE -f "$COMPOSE_FILE" up -d --force-recreate backend
+else
+  echo "WARNING: backend build failed; keeping the running backend container."
+fi
 
 echo "Waiting for backend..."
 for _ in $(seq 1 30); do

@@ -477,6 +477,10 @@ public class PuzzleService {
     }
     
     private Puzzle getRandomPuzzleByRating(int minRating, int maxRating) {
+        return getRandomPuzzleByRating(minRating, maxRating, Collections.emptyList());
+    }
+
+    private Puzzle getRandomPuzzleByRating(int minRating, int maxRating, List<String> themes) {
         try {
             // Wait for initialization if in progress
             if (!initialized) {
@@ -500,6 +504,14 @@ public class PuzzleService {
                 if (bucketPuzzles != null) {
                     for (Puzzle p : bucketPuzzles) {
                         if (p.getRating() >= minRating && p.getRating() <= maxRating) {
+                            if (themes != null && !themes.isEmpty()) {
+                                String puzzleThemes = p.getThemes() != null ? p.getThemes().toLowerCase() : "";
+                                boolean matches = themes.stream()
+                                        .anyMatch(theme -> theme != null && puzzleThemes.contains(theme.toLowerCase()));
+                                if (!matches) {
+                                    continue;
+                                }
+                            }
                             candidates.add(p);
                         }
                     }
