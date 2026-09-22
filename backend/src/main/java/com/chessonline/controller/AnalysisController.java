@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,12 +20,7 @@ public class AnalysisController {
         this.analysisService = analysisService;
     }
 
-    /**
-     * Analyze a chess game using Stockfish
-     * POST /api/games/{gameId}/analyze
-     */
     @PostMapping("/{gameId}/analyze")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> analyzeGame(@PathVariable String gameId, @RequestBody AnalysisRequest request) {
         try {
             logger.info("Received analysis request for game: {}", gameId);
